@@ -1,0 +1,23 @@
+{
+  "format_version": "1.0",
+  "instance_id": "tiny-single-rotatable",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 4,
+    "width": 3,
+    "height": 2
+  },
+  "box_types": [
+    {
+      "type_id": "panel",
+      "dimensions": {
+        "length": 2,
+        "width": 3,
+        "height": 1
+      },
+      "quantity": 1,
+      "box_ids": ["panel-01"],
+      "allowed_orientations": ["LWH", "WLH"]
+    }
+  ]
+}

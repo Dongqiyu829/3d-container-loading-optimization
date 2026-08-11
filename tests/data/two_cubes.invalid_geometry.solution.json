@@ -1,0 +1,38 @@
+{
+  "format_version": "1.0",
+  "instance_id": "tiny-two-cubes",
+  "placements": [
+    {
+      "box_id": "cube-01",
+      "orientation": "LWH",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "dimensions": {
+        "length": 2,
+        "width": 2,
+        "height": 2
+      }
+    },
+    {
+      "box_id": "cube-02",
+      "orientation": "LWH",
+      "position": {
+        "x": 1,
+        "y": 0,
+        "z": 0
+      },
+      "dimensions": {
+        "length": 2,
+        "width": 2,
+        "height": 2
+      }
+    }
+  ],
+  "metrics": {
+    "packed_volume": 16,
+    "utilization": 1.0
+  }
+}
