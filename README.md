@@ -210,7 +210,7 @@ ortool_Bin_packing.ipynb
 
 in Jupyter.
 
-### Reinforcement-learning version
+[/### Reinforcement-learning version
 
 Open:
 
@@ -219,7 +219,7 @@ Reinforce_learning_bin_packing.ipynb
 ```
 
 in Jupyter and run the cells in order.
-
+/]:
 ### C++ 3D heuristic
 
 For example, with GCC:
