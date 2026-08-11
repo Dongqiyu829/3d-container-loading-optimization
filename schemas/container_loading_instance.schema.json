@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/3d-container-loading/container_loading_instance.schema.json",
+  "title": "Container-loading instance",
+  "description": "Version 1.0 format for one rectangular container and explicitly identified rectangular boxes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format_version",
+    "instance_id",
+    "units",
+    "container",
+    "box_types"
+  ],
+  "properties": {
+    "format_version": {
+      "const": "1.0"
+    },
+    "instance_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "units": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Length unit used consistently throughout the instance, for example mm or arbitrary_unit."
+    },
+    "container": {
+      "$ref": "#/$defs/dimensions"
+    },
+    "box_types": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/boxType"
+      }
+    }
+  },
+  "$defs": {
+    "dimensions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["length", "width", "height"],
+      "properties": {
+        "length": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "orientation": {
+      "type": "string",
+      "enum": ["LWH", "LHW", "WLH", "WHL", "HLW", "HWL"],
+      "description": "Permutation of the original length (L), width (W), and height (H) onto realized length, width, and height."
+    },
+    "boxType": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type_id",
+        "dimensions",
+        "quantity",
+        "box_ids",
+        "allowed_orientations"
+      ],
+      "properties": {
+        "type_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dimensions": {
+          "$ref": "#/$defs/dimensions"
+        },
+        "quantity": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "box_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Concrete box IDs. The validator requires this count to equal quantity and IDs to be globally unique."
+        },
+        "allowed_orientations": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/orientation"
+          }
+        }
+      }
+    }
+  }
+}

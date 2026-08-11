@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/3d-container-loading/container_loading_solution.schema.json",
+  "title": "Container-loading solution",
+  "description": "Version 1.0 placement solution. Utilization is a fraction in the closed interval [0, 1].",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format_version",
+    "instance_id",
+    "placements",
+    "metrics"
+  ],
+  "properties": {
+    "format_version": {
+      "const": "1.0"
+    },
+    "instance_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "placements": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/placement"
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["packed_volume", "utilization"],
+      "properties": {
+        "packed_volume": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "utilization": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    }
+  },
+  "$defs": {
+    "orientation": {
+      "type": "string",
+      "enum": ["LWH", "LHW", "WLH", "WHL", "HLW", "HWL"]
+    },
+    "dimensions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["length", "width", "height"],
+      "properties": {
+        "length": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "position": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y", "z"],
+      "properties": {
+        "x": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "y": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "z": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "placement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["box_id", "orientation", "position", "dimensions"],
+      "properties": {
+        "box_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "orientation": {
+          "$ref": "#/$defs/orientation"
+        },
+        "position": {
+          "$ref": "#/$defs/position"
+        },
+        "dimensions": {
+          "$ref": "#/$defs/dimensions"
+        }
+      }
+    }
+  }
+}

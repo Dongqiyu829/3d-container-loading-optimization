@@ -1,0 +1,24 @@
+{
+  "format_version": "1.0",
+  "instance_id": "tiny-single-rotatable",
+  "placements": [
+    {
+      "box_id": "panel-01",
+      "orientation": "LHW",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "dimensions": {
+        "length": 2,
+        "width": 1,
+        "height": 3
+      }
+    }
+  ],
+  "metrics": {
+    "packed_volume": 6,
+    "utilization": 0.25
+  }
+}
