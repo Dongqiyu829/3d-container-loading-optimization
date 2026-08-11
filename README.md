@@ -1,6 +1,6 @@
 # 3D Container Loading Optimization
 
-Experimental implementations of **3D container loading / bin packing** using classical heuristics, **Google OR-Tools CP-SAT**, and **deep reinforcement learning**.
+Experimental implementations of **3D container loading / bin packing** using classical heuristics, **Google OR-Tools CP-SAT**, and **deep reinforcement learning(not already implemented)**.
 ![CP-SAT packing example](assets/cp_sat_packing_example.png)
 This project started from a practical container-loading problem and gradually evolved into a small testbed for comparing different approaches to combinatorial optimization.
 
