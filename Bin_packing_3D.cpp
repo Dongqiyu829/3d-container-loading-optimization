@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <set>
 #include <string>
+#include <sstream>
 #include <fstream> // 添加头文件
 using namespace std;
 
@@ -23,7 +24,17 @@ struct Cargo {
     int _length, _width, _height;
     CargoPose::Type _pose;
     Point _point;
-    Cargo(int l, int w, int h) : _length(l), _width(w), _height(h), _pose(CargoPose::tall_thin), _point(-1, -1, -1) {}
+    string _box_id;
+    string _type_id;
+    unsigned int _allowed_pose_mask;
+    Cargo(int l, int w, int h)
+        : _length(l), _width(w), _height(h), _pose(CargoPose::tall_thin),
+          _point(-1, -1, -1), _allowed_pose_mask((1u << 6) - 1) {}
+    Cargo(int l, int w, int h, const string& box_id, const string& type_id,
+          unsigned int allowed_pose_mask)
+        : _length(l), _width(w), _height(h), _pose(CargoPose::tall_thin),
+          _point(-1, -1, -1), _box_id(box_id), _type_id(type_id),
+          _allowed_pose_mask(allowed_pose_mask) {}
     tuple<int,int,int> shape() const {
         // 参考Python版，返回不同姿态下的三边
         int l = _length, w = _width, h = _height;
@@ -41,6 +52,9 @@ struct Cargo {
     int width()  const { return get<1>(shape()); }
     int height() const { return get<2>(shape()); }
     int volume() const { return _length * _width * _height; }
+    bool is_pose_allowed(CargoPose::Type pose) const {
+        return (_allowed_pose_mask & (1u << static_cast<unsigned int>(pose))) != 0;
+    }
     // 坐标相关h
     int x() const { return _point.x; }
     int y() const { return _point.y; }
@@ -189,7 +203,18 @@ bool is_rectangles_overlap(std::tuple<int,int,int,int> rec1, std::tuple<int,int,
 // 策略基类
 struct Strategy {
     virtual vector<CargoPose::Type> choose_cargo_poses(const Cargo& cargo, const Container& container) const {
-        return {CargoPose::tall_wide, CargoPose::tall_thin, CargoPose::mid_wide, CargoPose::mid_thin, CargoPose::short_wide, CargoPose::short_thin};
+        // Preserve the historical trial order, filtering only orientations that
+        // the canonical instance explicitly disallows.
+        const vector<CargoPose::Type> historical_order = {
+            CargoPose::tall_wide, CargoPose::tall_thin,
+            CargoPose::mid_wide, CargoPose::mid_thin,
+            CargoPose::short_wide, CargoPose::short_thin
+        };
+        vector<CargoPose::Type> allowed;
+        for (CargoPose::Type pose : historical_order) {
+            if (cargo.is_pose_allowed(pose)) allowed.push_back(pose);
+        }
+        return allowed;
     }
     virtual vector<Cargo> encasement_sequence(const vector<Cargo>& cargos) const {
         return cargos;
@@ -259,8 +284,90 @@ void save_encasement_as_file(const Container& container, const std::string& file
     file.close();
 }
 
-// 示例主函数
-int main() {
+// Explicit mapping between the canonical orientation names and the historical
+// internal pose enum. Repeated dimensions do not collapse orientation IDs: the
+// exact allowed/chosen orientation remains identifiable even when shapes match.
+string canonical_orientation(CargoPose::Type pose) {
+    switch (pose) {
+        case CargoPose::tall_thin:  return "LWH";
+        case CargoPose::short_wide: return "LHW";
+        case CargoPose::tall_wide:  return "WLH";
+        case CargoPose::mid_wide:   return "WHL";
+        case CargoPose::short_thin: return "HLW";
+        case CargoPose::mid_thin:   return "HWL";
+    }
+    return "";
+}
+
+int run_machine_mode() {
+    string line;
+    int container_length = 0, container_width = 0, container_height = 0;
+    vector<Cargo> cargos;
+    bool have_container = false;
+
+    while (getline(cin, line)) {
+        if (line.empty()) continue;
+        istringstream fields(line);
+        string record_type;
+        fields >> record_type;
+        if (record_type == "CONTAINER") {
+            if (!(fields >> container_length >> container_width >> container_height) ||
+                container_length <= 0 || container_width <= 0 || container_height <= 0) {
+                cerr << "ERROR invalid CONTAINER record" << endl;
+                return 2;
+            }
+            have_container = true;
+        } else if (record_type == "BOX") {
+            string box_id, type_id;
+            int length, width, height;
+            unsigned int allowed_pose_mask;
+            if (!(fields >> box_id >> type_id >> length >> width >> height >> allowed_pose_mask) ||
+                box_id.empty() || type_id.empty() || length <= 0 || width <= 0 || height <= 0 ||
+                allowed_pose_mask == 0 || allowed_pose_mask >= (1u << 6)) {
+                cerr << "ERROR invalid BOX record" << endl;
+                return 2;
+            }
+            cargos.emplace_back(length, width, height, box_id, type_id, allowed_pose_mask);
+        } else if (record_type == "END") {
+            break;
+        } else {
+            cerr << "ERROR unknown record type: " << record_type << endl;
+            return 2;
+        }
+    }
+
+    if (!have_container) {
+        cerr << "ERROR missing CONTAINER record" << endl;
+        return 2;
+    }
+
+    Container container(container_length, container_width, container_height);
+    VolumeGreedyStrategy strategy;
+    encase_cargos_into_container(cargos, container, strategy);
+
+    long long packed_volume = 0;
+    for (const auto& cargo : container._setted_cargos) {
+        if (cargo.x() < 0 || cargo.y() < 0 || cargo.z() < 0) continue;
+        packed_volume += cargo.volume();
+        cout << "PLACEMENT\t" << cargo._box_id
+             << "\t" << cargo._type_id
+             << "\t" << canonical_orientation(cargo._pose)
+             << "\t" << cargo.x()
+             << "\t" << cargo.y()
+             << "\t" << cargo.z()
+             << "\t" << cargo.length()
+             << "\t" << cargo.width()
+             << "\t" << cargo.height() << "\n";
+    }
+    cout << "SUMMARY\t" << container._setted_cargos.size()
+         << "\t" << packed_volume
+         << "\t" << static_cast<long long>(container_length) * container_width * container_height
+         << "\n";
+    return 0;
+}
+
+// 示例交互路径（保留原有行为）
+int run_interactive_mode() {
     cout<< "3D Bin Packing Example" << endl;
     int container_length, container_width, container_height;
     cout << "input container length, width, height: " << endl;
@@ -302,5 +409,15 @@ int main() {
     cout<< "input anything to exit"<<endl;
     cin>> is_continue;
     return 0;
-    
+}
+
+int main(int argc, char* argv[]) {
+    if (argc == 2 && string(argv[1]) == "--machine") {
+        return run_machine_mode();
+    }
+    if (argc != 1) {
+        cerr << "usage: " << argv[0] << " [--machine]" << endl;
+        return 2;
+    }
+    return run_interactive_mode();
 }
