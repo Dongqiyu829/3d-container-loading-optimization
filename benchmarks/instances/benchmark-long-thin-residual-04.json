@@ -1,0 +1,82 @@
+{
+  "format_version": "1.0",
+  "instance_id": "benchmark-long-thin-residual-04",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 12,
+    "width": 8,
+    "height": 6
+  },
+  "box_types": [
+    {
+      "type_id": "channel-block",
+      "dimensions": {
+        "length": 5,
+        "width": 7,
+        "height": 3
+      },
+      "quantity": 4,
+      "box_ids": [
+        "channel-block-001",
+        "channel-block-002",
+        "channel-block-003",
+        "channel-block-004"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW",
+        "WLH",
+        "WHL",
+        "HLW",
+        "HWL"
+      ]
+    },
+    {
+      "type_id": "channel-beam",
+      "dimensions": {
+        "length": 7,
+        "width": 1,
+        "height": 3
+      },
+      "quantity": 8,
+      "box_ids": [
+        "channel-beam-001",
+        "channel-beam-002",
+        "channel-beam-003",
+        "channel-beam-004",
+        "channel-beam-005",
+        "channel-beam-006",
+        "channel-beam-007",
+        "channel-beam-008"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW"
+      ]
+    },
+    {
+      "type_id": "channel-filler",
+      "dimensions": {
+        "length": 2,
+        "width": 2,
+        "height": 2
+      },
+      "quantity": 10,
+      "box_ids": [
+        "channel-filler-001",
+        "channel-filler-002",
+        "channel-filler-003",
+        "channel-filler-004",
+        "channel-filler-005",
+        "channel-filler-006",
+        "channel-filler-007",
+        "channel-filler-008",
+        "channel-filler-009",
+        "channel-filler-010"
+      ],
+      "allowed_orientations": [
+        "LWH"
+      ]
+    }
+  ]
+}

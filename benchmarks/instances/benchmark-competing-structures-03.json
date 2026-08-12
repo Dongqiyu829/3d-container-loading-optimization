@@ -1,0 +1,89 @@
+{
+  "format_version": "1.0",
+  "instance_id": "benchmark-competing-structures-03",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 9,
+    "width": 7,
+    "height": 6
+  },
+  "box_types": [
+    {
+      "type_id": "compete-large",
+      "dimensions": {
+        "length": 5,
+        "width": 4,
+        "height": 3
+      },
+      "quantity": 4,
+      "box_ids": [
+        "compete-large-001",
+        "compete-large-002",
+        "compete-large-003",
+        "compete-large-004"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW",
+        "WLH",
+        "WHL",
+        "HLW",
+        "HWL"
+      ]
+    },
+    {
+      "type_id": "compete-medium",
+      "dimensions": {
+        "length": 3,
+        "width": 3,
+        "height": 2
+      },
+      "quantity": 10,
+      "box_ids": [
+        "compete-medium-001",
+        "compete-medium-002",
+        "compete-medium-003",
+        "compete-medium-004",
+        "compete-medium-005",
+        "compete-medium-006",
+        "compete-medium-007",
+        "compete-medium-008",
+        "compete-medium-009",
+        "compete-medium-010"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW",
+        "WLH",
+        "WHL",
+        "HLW",
+        "HWL"
+      ]
+    },
+    {
+      "type_id": "compete-small",
+      "dimensions": {
+        "length": 2,
+        "width": 1,
+        "height": 2
+      },
+      "quantity": 10,
+      "box_ids": [
+        "compete-small-001",
+        "compete-small-002",
+        "compete-small-003",
+        "compete-small-004",
+        "compete-small-005",
+        "compete-small-006",
+        "compete-small-007",
+        "compete-small-008",
+        "compete-small-009",
+        "compete-small-010"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "WLH"
+      ]
+    }
+  ]
+}

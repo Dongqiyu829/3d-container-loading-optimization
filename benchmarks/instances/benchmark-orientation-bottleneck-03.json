@@ -1,0 +1,73 @@
+{
+  "format_version": "1.0",
+  "instance_id": "benchmark-orientation-bottleneck-03",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 8,
+    "width": 6,
+    "height": 5
+  },
+  "box_types": [
+    {
+      "type_id": "orient-long",
+      "dimensions": {
+        "length": 5,
+        "width": 2,
+        "height": 3
+      },
+      "quantity": 4,
+      "box_ids": [
+        "orient-long-001",
+        "orient-long-002",
+        "orient-long-003",
+        "orient-long-004"
+      ],
+      "allowed_orientations": [
+        "LHW",
+        "HLW"
+      ]
+    },
+    {
+      "type_id": "orient-medium",
+      "dimensions": {
+        "length": 3,
+        "width": 2,
+        "height": 2
+      },
+      "quantity": 6,
+      "box_ids": [
+        "orient-medium-001",
+        "orient-medium-002",
+        "orient-medium-003",
+        "orient-medium-004",
+        "orient-medium-005",
+        "orient-medium-006"
+      ],
+      "allowed_orientations": [
+        "WLH"
+      ]
+    },
+    {
+      "type_id": "orient-filler",
+      "dimensions": {
+        "length": 1,
+        "width": 1,
+        "height": 2
+      },
+      "quantity": 8,
+      "box_ids": [
+        "orient-filler-001",
+        "orient-filler-002",
+        "orient-filler-003",
+        "orient-filler-004",
+        "orient-filler-005",
+        "orient-filler-006",
+        "orient-filler-007",
+        "orient-filler-008"
+      ],
+      "allowed_orientations": [
+        "LWH"
+      ]
+    }
+  ]
+}

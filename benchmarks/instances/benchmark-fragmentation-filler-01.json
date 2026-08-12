@@ -1,0 +1,74 @@
+{
+  "format_version": "1.0",
+  "instance_id": "benchmark-fragmentation-filler-01",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 7,
+    "width": 5,
+    "height": 4
+  },
+  "box_types": [
+    {
+      "type_id": "frag-block",
+      "dimensions": {
+        "length": 4,
+        "width": 3,
+        "height": 4
+      },
+      "quantity": 2,
+      "box_ids": [
+        "frag-block-001",
+        "frag-block-002"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "WLH"
+      ]
+    },
+    {
+      "type_id": "frag-strip",
+      "dimensions": {
+        "length": 3,
+        "width": 2,
+        "height": 2
+      },
+      "quantity": 4,
+      "box_ids": [
+        "frag-strip-001",
+        "frag-strip-002",
+        "frag-strip-003",
+        "frag-strip-004"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW",
+        "WLH",
+        "WHL",
+        "HLW",
+        "HWL"
+      ]
+    },
+    {
+      "type_id": "frag-filler",
+      "dimensions": {
+        "length": 1,
+        "width": 1,
+        "height": 2
+      },
+      "quantity": 8,
+      "box_ids": [
+        "frag-filler-001",
+        "frag-filler-002",
+        "frag-filler-003",
+        "frag-filler-004",
+        "frag-filler-005",
+        "frag-filler-006",
+        "frag-filler-007",
+        "frag-filler-008"
+      ],
+      "allowed_orientations": [
+        "LWH"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "format_version": "1.0",
+  "instance_id": "benchmark-exact-plane-fit-03",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 9,
+    "width": 6,
+    "height": 4
+  },
+  "box_types": [
+    {
+      "type_id": "plane-brick",
+      "dimensions": {
+        "length": 3,
+        "width": 3,
+        "height": 2
+      },
+      "quantity": 12,
+      "box_ids": [
+        "plane-brick-001",
+        "plane-brick-002",
+        "plane-brick-003",
+        "plane-brick-004",
+        "plane-brick-005",
+        "plane-brick-006",
+        "plane-brick-007",
+        "plane-brick-008",
+        "plane-brick-009",
+        "plane-brick-010",
+        "plane-brick-011",
+        "plane-brick-012"
+      ],
+      "allowed_orientations": [
+        "LWH"
+      ]
+    }
+  ]
+}

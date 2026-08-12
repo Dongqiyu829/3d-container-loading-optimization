@@ -1,0 +1,45 @@
+{
+  "format_version": "1.0",
+  "instance_id": "benchmark-selection-pressure-01",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 6,
+    "width": 4,
+    "height": 3
+  },
+  "box_types": [
+    {
+      "type_id": "select-large",
+      "dimensions": {
+        "length": 4,
+        "width": 4,
+        "height": 3
+      },
+      "quantity": 1,
+      "box_ids": [
+        "select-large-001"
+      ],
+      "allowed_orientations": [
+        "LWH"
+      ]
+    },
+    {
+      "type_id": "select-small",
+      "dimensions": {
+        "length": 2,
+        "width": 2,
+        "height": 3
+      },
+      "quantity": 4,
+      "box_ids": [
+        "select-small-001",
+        "select-small-002",
+        "select-small-003",
+        "select-small-004"
+      ],
+      "allowed_orientations": [
+        "LWH"
+      ]
+    }
+  ]
+}

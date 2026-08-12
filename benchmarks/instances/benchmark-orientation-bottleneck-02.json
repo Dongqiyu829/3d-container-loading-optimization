@@ -1,0 +1,51 @@
+{
+  "format_version": "1.0",
+  "instance_id": "benchmark-orientation-bottleneck-02",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 7,
+    "width": 5,
+    "height": 4
+  },
+  "box_types": [
+    {
+      "type_id": "orient-tall",
+      "dimensions": {
+        "length": 2,
+        "width": 5,
+        "height": 3
+      },
+      "quantity": 3,
+      "box_ids": [
+        "orient-tall-001",
+        "orient-tall-002",
+        "orient-tall-003"
+      ],
+      "allowed_orientations": [
+        "LHW",
+        "HWL"
+      ]
+    },
+    {
+      "type_id": "orient-flat",
+      "dimensions": {
+        "length": 3,
+        "width": 2,
+        "height": 1
+      },
+      "quantity": 6,
+      "box_ids": [
+        "orient-flat-001",
+        "orient-flat-002",
+        "orient-flat-003",
+        "orient-flat-004",
+        "orient-flat-005",
+        "orient-flat-006"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "WLH"
+      ]
+    }
+  ]
+}

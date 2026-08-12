@@ -1,0 +1,72 @@
+{
+  "format_version": "1.0",
+  "instance_id": "benchmark-selection-pressure-02",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 8,
+    "width": 6,
+    "height": 4
+  },
+  "box_types": [
+    {
+      "type_id": "select-slab",
+      "dimensions": {
+        "length": 5,
+        "width": 3,
+        "height": 4
+      },
+      "quantity": 2,
+      "box_ids": [
+        "select-slab-001",
+        "select-slab-002"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "WLH"
+      ]
+    },
+    {
+      "type_id": "select-brick",
+      "dimensions": {
+        "length": 3,
+        "width": 3,
+        "height": 2
+      },
+      "quantity": 6,
+      "box_ids": [
+        "select-brick-001",
+        "select-brick-002",
+        "select-brick-003",
+        "select-brick-004",
+        "select-brick-005",
+        "select-brick-006"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW",
+        "WLH",
+        "WHL",
+        "HLW",
+        "HWL"
+      ]
+    },
+    {
+      "type_id": "select-cube",
+      "dimensions": {
+        "length": 2,
+        "width": 2,
+        "height": 2
+      },
+      "quantity": 4,
+      "box_ids": [
+        "select-cube-001",
+        "select-cube-002",
+        "select-cube-003",
+        "select-cube-004"
+      ],
+      "allowed_orientations": [
+        "LWH"
+      ]
+    }
+  ]
+}

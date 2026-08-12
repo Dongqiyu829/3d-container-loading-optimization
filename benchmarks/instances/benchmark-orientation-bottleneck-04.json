@@ -1,0 +1,77 @@
+{
+  "format_version": "1.0",
+  "instance_id": "benchmark-orientation-bottleneck-04",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 10,
+    "width": 7,
+    "height": 6
+  },
+  "box_types": [
+    {
+      "type_id": "orient-beam",
+      "dimensions": {
+        "length": 6,
+        "width": 2,
+        "height": 3
+      },
+      "quantity": 6,
+      "box_ids": [
+        "orient-beam-001",
+        "orient-beam-002",
+        "orient-beam-003",
+        "orient-beam-004",
+        "orient-beam-005",
+        "orient-beam-006"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "HLW"
+      ]
+    },
+    {
+      "type_id": "orient-panel",
+      "dimensions": {
+        "length": 4,
+        "width": 1,
+        "height": 3
+      },
+      "quantity": 8,
+      "box_ids": [
+        "orient-panel-001",
+        "orient-panel-002",
+        "orient-panel-003",
+        "orient-panel-004",
+        "orient-panel-005",
+        "orient-panel-006",
+        "orient-panel-007",
+        "orient-panel-008"
+      ],
+      "allowed_orientations": [
+        "LHW"
+      ]
+    },
+    {
+      "type_id": "orient-cube",
+      "dimensions": {
+        "length": 2,
+        "width": 2,
+        "height": 2
+      },
+      "quantity": 8,
+      "box_ids": [
+        "orient-cube-001",
+        "orient-cube-002",
+        "orient-cube-003",
+        "orient-cube-004",
+        "orient-cube-005",
+        "orient-cube-006",
+        "orient-cube-007",
+        "orient-cube-008"
+      ],
+      "allowed_orientations": [
+        "LWH"
+      ]
+    }
+  ]
+}

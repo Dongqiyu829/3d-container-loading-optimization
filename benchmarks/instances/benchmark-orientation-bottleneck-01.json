@@ -1,0 +1,44 @@
+{
+  "format_version": "1.0",
+  "instance_id": "benchmark-orientation-bottleneck-01",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 6,
+    "width": 4,
+    "height": 3
+  },
+  "box_types": [
+    {
+      "type_id": "orient-bar",
+      "dimensions": {
+        "length": 4,
+        "width": 3,
+        "height": 2
+      },
+      "quantity": 2,
+      "box_ids": [
+        "orient-bar-001",
+        "orient-bar-002"
+      ],
+      "allowed_orientations": [
+        "HLW"
+      ]
+    },
+    {
+      "type_id": "orient-cube",
+      "dimensions": {
+        "length": 2,
+        "width": 2,
+        "height": 2
+      },
+      "quantity": 2,
+      "box_ids": [
+        "orient-cube-001",
+        "orient-cube-002"
+      ],
+      "allowed_orientations": [
+        "LWH"
+      ]
+    }
+  ]
+}

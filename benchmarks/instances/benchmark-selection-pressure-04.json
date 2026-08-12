@@ -1,0 +1,86 @@
+{
+  "format_version": "1.0",
+  "instance_id": "benchmark-selection-pressure-04",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 10,
+    "width": 7,
+    "height": 6
+  },
+  "box_types": [
+    {
+      "type_id": "select-heavy",
+      "dimensions": {
+        "length": 6,
+        "width": 4,
+        "height": 3
+      },
+      "quantity": 4,
+      "box_ids": [
+        "select-heavy-001",
+        "select-heavy-002",
+        "select-heavy-003",
+        "select-heavy-004"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW",
+        "WLH",
+        "WHL",
+        "HLW",
+        "HWL"
+      ]
+    },
+    {
+      "type_id": "select-medium",
+      "dimensions": {
+        "length": 4,
+        "width": 3,
+        "height": 2
+      },
+      "quantity": 8,
+      "box_ids": [
+        "select-medium-001",
+        "select-medium-002",
+        "select-medium-003",
+        "select-medium-004",
+        "select-medium-005",
+        "select-medium-006",
+        "select-medium-007",
+        "select-medium-008"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW",
+        "WLH",
+        "WHL",
+        "HLW",
+        "HWL"
+      ]
+    },
+    {
+      "type_id": "select-light",
+      "dimensions": {
+        "length": 2,
+        "width": 2,
+        "height": 2
+      },
+      "quantity": 10,
+      "box_ids": [
+        "select-light-001",
+        "select-light-002",
+        "select-light-003",
+        "select-light-004",
+        "select-light-005",
+        "select-light-006",
+        "select-light-007",
+        "select-light-008",
+        "select-light-009",
+        "select-light-010"
+      ],
+      "allowed_orientations": [
+        "LWH"
+      ]
+    }
+  ]
+}

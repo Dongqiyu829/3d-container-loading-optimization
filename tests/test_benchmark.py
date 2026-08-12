@@ -24,7 +24,10 @@ from benchmark import (  # noqa: E402
 from cpsat_baseline import calculate_volume_bound_metrics  # noqa: E402
 from benchmarks.generate_instances import (  # noqa: E402
     build_instances,
+    build_suite,
     check_committed_instances,
+    instance_metrics,
+    validate_generated_instance,
 )
 from validate_solution import ValidationResult, load_json, validate_solution  # noqa: E402
 
@@ -34,9 +37,11 @@ class DeterministicBenchmarkInstanceTests(unittest.TestCase):
         self.assertEqual(build_instances(), build_instances())
         self.assertEqual(check_committed_instances(), [])
 
-        _, entries = load_suite()
+        suite, entries = load_suite()
+        self.assertEqual(suite, build_suite())
+        self.assertEqual(len(entries), 28)
         self.assertEqual(
-            [(entry.instance_id, entry.difficulty, entry.candidate_box_count) for entry in entries],
+            [(entry.instance_id, entry.difficulty, entry.candidate_box_count) for entry in entries[:4]],
             [
                 ("benchmark-tiny-two-cubes", "tiny", 2),
                 ("benchmark-tiny-orientation-gate", "tiny", 1),
@@ -44,6 +49,21 @@ class DeterministicBenchmarkInstanceTests(unittest.TestCase):
                 ("benchmark-medium-mixed-24", "medium", 24),
             ],
         )
+
+    def test_suite_metrics_match_every_generated_instance(self):
+        instances = build_instances()
+        suite = build_suite()
+        self.assertEqual({entry["instance_id"] for entry in suite["instances"]}, set(instances))
+        for entry in suite["instances"]:
+            metrics = instance_metrics(instances[entry["instance_id"]])
+            for key, expected in metrics.items():
+                self.assertEqual(entry[key], expected, (entry["instance_id"], key))
+
+    def test_generator_rejects_duplicate_orientation(self):
+        malformed = json.loads(json.dumps(build_instances()["benchmark-tiny-two-cubes"]))
+        malformed["box_types"][0]["allowed_orientations"] = ["LWH", "LWH"]
+        with self.assertRaisesRegex(ValueError, "unique canonical names"):
+            validate_generated_instance(malformed)
 
 
 class BenchmarkResultTests(unittest.TestCase):
