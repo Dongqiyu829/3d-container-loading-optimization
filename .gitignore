@@ -47,6 +47,7 @@ models/
 # Generated output
 # ============================================
 output/
+results/
 
 # ============================================
 # OR-Tools third-party SDK

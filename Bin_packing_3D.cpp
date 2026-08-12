@@ -4,8 +4,30 @@
 #include <algorithm>
 #include <set>
 #include <string>
+<<<<<<< Updated upstream
+=======
+#include <sstream>
+#include <chrono>
+#include <iomanip>
+>>>>>>> Stashed changes
 #include <fstream> // 添加头文件
+#ifdef _WIN32
+#include <windows.h>
+#endif
 using namespace std;
+
+double high_resolution_seconds() {
+#ifdef _WIN32
+    LARGE_INTEGER frequency, counter;
+    QueryPerformanceFrequency(&frequency);
+    QueryPerformanceCounter(&counter);
+    return static_cast<double>(counter.QuadPart) / frequency.QuadPart;
+#else
+    return chrono::duration<double>(
+        chrono::steady_clock::now().time_since_epoch()
+    ).count();
+#endif
+}
 
 // 货物的6种放置姿态
 struct CargoPose {
@@ -259,8 +281,98 @@ void save_encasement_as_file(const Container& container, const std::string& file
     file.close();
 }
 
+<<<<<<< Updated upstream
 // 示例主函数
 int main() {
+=======
+// Explicit mapping between the canonical orientation names and the historical
+// internal pose enum. Repeated dimensions do not collapse orientation IDs: the
+// exact allowed/chosen orientation remains identifiable even when shapes match.
+string canonical_orientation(CargoPose::Type pose) {
+    switch (pose) {
+        case CargoPose::tall_thin:  return "LWH";
+        case CargoPose::short_wide: return "LHW";
+        case CargoPose::tall_wide:  return "WLH";
+        case CargoPose::mid_wide:   return "WHL";
+        case CargoPose::short_thin: return "HLW";
+        case CargoPose::mid_thin:   return "HWL";
+    }
+    return "";
+}
+
+int run_machine_mode() {
+    string line;
+    int container_length = 0, container_width = 0, container_height = 0;
+    vector<Cargo> cargos;
+    bool have_container = false;
+
+    while (getline(cin, line)) {
+        if (line.empty()) continue;
+        istringstream fields(line);
+        string record_type;
+        fields >> record_type;
+        if (record_type == "CONTAINER") {
+            if (!(fields >> container_length >> container_width >> container_height) ||
+                container_length <= 0 || container_width <= 0 || container_height <= 0) {
+                cerr << "ERROR invalid CONTAINER record" << endl;
+                return 2;
+            }
+            have_container = true;
+        } else if (record_type == "BOX") {
+            string box_id, type_id;
+            int length, width, height;
+            unsigned int allowed_pose_mask;
+            if (!(fields >> box_id >> type_id >> length >> width >> height >> allowed_pose_mask) ||
+                box_id.empty() || type_id.empty() || length <= 0 || width <= 0 || height <= 0 ||
+                allowed_pose_mask == 0 || allowed_pose_mask >= (1u << 6)) {
+                cerr << "ERROR invalid BOX record" << endl;
+                return 2;
+            }
+            cargos.emplace_back(length, width, height, box_id, type_id, allowed_pose_mask);
+        } else if (record_type == "END") {
+            break;
+        } else {
+            cerr << "ERROR unknown record type: " << record_type << endl;
+            return 2;
+        }
+    }
+
+    if (!have_container) {
+        cerr << "ERROR missing CONTAINER record" << endl;
+        return 2;
+    }
+
+    Container container(container_length, container_width, container_height);
+    VolumeGreedyStrategy strategy;
+    const double core_start = high_resolution_seconds();
+    encase_cargos_into_container(cargos, container, strategy);
+    const double core_runtime_seconds = high_resolution_seconds() - core_start;
+
+    long long packed_volume = 0;
+    cout << "CORE_RUNTIME_SECONDS\t" << setprecision(17) << core_runtime_seconds << "\n";
+    for (const auto& cargo : container._setted_cargos) {
+        if (cargo.x() < 0 || cargo.y() < 0 || cargo.z() < 0) continue;
+        packed_volume += cargo.volume();
+        cout << "PLACEMENT\t" << cargo._box_id
+             << "\t" << cargo._type_id
+             << "\t" << canonical_orientation(cargo._pose)
+             << "\t" << cargo.x()
+             << "\t" << cargo.y()
+             << "\t" << cargo.z()
+             << "\t" << cargo.length()
+             << "\t" << cargo.width()
+             << "\t" << cargo.height() << "\n";
+    }
+    cout << "SUMMARY\t" << container._setted_cargos.size()
+         << "\t" << packed_volume
+         << "\t" << static_cast<long long>(container_length) * container_width * container_height
+         << "\n";
+    return 0;
+}
+
+// 示例交互路径（保留原有行为）
+int run_interactive_mode() {
+>>>>>>> Stashed changes
     cout<< "3D Bin Packing Example" << endl;
     int container_length, container_width, container_height;
     cout << "input container length, width, height: " << endl;

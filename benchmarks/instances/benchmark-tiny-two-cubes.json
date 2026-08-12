@@ -1,0 +1,28 @@
+{
+  "format_version": "1.0",
+  "instance_id": "benchmark-tiny-two-cubes",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 4,
+    "width": 2,
+    "height": 2
+  },
+  "box_types": [
+    {
+      "type_id": "cube",
+      "dimensions": {
+        "length": 2,
+        "width": 2,
+        "height": 2
+      },
+      "quantity": 2,
+      "box_ids": [
+        "cube-001",
+        "cube-002"
+      ],
+      "allowed_orientations": [
+        "LWH"
+      ]
+    }
+  ]
+}

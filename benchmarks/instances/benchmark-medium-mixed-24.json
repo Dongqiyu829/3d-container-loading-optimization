@@ -1,0 +1,86 @@
+{
+  "format_version": "1.0",
+  "instance_id": "benchmark-medium-mixed-24",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 10,
+    "width": 8,
+    "height": 6
+  },
+  "box_types": [
+    {
+      "type_id": "medium-crate",
+      "dimensions": {
+        "length": 4,
+        "width": 4,
+        "height": 3
+      },
+      "quantity": 8,
+      "box_ids": [
+        "medium-crate-001",
+        "medium-crate-002",
+        "medium-crate-003",
+        "medium-crate-004",
+        "medium-crate-005",
+        "medium-crate-006",
+        "medium-crate-007",
+        "medium-crate-008"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW",
+        "WLH",
+        "WHL",
+        "HLW",
+        "HWL"
+      ]
+    },
+    {
+      "type_id": "medium-carton",
+      "dimensions": {
+        "length": 3,
+        "width": 3,
+        "height": 2
+      },
+      "quantity": 8,
+      "box_ids": [
+        "medium-carton-001",
+        "medium-carton-002",
+        "medium-carton-003",
+        "medium-carton-004",
+        "medium-carton-005",
+        "medium-carton-006",
+        "medium-carton-007",
+        "medium-carton-008"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW",
+        "WLH",
+        "HLW"
+      ]
+    },
+    {
+      "type_id": "medium-cube",
+      "dimensions": {
+        "length": 2,
+        "width": 2,
+        "height": 2
+      },
+      "quantity": 8,
+      "box_ids": [
+        "medium-cube-001",
+        "medium-cube-002",
+        "medium-cube-003",
+        "medium-cube-004",
+        "medium-cube-005",
+        "medium-cube-006",
+        "medium-cube-007",
+        "medium-cube-008"
+      ],
+      "allowed_orientations": [
+        "LWH"
+      ]
+    }
+  ]
+}
