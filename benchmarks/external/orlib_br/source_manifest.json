@@ -1,0 +1,30 @@
+{
+  "source_manifest_version": "1.0",
+  "source_name": "OR-Library Bischoff-Ratcliff container-loading data",
+  "maintainer": "J. E. Beasley, OR-Library",
+  "contributor": "M. S. W. Ratcliff",
+  "documentation_url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/thpackinfo.html",
+  "files_base_url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files",
+  "license": "MIT",
+  "license_url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/legal.html",
+  "license_notice_path": "LICENSE-ORLIB.txt",
+  "retrieval_date": "2026-08-12",
+  "paper": "E. E. Bischoff and M. S. W. Ratcliff, Issues in the Development of Approaches to Container Loading, OMEGA 23(4), 1995, 377-390.",
+  "objective": "maximize single-container volume utilization",
+  "scope_note": "The raw records encode geometry, quantities, and vertical-orientation permissions only. Repository experiments evaluate the common axis-aligned geometric packed-volume problem without adding support, stability, weight, balance, sequence, or load-bearing constraints.",
+  "orientation_evidence": {
+    "source_rule": "The indicator after each original dimension states whether that dimension may be vertical.",
+    "horizontal_rule": "For each permitted vertical dimension, both orthogonal horizontal rotations are permitted.",
+    "review_url": "https://journals.ub.ovgu.de/index.php/FEMM-WPS/article/view/331/325"
+  },
+  "expected_problem_count_per_file": 100,
+  "files": [
+    {"filename": "thpack1.txt", "br_class": "BR1", "expected_box_type_count": 3, "byte_count": 9188, "sha256": "d6f0b99b4cc6e51c5753565b175a778a40422dc92cffee3204bf16cc1d23f341"},
+    {"filename": "thpack2.txt", "br_class": "BR2", "expected_box_type_count": 5, "byte_count": 13427, "sha256": "a31e6400d46926574068524172b1e38495cfd5ad6725f92c58a0af8d92721700"},
+    {"filename": "thpack3.txt", "br_class": "BR3", "expected_box_type_count": 8, "byte_count": 19743, "sha256": "3359b278aa20a6874d5a63467be6064e8d489014df45f5410a7d85a852ef876d"},
+    {"filename": "thpack4.txt", "br_class": "BR4", "expected_box_type_count": 10, "byte_count": 24040, "sha256": "9668bae0abd2ad513c6f8bcb5ed8845c4526f08b452f1b7fa9426b6990fbc4d6"},
+    {"filename": "thpack5.txt", "br_class": "BR5", "expected_box_type_count": 12, "byte_count": 28261, "sha256": "5ece29990ab5034d75728c7ee777379475b16b9218fa9dded17f327de7fa126f"},
+    {"filename": "thpack6.txt", "br_class": "BR6", "expected_box_type_count": 15, "byte_count": 34430, "sha256": "5c3604cad7a47f7ee38c3c6a4e74c0e846db1eea9ca4ac637106843311abe196"},
+    {"filename": "thpack7.txt", "br_class": "BR7", "expected_box_type_count": 20, "byte_count": 44743, "sha256": "43fc06212473bbb12ec575678232e444e021642cec7b649be1d43282edec7f2a"}
+  ]
+}
