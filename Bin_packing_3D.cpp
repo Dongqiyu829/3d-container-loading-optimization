@@ -31,11 +31,42 @@ struct CargoPose {
     enum Type { tall_wide, tall_thin, mid_wide, mid_thin, short_wide, short_thin };
 };
 
+string canonical_orientation(CargoPose::Type pose);
+
 struct Point {
     int x, y, z;
     Point(int x_ = -1, int y_ = -1, int z_ = -1) : x(x_), y(y_), z(z_) {}
     bool is_valid() const { return x >= 0 && y >= 0 && z >= 0; }
     bool operator==(const Point& o) const { return x == o.x && y == o.y && z == o.z; }
+};
+
+struct GreedyAttemptTrace {
+    size_t step_index = 0;
+    string box_id;
+    string type_id;
+    int original_length = 0, original_width = 0, original_height = 0;
+    vector<CargoPose::Type> allowed_orientations;
+    vector<Point> candidate_points_before;
+    vector<CargoPose::Type> orientations_attempted;
+    int placement_candidates_evaluated = 0;
+    int boundary_rejections = 0;
+    int collision_rejections = 0;
+    int geometrically_feasible_candidates = 0;
+    int placement_rule_rejections = 0;
+    bool placement_succeeded = false;
+    string status;
+    CargoPose::Type selected_orientation = CargoPose::tall_thin;
+    Point selected_candidate_point;
+    Point selected_position;
+    vector<Point> candidate_points_added;
+    vector<Point> candidate_points_removed;
+    int cumulative_packed_box_count = 0;
+    long long cumulative_packed_volume = 0;
+    int candidate_point_count = 0;
+    int occupied_extent_x = 0, occupied_extent_y = 0, occupied_extent_z = 0;
+    long long remaining_candidate_volume = 0;
+    int horizontal_planar_before = 0, vertical_planar_before = 0;
+    int horizontal_planar_after = 0, vertical_planar_after = 0;
 };
 
 struct Cargo {
@@ -98,6 +129,7 @@ struct Container {
     vector<Cargo> _setted_cargos;
     int _horizontal_planar = 0;
     int _vertical_planar = 0;
+    GreedyAttemptTrace* _active_trace = nullptr;
     Container(int l, int w, int h) : _length(l), _width(w), _height(h) {
         _available_points.push_back(Point(0,0,0));
     }
@@ -141,6 +173,24 @@ struct Container {
         }
         return true;
     }
+    bool evaluate_candidate(const Point& site, const Cargo& cargo) {
+        if (_active_trace == nullptr) return is_encasable(site, cargo);
+        ++_active_trace->placement_candidates_evaluated;
+        Cargo temp = cargo;
+        temp._point = site;
+        if (temp.x() + temp.length() > _length || temp.y() + temp.width() > _width || temp.z() + temp.height() > _height) {
+            ++_active_trace->boundary_rejections;
+            return false;
+        }
+        for (const auto& setted : _setted_cargos) {
+            if (is_cargos_collide(temp, setted)) {
+                ++_active_trace->collision_rejections;
+                return false;
+            }
+        }
+        ++_active_trace->geometrically_feasible_candidates;
+        return true;
+    }
     Point encase(Cargo& cargo) {
         Point flag(-1,-1,-1);
         int history_h = _horizontal_planar, history_v = _vertical_planar;
@@ -148,14 +198,18 @@ struct Container {
             return (!flag.is_valid() && _horizontal_planar == history_h && _vertical_planar == history_v);
         };
         for (const auto& point : _available_points) {
-            if (is_encasable(point, cargo) && point.x + cargo.length() < _horizontal_planar && point.z + cargo.height() < _vertical_planar) {
+            const bool geometrically_feasible = evaluate_candidate(point, cargo);
+            if (geometrically_feasible && point.x + cargo.length() < _horizontal_planar && point.z + cargo.height() < _vertical_planar) {
                 flag = point;
                 break;
+            }
+            if (geometrically_feasible && _active_trace != nullptr) {
+                ++_active_trace->placement_rule_rejections;
             }
         }
         if (!flag.is_valid()) {
             if (_horizontal_planar == 0 || _horizontal_planar == _length) {
-                if (is_encasable(Point(0,0,_vertical_planar), cargo)) {
+                if (evaluate_candidate(Point(0,0,_vertical_planar), cargo)) {
                     flag = Point(0,0,_vertical_planar);
                     _vertical_planar += cargo.height();
                     _horizontal_planar = cargo.length();
@@ -166,10 +220,16 @@ struct Container {
                 }
             } else {
                 for (const auto& point : _available_points) {
-                    if (point.x == _horizontal_planar && point.y == 0 && is_encasable(point, cargo) && point.z + cargo.height() <= _vertical_planar) {
-                        flag = point;
-                        _horizontal_planar += cargo.length();
-                        break;
+                    if (point.x == _horizontal_planar && point.y == 0) {
+                        const bool geometrically_feasible = evaluate_candidate(point, cargo);
+                        if (geometrically_feasible && point.z + cargo.height() <= _vertical_planar) {
+                            flag = point;
+                            _horizontal_planar += cargo.length();
+                            break;
+                        }
+                        if (geometrically_feasible && _active_trace != nullptr) {
+                            ++_active_trace->placement_rule_rejections;
+                        }
                     }
                 }
                 if (!flag.is_valid()) {
@@ -179,14 +239,25 @@ struct Container {
             }
         }
         if (flag.is_valid()) {
+            if (_active_trace != nullptr) _active_trace->selected_candidate_point = flag;
             cargo._point = flag;
             auto it = find(_available_points.begin(), _available_points.end(), flag);
-            if (it != _available_points.end()) _available_points.erase(it);
+            if (it != _available_points.end()) {
+                if (_active_trace != nullptr) _active_trace->candidate_points_removed.push_back(flag);
+                _available_points.erase(it);
+            }
             adjust_setting_cargo(cargo);
             _setted_cargos.push_back(cargo);
-            _available_points.push_back(Point(cargo.x() + cargo.length(), cargo.y(), cargo.z()));
-            _available_points.push_back(Point(cargo.x(), cargo.y() + cargo.width(), cargo.z()));
-            _available_points.push_back(Point(cargo.x(), cargo.y(), cargo.z() + cargo.height()));
+            const Point added_x(cargo.x() + cargo.length(), cargo.y(), cargo.z());
+            const Point added_y(cargo.x(), cargo.y() + cargo.width(), cargo.z());
+            const Point added_z(cargo.x(), cargo.y(), cargo.z() + cargo.height());
+            _available_points.push_back(added_x);
+            _available_points.push_back(added_y);
+            _available_points.push_back(added_z);
+            if (_active_trace != nullptr) {
+                _active_trace->selected_position = cargo._point;
+                _active_trace->candidate_points_added = {added_x, added_y, added_z};
+            }
             sort_available_points();
         }
         return flag;
@@ -248,7 +319,8 @@ struct VolumeGreedyStrategy : public Strategy {
 };
 
 // 主装箱函数
-float encase_cargos_into_container(vector<Cargo> cargos, Container& container, const Strategy& strategy) {
+float encase_cargos_into_container(vector<Cargo> cargos, Container& container, const Strategy& strategy,
+                                   vector<GreedyAttemptTrace>* trace_attempts = nullptr) {
     // 需要用指针或引用操作原始cargos，保证container中存储的cargo与外部一致
     vector<Cargo*> sorted_cargos_ptr;
     vector<Cargo> sorted_cargos = strategy.encasement_sequence(cargos);
@@ -258,25 +330,83 @@ float encase_cargos_into_container(vector<Cargo> cargos, Container& container, c
     sort(sorted_cargos_ptr.begin(), sorted_cargos_ptr.end(), [&](Cargo* a, Cargo* b){
         return a->volume() > b->volume();
     });
+    long long total_candidate_volume = 0;
+    for (const auto& cargo : cargos) total_candidate_volume += cargo.volume();
     size_t i = 0;
     while (i < sorted_cargos_ptr.size()) {
         size_t j = 0;
         Cargo* cargo = sorted_cargos_ptr[i];
         auto poses = strategy.choose_cargo_poses(*cargo, container);
+        GreedyAttemptTrace attempt;
+        if (trace_attempts != nullptr) {
+            attempt.step_index = trace_attempts->size();
+            attempt.box_id = cargo->_box_id;
+            attempt.type_id = cargo->_type_id;
+            attempt.original_length = cargo->_length;
+            attempt.original_width = cargo->_width;
+            attempt.original_height = cargo->_height;
+            attempt.allowed_orientations = poses;
+            attempt.candidate_points_before = container._available_points;
+            attempt.horizontal_planar_before = container._horizontal_planar;
+            attempt.vertical_planar_before = container._vertical_planar;
+            container._active_trace = &attempt;
+        }
         bool is_valid = false;
         Point flag(-1,-1,-1);
         while (j < poses.size()) {
+            if (trace_attempts != nullptr) attempt.orientations_attempted.push_back(poses[j]);
             cargo->set_pose(poses[j]);
             flag = container.encase(*cargo);
             if (flag.is_valid()) { is_valid = true; break; }
             ++j;
         }
         if (is_valid) {
+            if (trace_attempts != nullptr) {
+                attempt.placement_succeeded = true;
+                attempt.status = "PLACED";
+                attempt.selected_orientation = cargo->_pose;
+            }
             ++i;
         } else if (flag == Point(-1,-1,0)) {
+            if (trace_attempts != nullptr) attempt.status = "RETRY_AFTER_PLANAR_ADVANCE";
+            if (trace_attempts != nullptr) {
+                container._active_trace = nullptr;
+                long long packed_volume = 0;
+                for (const auto& packed : container._setted_cargos) packed_volume += packed.volume();
+                attempt.cumulative_packed_box_count = static_cast<int>(container._setted_cargos.size());
+                attempt.cumulative_packed_volume = packed_volume;
+                attempt.candidate_point_count = static_cast<int>(container._available_points.size());
+                for (const auto& packed : container._setted_cargos) {
+                    attempt.occupied_extent_x = max(attempt.occupied_extent_x, packed.x() + packed.length());
+                    attempt.occupied_extent_y = max(attempt.occupied_extent_y, packed.y() + packed.width());
+                    attempt.occupied_extent_z = max(attempt.occupied_extent_z, packed.z() + packed.height());
+                }
+                attempt.remaining_candidate_volume = total_candidate_volume - packed_volume;
+                attempt.horizontal_planar_after = container._horizontal_planar;
+                attempt.vertical_planar_after = container._vertical_planar;
+                trace_attempts->push_back(attempt);
+            }
             continue;
         } else {
+            if (trace_attempts != nullptr) attempt.status = "NO_ACCEPTED_PLACEMENT";
             ++i;
+        }
+        if (trace_attempts != nullptr) {
+            container._active_trace = nullptr;
+            long long packed_volume = 0;
+            for (const auto& packed : container._setted_cargos) packed_volume += packed.volume();
+            attempt.cumulative_packed_box_count = static_cast<int>(container._setted_cargos.size());
+            attempt.cumulative_packed_volume = packed_volume;
+            attempt.candidate_point_count = static_cast<int>(container._available_points.size());
+            for (const auto& packed : container._setted_cargos) {
+                attempt.occupied_extent_x = max(attempt.occupied_extent_x, packed.x() + packed.length());
+                attempt.occupied_extent_y = max(attempt.occupied_extent_y, packed.y() + packed.width());
+                attempt.occupied_extent_z = max(attempt.occupied_extent_z, packed.z() + packed.height());
+            }
+            attempt.remaining_candidate_volume = total_candidate_volume - packed_volume;
+            attempt.horizontal_planar_after = container._horizontal_planar;
+            attempt.vertical_planar_after = container._vertical_planar;
+            trace_attempts->push_back(attempt);
         }
     }
     int total = 0;
@@ -317,7 +447,27 @@ string canonical_orientation(CargoPose::Type pose) {
     return "";
 }
 
-int run_machine_mode() {
+string trace_points(const vector<Point>& points) {
+    if (points.empty()) return "-";
+    ostringstream value;
+    for (size_t index = 0; index < points.size(); ++index) {
+        if (index != 0) value << ";";
+        value << points[index].x << "," << points[index].y << "," << points[index].z;
+    }
+    return value.str();
+}
+
+string trace_orientations(const vector<CargoPose::Type>& orientations) {
+    if (orientations.empty()) return "-";
+    ostringstream value;
+    for (size_t index = 0; index < orientations.size(); ++index) {
+        if (index != 0) value << ",";
+        value << canonical_orientation(orientations[index]);
+    }
+    return value.str();
+}
+
+int run_machine_mode(bool trace_enabled) {
     string line;
     int container_length = 0, container_width = 0, container_height = 0;
     vector<Cargo> cargos;
@@ -361,8 +511,11 @@ int run_machine_mode() {
 
     Container container(container_length, container_width, container_height);
     VolumeGreedyStrategy strategy;
+    vector<GreedyAttemptTrace> trace_attempts;
     const double core_start = high_resolution_seconds();
-    encase_cargos_into_container(cargos, container, strategy);
+    encase_cargos_into_container(
+        cargos, container, strategy, trace_enabled ? &trace_attempts : nullptr
+    );
     const double core_runtime_seconds = high_resolution_seconds() - core_start;
 
     long long packed_volume = 0;
@@ -384,6 +537,67 @@ int run_machine_mode() {
          << "\t" << packed_volume
          << "\t" << static_cast<long long>(container_length) * container_width * container_height
          << "\n";
+    if (trace_enabled) {
+        cout << "TRACE_BEGIN\t1.0\tvolume-greedy-historical" << "\n";
+        for (const auto& attempt : trace_attempts) {
+            cout << "TRACE_ATTEMPT\t" << attempt.step_index
+                 << "\t" << attempt.box_id
+                 << "\t" << attempt.type_id
+                 << "\t" << attempt.original_length
+                 << "\t" << attempt.original_width
+                 << "\t" << attempt.original_height
+                 << "\t" << trace_orientations(attempt.allowed_orientations)
+                 << "\t" << trace_points(attempt.candidate_points_before)
+                 << "\t" << trace_orientations(attempt.orientations_attempted)
+                 << "\t" << attempt.placement_candidates_evaluated
+                 << "\t" << attempt.boundary_rejections
+                 << "\t" << attempt.collision_rejections
+                 << "\t" << attempt.geometrically_feasible_candidates
+                 << "\t" << attempt.placement_rule_rejections
+                 << "\t" << (attempt.placement_succeeded ? canonical_orientation(attempt.selected_orientation) : "-")
+                 << "\t" << attempt.selected_candidate_point.x
+                 << "\t" << attempt.selected_candidate_point.y
+                 << "\t" << attempt.selected_candidate_point.z
+                 << "\t" << attempt.selected_position.x
+                 << "\t" << attempt.selected_position.y
+                 << "\t" << attempt.selected_position.z
+                 << "\t" << (attempt.placement_succeeded ? 1 : 0)
+                 << "\t" << attempt.status
+                 << "\t" << attempt.cumulative_packed_box_count
+                 << "\t" << attempt.cumulative_packed_volume
+                 << "\t" << setprecision(17)
+                 << (static_cast<double>(attempt.cumulative_packed_volume) / container.volume())
+                 << "\t" << attempt.candidate_point_count
+                 << "\t" << attempt.occupied_extent_x
+                 << "\t" << attempt.occupied_extent_y
+                 << "\t" << attempt.occupied_extent_z
+                 << "\t" << attempt.remaining_candidate_volume
+                 << "\t" << trace_points(attempt.candidate_points_added)
+                 << "\t" << trace_points(attempt.candidate_points_removed)
+                 << "\t" << attempt.horizontal_planar_before
+                 << "\t" << attempt.vertical_planar_before
+                 << "\t" << attempt.horizontal_planar_after
+                 << "\t" << attempt.vertical_planar_after
+                 << "\n";
+        }
+        int extent_x = 0, extent_y = 0, extent_z = 0;
+        for (const auto& packed : container._setted_cargos) {
+            extent_x = max(extent_x, packed.x() + packed.length());
+            extent_y = max(extent_y, packed.y() + packed.width());
+            extent_z = max(extent_z, packed.z() + packed.height());
+        }
+        cout << "TRACE_FINAL\t" << trace_attempts.size()
+             << "\t" << container._setted_cargos.size()
+             << "\t" << packed_volume
+             << "\t" << static_cast<long long>(container_length) * container_width * container_height
+             << "\t" << setprecision(17)
+             << (static_cast<double>(packed_volume) / container.volume())
+             << "\t" << container._available_points.size()
+             << "\t" << extent_x
+             << "\t" << extent_y
+             << "\t" << extent_z
+             << "\n";
+    }
     return 0;
 }
 
@@ -434,10 +648,13 @@ int run_interactive_mode() {
 
 int main(int argc, char* argv[]) {
     if (argc == 2 && string(argv[1]) == "--machine") {
-        return run_machine_mode();
+        return run_machine_mode(false);
+    }
+    if (argc == 2 && string(argv[1]) == "--machine-trace") {
+        return run_machine_mode(true);
     }
     if (argc != 1) {
-        cerr << "usage: " << argv[0] << " [--machine]" << endl;
+        cerr << "usage: " << argv[0] << " [--machine|--machine-trace]" << endl;
         return 2;
     }
     return run_interactive_mode();
