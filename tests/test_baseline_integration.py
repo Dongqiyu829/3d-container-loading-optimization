@@ -1,5 +1,6 @@
 import importlib.util
 import copy
+import hashlib
 import json
 import shutil
 import subprocess
@@ -15,6 +16,7 @@ if str(ROOT) not in sys.path:
 
 from baseline_common import load_instance  # noqa: E402
 from greedy_baseline import (  # noqa: E402
+    GREEDY_MODES,
     allowed_pose_mask,
     compile_greedy,
     run_greedy,
@@ -153,11 +155,22 @@ class GreedyBaselineIntegrationTests(unittest.TestCase):
             ROOT / "benchmarks" / "instances" / "benchmark-medium-mixed-24.json"
         )
         normal_solution, normal_metadata = run_greedy(instance, self.executable)
+        explicit_historical, _ = run_greedy(
+            instance, self.executable, mode="historical"
+        )
         traced_solution, traced_metadata, trace = run_greedy_with_trace(
             instance, self.executable
         )
 
         self.assertEqual(traced_solution, normal_solution)
+        self.assertEqual(explicit_historical, normal_solution)
+        canonical = json.dumps(
+            normal_solution, sort_keys=True, separators=(",", ":")
+        ).encode()
+        self.assertEqual(
+            hashlib.sha256(canonical).hexdigest(),
+            "c7c983f00da3e041dc00a888d97b9f54a8b8a28bc4f166c475b4a82fb1b94ecc",
+        )
         self.assertNotIn("TRACE_", normal_metadata["solver_stdout"])
         self.assertIn("TRACE_BEGIN", traced_metadata["solver_stdout"])
         self.assertEqual(
@@ -167,6 +180,92 @@ class GreedyBaselineIntegrationTests(unittest.TestCase):
             len({attempt["box_id"] for attempt in trace["attempts"]}),
             len(instance.boxes),
         )
+
+    def test_diagnostics_do_not_alter_any_planar_variant(self):
+        instance = load_instance(
+            ROOT / "benchmarks" / "instances" / "benchmark-medium-mixed-24.json"
+        )
+        for mode in GREEDY_MODES:
+            with self.subTest(mode=mode):
+                normal_solution, normal_metadata = run_greedy(
+                    instance, self.executable, mode=mode
+                )
+                traced_solution, traced_metadata, trace = run_greedy_with_trace(
+                    instance, self.executable, mode=mode
+                )
+                self.assertEqual(traced_solution, normal_solution)
+                self.assertEqual(normal_metadata["greedy_mode"], mode)
+                self.assertEqual(traced_metadata["greedy_mode"], mode)
+                self.assertEqual(trace["mode"], mode)
+
+    def test_experimental_modes_are_validator_valid_on_tiny_benchmarks(self):
+        fixtures = (
+            "benchmark-tiny-two-cubes.json",
+            "benchmark-tiny-orientation-gate.json",
+        )
+        for fixture in fixtures:
+            instance = load_instance(ROOT / "benchmarks" / "instances" / fixture)
+            for mode in ("planar-inclusive", "geometry-first"):
+                with self.subTest(fixture=fixture, mode=mode):
+                    solution, _ = run_greedy(instance, self.executable, mode=mode)
+                    validation = validate_solution(instance.raw, solution)
+                    self.assertTrue(validation.valid, validation.issues)
+
+    def test_planar_ablation_exercises_only_policy_at_first_divergence(self):
+        instance = load_instance(
+            ROOT / "benchmarks" / "instances" / "benchmark-medium-mixed-24.json"
+        )
+        traces = {}
+        solutions = {}
+        for mode in GREEDY_MODES:
+            solutions[mode], _, traces[mode] = run_greedy_with_trace(
+                instance, self.executable, mode=mode
+            )
+
+        historical = traces["historical"]["attempts"]
+        inclusive = traces["planar-inclusive"]["attempts"]
+        geometry_first = traces["geometry-first"]["attempts"]
+        self.assertEqual(
+            [attempt["box_id"] for attempt in historical],
+            [attempt["box_id"] for attempt in inclusive],
+        )
+        self.assertEqual(
+            [attempt["box_id"] for attempt in historical],
+            [attempt["box_id"] for attempt in geometry_first],
+        )
+        for other in (inclusive, geometry_first):
+            self.assertEqual(historical[0]["selected_position"], other[0]["selected_position"])
+            self.assertEqual(historical[1]["box_id"], other[1]["box_id"])
+            self.assertEqual(
+                historical[1]["candidate_points_before"],
+                other[1]["candidate_points_before"],
+            )
+            self.assertEqual(
+                historical[1]["orientation_trial_order"],
+                other[1]["orientation_trial_order"],
+            )
+            self.assertEqual(historical[1]["selected_orientation"], other[1]["selected_orientation"])
+            self.assertNotEqual(historical[1]["selected_position"], other[1]["selected_position"])
+        self.assertEqual(inclusive[1]["selected_position"], {"x": 0, "y": 4, "z": 0})
+        self.assertEqual(geometry_first[1]["selected_position"], {"x": 0, "y": 4, "z": 0})
+        inclusive_crate_008 = next(
+            placement
+            for placement in solutions["planar-inclusive"]["placements"]
+            if placement["box_id"] == "medium-crate-008"
+        )
+        self.assertEqual(
+            inclusive_crate_008["position"], {"x": 4, "y": 0, "z": 3}
+        )
+        for mode, trace in traces.items():
+            for attempt in trace["attempts"]:
+                points = attempt["candidate_points_before"]
+                self.assertEqual(
+                    points,
+                    sorted(points, key=lambda point: (point["z"], point["x"], point["y"])),
+                    mode,
+                )
+                if attempt["placement_succeeded"]:
+                    self.assertEqual(len(attempt["after_success"]["candidate_points_added"]), 3)
 
     def test_trace_summary_and_successes_match_canonical_solution(self):
         instance = load_instance(ROOT / "tests" / "data" / "two_cubes.instance.json")

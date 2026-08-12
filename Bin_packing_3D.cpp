@@ -33,6 +33,17 @@ struct CargoPose {
 
 string canonical_orientation(CargoPose::Type pose);
 
+enum class PlanarPolicy { historical, planar_inclusive, geometry_first };
+
+string planar_policy_name(PlanarPolicy policy) {
+    switch (policy) {
+        case PlanarPolicy::historical: return "historical";
+        case PlanarPolicy::planar_inclusive: return "planar-inclusive";
+        case PlanarPolicy::geometry_first: return "geometry-first";
+    }
+    return "";
+}
+
 struct Point {
     int x, y, z;
     Point(int x_ = -1, int y_ = -1, int z_ = -1) : x(x_), y(y_), z(z_) {}
@@ -130,7 +141,9 @@ struct Container {
     int _horizontal_planar = 0;
     int _vertical_planar = 0;
     GreedyAttemptTrace* _active_trace = nullptr;
-    Container(int l, int w, int h) : _length(l), _width(w), _height(h) {
+    PlanarPolicy _planar_policy;
+    Container(int l, int w, int h, PlanarPolicy planar_policy = PlanarPolicy::historical)
+        : _length(l), _width(w), _height(h), _planar_policy(planar_policy) {
         _available_points.push_back(Point(0,0,0));
     }
     int length() const { return _length; }
@@ -199,7 +212,15 @@ struct Container {
         };
         for (const auto& point : _available_points) {
             const bool geometrically_feasible = evaluate_candidate(point, cargo);
-            if (geometrically_feasible && point.x + cargo.length() < _horizontal_planar && point.z + cargo.height() < _vertical_planar) {
+            const bool accepted_by_policy =
+                _planar_policy == PlanarPolicy::geometry_first ||
+                (_planar_policy == PlanarPolicy::historical &&
+                 point.x + cargo.length() < _horizontal_planar &&
+                 point.z + cargo.height() < _vertical_planar) ||
+                (_planar_policy == PlanarPolicy::planar_inclusive &&
+                 point.x + cargo.length() <= _horizontal_planar &&
+                 point.z + cargo.height() <= _vertical_planar);
+            if (geometrically_feasible && accepted_by_policy) {
                 flag = point;
                 break;
             }
@@ -207,7 +228,7 @@ struct Container {
                 ++_active_trace->placement_rule_rejections;
             }
         }
-        if (!flag.is_valid()) {
+        if (!flag.is_valid() && _planar_policy != PlanarPolicy::geometry_first) {
             if (_horizontal_planar == 0 || _horizontal_planar == _length) {
                 if (evaluate_candidate(Point(0,0,_vertical_planar), cargo)) {
                     flag = Point(0,0,_vertical_planar);
@@ -467,7 +488,7 @@ string trace_orientations(const vector<CargoPose::Type>& orientations) {
     return value.str();
 }
 
-int run_machine_mode(bool trace_enabled) {
+int run_machine_mode(bool trace_enabled, PlanarPolicy planar_policy) {
     string line;
     int container_length = 0, container_width = 0, container_height = 0;
     vector<Cargo> cargos;
@@ -509,7 +530,7 @@ int run_machine_mode(bool trace_enabled) {
         return 2;
     }
 
-    Container container(container_length, container_width, container_height);
+    Container container(container_length, container_width, container_height, planar_policy);
     VolumeGreedyStrategy strategy;
     vector<GreedyAttemptTrace> trace_attempts;
     const double core_start = high_resolution_seconds();
@@ -538,7 +559,8 @@ int run_machine_mode(bool trace_enabled) {
          << "\t" << static_cast<long long>(container_length) * container_width * container_height
          << "\n";
     if (trace_enabled) {
-        cout << "TRACE_BEGIN\t1.0\tvolume-greedy-historical" << "\n";
+        cout << "TRACE_BEGIN\t1.1\tvolume-greedy-planar-ablation\t"
+             << planar_policy_name(planar_policy) << "\n";
         for (const auto& attempt : trace_attempts) {
             cout << "TRACE_ATTEMPT\t" << attempt.step_index
                  << "\t" << attempt.box_id
@@ -648,13 +670,28 @@ int run_interactive_mode() {
 
 int main(int argc, char* argv[]) {
     if (argc == 2 && string(argv[1]) == "--machine") {
-        return run_machine_mode(false);
+        return run_machine_mode(false, PlanarPolicy::historical);
     }
     if (argc == 2 && string(argv[1]) == "--machine-trace") {
-        return run_machine_mode(true);
+        return run_machine_mode(true, PlanarPolicy::historical);
+    }
+    if (argc == 2 && string(argv[1]) == "--machine-planar-inclusive") {
+        return run_machine_mode(false, PlanarPolicy::planar_inclusive);
+    }
+    if (argc == 2 && string(argv[1]) == "--machine-trace-planar-inclusive") {
+        return run_machine_mode(true, PlanarPolicy::planar_inclusive);
+    }
+    if (argc == 2 && string(argv[1]) == "--machine-geometry-first") {
+        return run_machine_mode(false, PlanarPolicy::geometry_first);
+    }
+    if (argc == 2 && string(argv[1]) == "--machine-trace-geometry-first") {
+        return run_machine_mode(true, PlanarPolicy::geometry_first);
     }
     if (argc != 1) {
-        cerr << "usage: " << argv[0] << " [--machine|--machine-trace]" << endl;
+        cerr << "usage: " << argv[0]
+             << " [--machine|--machine-trace|--machine-planar-inclusive|"
+             << "--machine-trace-planar-inclusive|--machine-geometry-first|"
+             << "--machine-trace-geometry-first]" << endl;
         return 2;
     }
     return run_interactive_mode();

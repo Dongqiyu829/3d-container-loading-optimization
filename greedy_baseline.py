@@ -21,8 +21,17 @@ CANONICAL_TO_CPP_POSE = {
     "LHW": 4,  # short_wide; tried 5th historically
     "HLW": 5,  # short_thin; tried 6th historically
 }
-GREEDY_TRACE_FORMAT_VERSION = "1.0"
-GREEDY_BACKEND_ID = "volume-greedy-historical"
+GREEDY_TRACE_FORMAT_VERSION = "1.1"
+GREEDY_BACKEND_ID = "volume-greedy-planar-ablation"
+GREEDY_MODES = ("historical", "planar-inclusive", "geometry-first")
+_MACHINE_FLAGS = {
+    ("historical", False): "--machine",
+    ("historical", True): "--machine-trace",
+    ("planar-inclusive", False): "--machine-planar-inclusive",
+    ("planar-inclusive", True): "--machine-trace-planar-inclusive",
+    ("geometry-first", False): "--machine-geometry-first",
+    ("geometry-first", True): "--machine-trace-geometry-first",
+}
 
 
 def _encode_identifier(value: str) -> str:
@@ -216,6 +225,8 @@ def validate_greedy_trace(
         raise ValueError("unsupported greedy trace format_version")
     if trace.get("instance_id") != instance.instance_id or trace.get("solver") != "greedy":
         raise ValueError("greedy trace instance or solver identity mismatch")
+    if trace.get("mode") not in GREEDY_MODES:
+        raise ValueError("greedy trace contains an unknown planar mode")
     attempts = trace.get("attempts")
     final = trace.get("final_summary")
     if not isinstance(attempts, list) or not isinstance(final, dict):
@@ -294,8 +305,14 @@ def _run_greedy(
     executable: str | Path,
     *,
     trace_enabled: bool,
+    mode: str,
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any] | None]:
     """Run the unchanged placement loop through its line-oriented interface."""
+
+    if mode not in GREEDY_MODES:
+        raise ValueError(
+            f"unsupported Greedy mode {mode!r}; choose from {', '.join(GREEDY_MODES)}"
+        )
 
     container = instance.container
     records = [f"CONTAINER {container[0]} {container[1]} {container[2]}"]
@@ -311,10 +328,7 @@ def _run_greedy(
     records.append("END")
     protocol_input = "\n".join(records) + "\n"
 
-    command = [
-        str(Path(executable).resolve()),
-        "--machine-trace" if trace_enabled else "--machine",
-    ]
+    command = [str(Path(executable).resolve()), _MACHINE_FLAGS[(mode, trace_enabled)]]
     completed = subprocess.run(
         command,
         input=protocol_input,
@@ -331,7 +345,7 @@ def _run_greedy(
     placements: list[dict[str, Any]] = []
     reported_summary: tuple[int, int, int] | None = None
     core_runtime_seconds: float | None = None
-    trace_backend: tuple[str, str] | None = None
+    trace_backend: tuple[str, str, str] | None = None
     trace_attempts: list[dict[str, Any]] = []
     trace_final: dict[str, Any] | None = None
     box_by_id = {box.box_id: box for box in instance.boxes}
@@ -364,10 +378,10 @@ def _run_greedy(
             )
         elif fields[0] == "SUMMARY" and len(fields) == 4:
             reported_summary = tuple(map(int, fields[1:]))  # type: ignore[assignment]
-        elif fields[0] == "TRACE_BEGIN" and len(fields) == 3 and trace_enabled:
+        elif fields[0] == "TRACE_BEGIN" and len(fields) == 4 and trace_enabled:
             if trace_backend is not None:
                 raise RuntimeError("duplicate TRACE_BEGIN record")
-            trace_backend = (fields[1], fields[2])
+            trace_backend = (fields[1], fields[2], fields[3])
         elif fields[0] == "TRACE_ATTEMPT" and trace_enabled:
             trace_attempts.append(_trace_attempt(fields, box_by_id))
         elif fields[0] == "TRACE_FINAL" and len(fields) == 10 and trace_enabled:
@@ -410,6 +424,7 @@ def _run_greedy(
     metadata = {
         "solver": "greedy",
         "solver_status": "COMPLETED",
+        "greedy_mode": mode,
         "executable": str(Path(executable).resolve()),
         "command": command,
         "solver_core_runtime_seconds": core_runtime_seconds,
@@ -424,19 +439,20 @@ def _run_greedy(
         return solution, metadata, None
     if trace_backend is None or trace_final is None:
         raise RuntimeError("greedy diagnostic output is missing trace begin/final records")
-    if trace_backend != (GREEDY_TRACE_FORMAT_VERSION, GREEDY_BACKEND_ID):
+    if trace_backend != (GREEDY_TRACE_FORMAT_VERSION, GREEDY_BACKEND_ID, mode):
         raise RuntimeError(f"unsupported greedy trace backend record: {trace_backend!r}")
     trace = {
         "trace_format_version": GREEDY_TRACE_FORMAT_VERSION,
         "instance_id": instance.instance_id,
         "solver": "greedy",
+        "mode": mode,
         "backend": {
             "source": "Bin_packing_3D.cpp",
             "source_sha256": hashlib.sha256(
                 (Path(__file__).resolve().parent / "Bin_packing_3D.cpp").read_bytes()
             ).hexdigest(),
             "algorithm_id": trace_backend[1],
-            "protocol_mode": "--machine-trace",
+            "protocol_mode": command[1],
             "executable_sha256": hashlib.sha256(
                 Path(executable).resolve().read_bytes()
             ).hexdigest(),
@@ -456,20 +472,28 @@ def _run_greedy(
 def run_greedy(
     instance: CanonicalInstance,
     executable: str | Path,
+    *,
+    mode: str = "historical",
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    """Run the historical placement loop with diagnostics disabled."""
+    """Run a planar-policy mode with diagnostics disabled (historical by default)."""
 
-    solution, metadata, _ = _run_greedy(instance, executable, trace_enabled=False)
+    solution, metadata, _ = _run_greedy(
+        instance, executable, trace_enabled=False, mode=mode
+    )
     return solution, metadata
 
 
 def run_greedy_with_trace(
     instance: CanonicalInstance,
     executable: str | Path,
+    *,
+    mode: str = "historical",
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
-    """Run the same placement loop and return its versioned diagnostic trace."""
+    """Run a planar-policy mode and return its versioned diagnostic trace."""
 
-    solution, metadata, trace = _run_greedy(instance, executable, trace_enabled=True)
+    solution, metadata, trace = _run_greedy(
+        instance, executable, trace_enabled=True, mode=mode
+    )
     if trace is None:  # Defensive: trace_enabled requires a trace.
         raise RuntimeError("greedy diagnostic trace was not produced")
     return solution, metadata, trace

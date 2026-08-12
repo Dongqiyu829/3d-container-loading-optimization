@@ -6,13 +6,14 @@ import argparse
 import os
 import re
 import tempfile
+import time
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Sequence
 
 from baseline_common import CanonicalInstance, load_instance, write_json_new
-from greedy_baseline import compile_greedy, run_greedy_with_trace
+from greedy_baseline import GREEDY_MODES, compile_greedy, run_greedy_with_trace
 from validate_solution import validate_solution
 
 
@@ -54,6 +55,7 @@ def summarize_greedy_trace(
     ]
     return {
         "instance_id": instance.instance_id,
+        "mode": trace["mode"],
         "attempt_count": len(attempts),
         "distinct_boxes_attempted": len(final_attempt_by_box),
         "packed_box_count": len(solution["placements"]),
@@ -63,6 +65,9 @@ def summarize_greedy_trace(
         "first_permanent_failure_step": failed[0]["step_index"] if failed else None,
         "permanent_failure_count": len(failed),
         "planar_retry_count": len(retries),
+        "placement_candidates_evaluated": sum(
+            item["placement_candidates_evaluated"] for item in attempts
+        ),
         "boundary_rejections": sum(item["boundary_rejections"] for item in attempts),
         "collision_rejections": sum(item["collision_rejections"] for item in attempts),
         "geometrically_feasible_candidates": sum(
@@ -82,17 +87,23 @@ def summarize_greedy_trace(
     }
 
 
-def _default_paths(instance_id: str) -> tuple[Path, Path]:
+def _default_paths(instance_id: str, mode: str) -> tuple[Path, Path]:
     safe_id = re.sub(r"[^A-Za-z0-9._-]+", "_", instance_id).strip("._") or "instance"
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
     directory = REPOSITORY_ROOT / "results" / "greedy-diagnostics" / safe_id
-    stem = f"greedy-trace-{timestamp}"
+    stem = f"greedy-{mode}-trace-{timestamp}"
     return directory / f"{stem}.solution.json", directory / f"{stem}.trace.json"
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--instance", required=True, type=Path)
+    parser.add_argument(
+        "--mode",
+        choices=GREEDY_MODES,
+        default="historical",
+        help="experimental planar policy; historical remains the default",
+    )
     parser.add_argument("--output", type=Path, help="new canonical solution JSON path")
     parser.add_argument("--trace-output", type=Path, help="new diagnostic trace JSON path")
     parser.add_argument("--greedy-executable", type=Path)
@@ -101,7 +112,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     try:
         instance = load_instance(args.instance)
-        default_solution, default_trace = _default_paths(instance.instance_id)
+        default_solution, default_trace = _default_paths(instance.instance_id, args.mode)
         solution_path = (args.output or default_solution).resolve()
         trace_path = (args.trace_output or default_trace).resolve()
         if solution_path == trace_path:
@@ -123,7 +134,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                     executable,
                     compiler=args.cxx,
                 )
-            solution, _metadata, trace = run_greedy_with_trace(instance, executable)
+            started = time.perf_counter()
+            solution, solver_metadata, trace = run_greedy_with_trace(
+                instance, executable, mode=args.mode
+            )
+            end_to_end_runtime_seconds = time.perf_counter() - started
 
         validation = validate_solution(instance.raw, solution)
         if not validation.valid:
@@ -135,7 +150,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         write_json_new(trace_path, trace)
         summary = summarize_greedy_trace(instance, solution, trace)
         print(f"instance={instance.instance_id}")
-        print("solver=greedy status=COMPLETED validation=VALID")
+        print(f"solver=greedy mode={args.mode} status=COMPLETED validation=VALID")
         print(
             f"packed_boxes={summary['packed_box_count']} "
             f"packed_volume={summary['packed_volume']} "
@@ -144,9 +159,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(
             f"attempts={summary['attempt_count']} "
             f"first_permanent_failure_step={summary['first_permanent_failure_step']} "
+            f"candidates_evaluated={summary['placement_candidates_evaluated']} "
             f"boundary_rejections={summary['boundary_rejections']} "
             f"collision_rejections={summary['collision_rejections']} "
+            f"geometrically_feasible={summary['geometrically_feasible_candidates']} "
             f"placement_rule_rejections={summary['placement_rule_rejections']}"
+        )
+        print(
+            f"solver_core_runtime_seconds="
+            f"{solver_metadata['solver_core_runtime_seconds']:.9f} "
+            f"end_to_end_runtime_seconds={end_to_end_runtime_seconds:.9f}"
         )
         print(
             "candidate_points="
