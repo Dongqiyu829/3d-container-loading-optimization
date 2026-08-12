@@ -236,6 +236,7 @@ def _build_cpsat_model(
     *,
     maximize_volume: bool,
     volume_bound: bool,
+    selection_prefix_symmetry: bool,
 ) -> CpSatModelArtifacts:
     """Build the unchanged baseline formulation and expose its variables."""
 
@@ -281,6 +282,20 @@ def _build_cpsat_model(
         model.Add(x[box_index] + actual_length <= length).OnlyEnforceIf(selected[box_index])
         model.Add(y[box_index] + actual_width <= width).OnlyEnforceIf(selected[box_index])
         model.Add(z[box_index] + actual_height <= height).OnlyEnforceIf(selected[box_index])
+
+    if selection_prefix_symmetry:
+        # This opt-in symmetry breaker reduces labeled assignments while
+        # retaining one prefix-labeled representative of every physical
+        # packing equivalence class. Grouping is conservative and type-aware.
+        from identical_box_symmetry_audit import group_interchangeable_boxes
+
+        box_index_by_id = {box.box_id: index for index, box in enumerate(boxes)}
+        for group_index, group in enumerate(group_interchangeable_boxes(instance)):
+            indices = [box_index_by_id[box_id] for box_id in group.box_ids]
+            for prefix_index, (first, second) in enumerate(zip(indices, indices[1:])):
+                model.Add(selected[first] >= selected[second]).WithName(
+                    f"selection_prefix_{group_index}_{prefix_index}_{first}_{second}"
+                )
 
     # Preserve the existing six-way pairwise separation formulation.
     for first in range(box_count):
@@ -339,6 +354,7 @@ def build_cpsat_model(
     *,
     maximize_volume: bool = True,
     volume_bound: bool = False,
+    selection_prefix_symmetry: bool = False,
 ) -> CpSatModelArtifacts:
     """Public model builder used by equivalence and hint-mapping tests."""
 
@@ -351,6 +367,7 @@ def build_cpsat_model(
         cp_model,
         maximize_volume=maximize_volume,
         volume_bound=volume_bound,
+        selection_prefix_symmetry=selection_prefix_symmetry,
     )
 
 
@@ -397,6 +414,7 @@ def run_cpsat(
     progress_target_objective: float | None = None,
     max_deterministic_time: float | None = None,
     volume_bound: bool = False,
+    selection_prefix_symmetry: bool = False,
 ) -> tuple[dict[str, Any] | None, dict[str, Any]]:
     """Build and solve the existing formulation using canonical box identities."""
 
@@ -414,6 +432,7 @@ def run_cpsat(
         cp_model,
         maximize_volume=maximize_volume,
         volume_bound=volume_bound,
+        selection_prefix_symmetry=selection_prefix_symmetry,
     )
     model_build_runtime_seconds = time.perf_counter() - model_build_started
     model = artifacts.model
@@ -463,7 +482,13 @@ def run_cpsat(
         "max_deterministic_time": max_deterministic_time,
         "objective": "packed_volume" if maximize_volume else "selected_box_count",
         "volume_bound_enabled": volume_bound,
-        "model_variant": "baseline-plus-volume-bound" if volume_bound else "baseline",
+        "selection_prefix_symmetry_enabled": selection_prefix_symmetry,
+        "model_variant": "baseline" + (
+            "-plus-volume-bound" if volume_bound else ""
+        ) + (
+            "-plus-selection-prefix-symmetry"
+            if selection_prefix_symmetry else ""
+        ),
         "model_build_runtime_seconds": model_build_runtime_seconds,
         "wall_time_seconds": solver.WallTime(),
         "solver_core_runtime_seconds": solver.WallTime(),
