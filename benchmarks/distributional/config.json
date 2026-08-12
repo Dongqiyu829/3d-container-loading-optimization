@@ -1,0 +1,118 @@
+{
+  "generator_version": "1.0",
+  "global_seed": 20260812,
+  "suite_size": 60,
+  "container_regimes": {
+    "approximately-cubic": {
+      "length": [
+        9,
+        12
+      ],
+      "width": [
+        9,
+        12
+      ],
+      "height": [
+        9,
+        12
+      ]
+    },
+    "moderately-rectangular": {
+      "length": [
+        13,
+        17
+      ],
+      "width": [
+        8,
+        11
+      ],
+      "height": [
+        7,
+        10
+      ]
+    },
+    "long-thin": {
+      "length": [
+        17,
+        21
+      ],
+      "width": [
+        5,
+        7
+      ],
+      "height": [
+        5,
+        7
+      ]
+    },
+    "tall": {
+      "length": [
+        8,
+        11
+      ],
+      "width": [
+        7,
+        10
+      ],
+      "height": [
+        14,
+        18
+      ]
+    },
+    "flat-slab": {
+      "length": [
+        12,
+        17
+      ],
+      "width": [
+        9,
+        13
+      ],
+      "height": [
+        4,
+        6
+      ]
+    }
+  },
+  "pressure_bands": {
+    "underfilled": [
+      0.8,
+      1.0
+    ],
+    "near-capacity": [
+      1.0,
+      1.15
+    ],
+    "moderate-overfill": [
+      1.15,
+      1.35
+    ],
+    "strong-overfill": [
+      1.35,
+      1.6
+    ]
+  },
+  "shape_regimes": [
+    "approximately-cubic",
+    "elongated",
+    "flat-slab",
+    "mixed-shape"
+  ],
+  "orientation_levels": [
+    "all-six",
+    "partial",
+    "highly-restricted"
+  ],
+  "size_profiles": [
+    "similar-medium",
+    "mixed-scale",
+    "large-with-fillers"
+  ],
+  "type_structures": {
+    "few-types-larger-quantities": 3,
+    "balanced-types-and-quantities": 4,
+    "more-types-smaller-quantities": 6
+  },
+  "maximum_candidate_boxes": 60,
+  "maximum_generation_attempts": 500
+}

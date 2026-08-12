@@ -1,0 +1,146 @@
+{
+  "format_version": "1.0",
+  "instance_id": "distributional-v1-044",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 8,
+    "width": 10,
+    "height": 18
+  },
+  "box_types": [
+    {
+      "type_id": "dist-type-01",
+      "dimensions": {
+        "length": 1,
+        "width": 7,
+        "height": 4
+      },
+      "quantity": 6,
+      "box_ids": [
+        "dist-type-01-001",
+        "dist-type-01-002",
+        "dist-type-01-003",
+        "dist-type-01-004",
+        "dist-type-01-005",
+        "dist-type-01-006"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "HWL",
+        "WLH"
+      ]
+    },
+    {
+      "type_id": "dist-type-02",
+      "dimensions": {
+        "length": 2,
+        "width": 7,
+        "height": 5
+      },
+      "quantity": 6,
+      "box_ids": [
+        "dist-type-02-001",
+        "dist-type-02-002",
+        "dist-type-02-003",
+        "dist-type-02-004",
+        "dist-type-02-005",
+        "dist-type-02-006"
+      ],
+      "allowed_orientations": [
+        "WLH",
+        "WHL",
+        "HWL"
+      ]
+    },
+    {
+      "type_id": "dist-type-03",
+      "dimensions": {
+        "length": 6,
+        "width": 3,
+        "height": 5
+      },
+      "quantity": 6,
+      "box_ids": [
+        "dist-type-03-001",
+        "dist-type-03-002",
+        "dist-type-03-003",
+        "dist-type-03-004",
+        "dist-type-03-005",
+        "dist-type-03-006"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "HWL",
+        "WHL",
+        "HLW"
+      ]
+    },
+    {
+      "type_id": "dist-type-04",
+      "dimensions": {
+        "length": 2,
+        "width": 5,
+        "height": 4
+      },
+      "quantity": 6,
+      "box_ids": [
+        "dist-type-04-001",
+        "dist-type-04-002",
+        "dist-type-04-003",
+        "dist-type-04-004",
+        "dist-type-04-005",
+        "dist-type-04-006"
+      ],
+      "allowed_orientations": [
+        "WLH",
+        "LWH",
+        "WHL"
+      ]
+    },
+    {
+      "type_id": "dist-type-05",
+      "dimensions": {
+        "length": 5,
+        "width": 2,
+        "height": 4
+      },
+      "quantity": 6,
+      "box_ids": [
+        "dist-type-05-001",
+        "dist-type-05-002",
+        "dist-type-05-003",
+        "dist-type-05-004",
+        "dist-type-05-005",
+        "dist-type-05-006"
+      ],
+      "allowed_orientations": [
+        "WLH",
+        "LWH",
+        "LHW"
+      ]
+    },
+    {
+      "type_id": "dist-type-06",
+      "dimensions": {
+        "length": 1,
+        "width": 1,
+        "height": 10
+      },
+      "quantity": 6,
+      "box_ids": [
+        "dist-type-06-001",
+        "dist-type-06-002",
+        "dist-type-06-003",
+        "dist-type-06-004",
+        "dist-type-06-005",
+        "dist-type-06-006"
+      ],
+      "allowed_orientations": [
+        "LHW",
+        "WHL",
+        "HWL",
+        "HLW"
+      ]
+    }
+  ]
+}

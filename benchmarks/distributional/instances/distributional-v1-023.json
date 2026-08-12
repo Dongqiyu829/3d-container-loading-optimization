@@ -1,0 +1,124 @@
+{
+  "format_version": "1.0",
+  "instance_id": "distributional-v1-023",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 11,
+    "width": 11,
+    "height": 11
+  },
+  "box_types": [
+    {
+      "type_id": "dist-type-01",
+      "dimensions": {
+        "length": 7,
+        "width": 2,
+        "height": 5
+      },
+      "quantity": 13,
+      "box_ids": [
+        "dist-type-01-001",
+        "dist-type-01-002",
+        "dist-type-01-003",
+        "dist-type-01-004",
+        "dist-type-01-005",
+        "dist-type-01-006",
+        "dist-type-01-007",
+        "dist-type-01-008",
+        "dist-type-01-009",
+        "dist-type-01-010",
+        "dist-type-01-011",
+        "dist-type-01-012",
+        "dist-type-01-013"
+      ],
+      "allowed_orientations": [
+        "WHL",
+        "HWL",
+        "LHW",
+        "WLH"
+      ]
+    },
+    {
+      "type_id": "dist-type-02",
+      "dimensions": {
+        "length": 5,
+        "width": 2,
+        "height": 3
+      },
+      "quantity": 9,
+      "box_ids": [
+        "dist-type-02-001",
+        "dist-type-02-002",
+        "dist-type-02-003",
+        "dist-type-02-004",
+        "dist-type-02-005",
+        "dist-type-02-006",
+        "dist-type-02-007",
+        "dist-type-02-008",
+        "dist-type-02-009"
+      ],
+      "allowed_orientations": [
+        "HWL",
+        "LHW",
+        "HLW",
+        "WLH"
+      ]
+    },
+    {
+      "type_id": "dist-type-03",
+      "dimensions": {
+        "length": 3,
+        "width": 3,
+        "height": 2
+      },
+      "quantity": 15,
+      "box_ids": [
+        "dist-type-03-001",
+        "dist-type-03-002",
+        "dist-type-03-003",
+        "dist-type-03-004",
+        "dist-type-03-005",
+        "dist-type-03-006",
+        "dist-type-03-007",
+        "dist-type-03-008",
+        "dist-type-03-009",
+        "dist-type-03-010",
+        "dist-type-03-011",
+        "dist-type-03-012",
+        "dist-type-03-013",
+        "dist-type-03-014",
+        "dist-type-03-015"
+      ],
+      "allowed_orientations": [
+        "HWL",
+        "LHW",
+        "LWH",
+        "WLH"
+      ]
+    },
+    {
+      "type_id": "dist-type-04",
+      "dimensions": {
+        "length": 2,
+        "width": 3,
+        "height": 2
+      },
+      "quantity": 7,
+      "box_ids": [
+        "dist-type-04-001",
+        "dist-type-04-002",
+        "dist-type-04-003",
+        "dist-type-04-004",
+        "dist-type-04-005",
+        "dist-type-04-006",
+        "dist-type-04-007"
+      ],
+      "allowed_orientations": [
+        "WLH",
+        "HLW",
+        "LHW",
+        "WHL"
+      ]
+    }
+  ]
+}

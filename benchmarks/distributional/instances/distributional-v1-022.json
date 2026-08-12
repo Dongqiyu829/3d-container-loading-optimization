@@ -1,0 +1,113 @@
+{
+  "format_version": "1.0",
+  "instance_id": "distributional-v1-022",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 9,
+    "width": 10,
+    "height": 11
+  },
+  "box_types": [
+    {
+      "type_id": "dist-type-01",
+      "dimensions": {
+        "length": 5,
+        "width": 2,
+        "height": 6
+      },
+      "quantity": 17,
+      "box_ids": [
+        "dist-type-01-001",
+        "dist-type-01-002",
+        "dist-type-01-003",
+        "dist-type-01-004",
+        "dist-type-01-005",
+        "dist-type-01-006",
+        "dist-type-01-007",
+        "dist-type-01-008",
+        "dist-type-01-009",
+        "dist-type-01-010",
+        "dist-type-01-011",
+        "dist-type-01-012",
+        "dist-type-01-013",
+        "dist-type-01-014",
+        "dist-type-01-015",
+        "dist-type-01-016",
+        "dist-type-01-017"
+      ],
+      "allowed_orientations": [
+        "HWL",
+        "LHW"
+      ]
+    },
+    {
+      "type_id": "dist-type-02",
+      "dimensions": {
+        "length": 4,
+        "width": 1,
+        "height": 4
+      },
+      "quantity": 20,
+      "box_ids": [
+        "dist-type-02-001",
+        "dist-type-02-002",
+        "dist-type-02-003",
+        "dist-type-02-004",
+        "dist-type-02-005",
+        "dist-type-02-006",
+        "dist-type-02-007",
+        "dist-type-02-008",
+        "dist-type-02-009",
+        "dist-type-02-010",
+        "dist-type-02-011",
+        "dist-type-02-012",
+        "dist-type-02-013",
+        "dist-type-02-014",
+        "dist-type-02-015",
+        "dist-type-02-016",
+        "dist-type-02-017",
+        "dist-type-02-018",
+        "dist-type-02-019",
+        "dist-type-02-020"
+      ],
+      "allowed_orientations": [
+        "WLH",
+        "WHL",
+        "LHW",
+        "HLW"
+      ]
+    },
+    {
+      "type_id": "dist-type-03",
+      "dimensions": {
+        "length": 1,
+        "width": 2,
+        "height": 1
+      },
+      "quantity": 17,
+      "box_ids": [
+        "dist-type-03-001",
+        "dist-type-03-002",
+        "dist-type-03-003",
+        "dist-type-03-004",
+        "dist-type-03-005",
+        "dist-type-03-006",
+        "dist-type-03-007",
+        "dist-type-03-008",
+        "dist-type-03-009",
+        "dist-type-03-010",
+        "dist-type-03-011",
+        "dist-type-03-012",
+        "dist-type-03-013",
+        "dist-type-03-014",
+        "dist-type-03-015",
+        "dist-type-03-016",
+        "dist-type-03-017"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "HWL"
+      ]
+    }
+  ]
+}

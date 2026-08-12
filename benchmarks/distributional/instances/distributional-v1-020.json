@@ -1,0 +1,97 @@
+{
+  "format_version": "1.0",
+  "instance_id": "distributional-v1-020",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 13,
+    "width": 8,
+    "height": 9
+  },
+  "box_types": [
+    {
+      "type_id": "dist-type-01",
+      "dimensions": {
+        "length": 9,
+        "width": 2,
+        "height": 1
+      },
+      "quantity": 10,
+      "box_ids": [
+        "dist-type-01-001",
+        "dist-type-01-002",
+        "dist-type-01-003",
+        "dist-type-01-004",
+        "dist-type-01-005",
+        "dist-type-01-006",
+        "dist-type-01-007",
+        "dist-type-01-008",
+        "dist-type-01-009",
+        "dist-type-01-010"
+      ],
+      "allowed_orientations": [
+        "WHL",
+        "HWL"
+      ]
+    },
+    {
+      "type_id": "dist-type-02",
+      "dimensions": {
+        "length": 3,
+        "width": 4,
+        "height": 2
+      },
+      "quantity": 12,
+      "box_ids": [
+        "dist-type-02-001",
+        "dist-type-02-002",
+        "dist-type-02-003",
+        "dist-type-02-004",
+        "dist-type-02-005",
+        "dist-type-02-006",
+        "dist-type-02-007",
+        "dist-type-02-008",
+        "dist-type-02-009",
+        "dist-type-02-010",
+        "dist-type-02-011",
+        "dist-type-02-012"
+      ],
+      "allowed_orientations": [
+        "WHL",
+        "HWL",
+        "LHW",
+        "WLH"
+      ]
+    },
+    {
+      "type_id": "dist-type-03",
+      "dimensions": {
+        "length": 10,
+        "width": 1,
+        "height": 2
+      },
+      "quantity": 15,
+      "box_ids": [
+        "dist-type-03-001",
+        "dist-type-03-002",
+        "dist-type-03-003",
+        "dist-type-03-004",
+        "dist-type-03-005",
+        "dist-type-03-006",
+        "dist-type-03-007",
+        "dist-type-03-008",
+        "dist-type-03-009",
+        "dist-type-03-010",
+        "dist-type-03-011",
+        "dist-type-03-012",
+        "dist-type-03-013",
+        "dist-type-03-014",
+        "dist-type-03-015"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "WLH",
+        "HWL"
+      ]
+    }
+  ]
+}
