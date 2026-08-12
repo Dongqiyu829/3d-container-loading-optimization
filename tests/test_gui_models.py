@@ -1,23 +1,29 @@
 import sys
 import unittest
+from copy import deepcopy
 from pathlib import Path
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from baseline_common import build_solution  # noqa: E402
 from gui.models import (  # noqa: E402
     BoxTypeRow,
     GuiInputError,
     SolverRunResult,
     build_canonical_instance,
     comparison_rows,
+    execute_backends,
     format_result_details,
     list_examples,
     load_example,
     parse_orientations,
+    portfolio_sidecar_metadata,
     rows_from_instance,
+    visualizable_solution,
 )
 from validate_solution import ValidationResult  # noqa: E402
 
@@ -139,10 +145,143 @@ class GuiResultFormattingTests(unittest.TestCase):
         rows = comparison_rows(
             [self._result("greedy", "COMPLETED"), self._result("cpsat", "OPTIMAL")]
         )
-        self.assertEqual([row["solver"] for row in rows], ["Greedy", "CP-SAT"])
+        self.assertEqual(
+            [row["solver"] for row in rows], ["Greedy Portfolio", "CP-SAT"]
+        )
         self.assertTrue(all(row["validation"] == "VALID" for row in rows))
         self.assertTrue(all("solver_core_runtime_seconds" in row for row in rows))
         self.assertTrue(all("end_to_end_runtime_seconds" in row for row in rows))
+
+
+class GuiPortfolioIntegrationTests(unittest.TestCase):
+    def setUp(self):
+        self.instance_data = load_example("benchmark-tiny-two-cubes")
+
+    @staticmethod
+    def _solution(instance):
+        placements = []
+        for index, box in enumerate(instance.boxes):
+            placements.append({
+                "box_id": box.box_id,
+                "type_id": box.type_id,
+                "orientation": "LWH",
+                "position": {"x": index * 2, "y": 0, "z": 0},
+                "dimensions": {"length": 2, "width": 2, "height": 2},
+            })
+        return build_solution(instance, placements)
+
+    @staticmethod
+    def _portfolio_metadata(*, one_failed=False):
+        constituents = [
+            {
+                "mode": "planar-inclusive",
+                "solver_status": "ERROR" if one_failed else "COMPLETED",
+                "packed_box_count": None if one_failed else 2,
+                "packed_volume": None if one_failed else 16,
+                "utilization": None if one_failed else 1.0,
+                "validation": "NOT_VALID" if one_failed else "VALID",
+                "solver_core_runtime_seconds": None if one_failed else 0.001,
+                "end_to_end_runtime_seconds": 0.01,
+                "eligible": not one_failed,
+                "error": "injected constituent failure" if one_failed else None,
+            },
+            {
+                "mode": "geometry-first",
+                "solver_status": "COMPLETED",
+                "packed_box_count": 2,
+                "packed_volume": 16,
+                "utilization": 1.0,
+                "validation": "VALID",
+                "solver_core_runtime_seconds": 0.002,
+                "end_to_end_runtime_seconds": 0.02,
+                "eligible": True,
+                "error": None,
+            },
+        ]
+        return {
+            "portfolio_format_version": "1.0",
+            "portfolio_id": "portfolio-ig",
+            "constituent_modes": ["planar-inclusive", "geometry-first"],
+            "winner_mode": "geometry-first",
+            "modes_tied_for_best": ["geometry-first"],
+            "constituents": constituents,
+            "total_portfolio_end_to_end_runtime_seconds": 0.04,
+        }
+
+    def test_gui_greedy_backend_calls_portfolio_ig(self):
+        observed = {}
+
+        def fake_portfolio(instance, executable, *, portfolio_id):
+            observed["portfolio_id"] = portfolio_id
+            observed["instance"] = deepcopy(instance.raw)
+            return self._solution(instance), self._portfolio_metadata()
+
+        with patch("gui.models.compile_greedy"), patch(
+            "gui.models.run_greedy_portfolio", side_effect=fake_portfolio
+        ):
+            results = execute_backends(self.instance_data, "greedy")
+        self.assertEqual(observed["portfolio_id"], "portfolio-ig")
+        self.assertEqual(observed["instance"], self.instance_data)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0].metadata["winner_mode"], "geometry-first")
+        self.assertTrue(results[0].validation.valid)
+
+    def test_compare_both_uses_portfolio_and_cpsat_on_identical_instance(self):
+        observed = []
+
+        def fake_portfolio(instance, executable, *, portfolio_id):
+            observed.append(("portfolio", id(instance), deepcopy(instance.raw), portfolio_id))
+            return self._solution(instance), self._portfolio_metadata()
+
+        def fake_cpsat(instance, **kwargs):
+            observed.append(("cpsat", id(instance), deepcopy(instance.raw), kwargs))
+            return self._solution(instance), {
+                "solver_status": "OPTIMAL",
+                "solver_core_runtime_seconds": 0.003,
+            }
+
+        with patch("gui.models.compile_greedy"), patch(
+            "gui.models.run_greedy_portfolio", side_effect=fake_portfolio
+        ), patch("gui.models.run_cpsat", side_effect=fake_cpsat):
+            results = execute_backends(self.instance_data, "all")
+        self.assertEqual([result.solver for result in results], ["greedy", "cpsat"])
+        self.assertEqual(observed[0][1], observed[1][1])
+        self.assertEqual(observed[0][2], observed[1][2])
+        self.assertEqual(observed[0][2], self.instance_data)
+        self.assertEqual(observed[0][3], "portfolio-ig")
+
+    def test_winner_and_constituent_metadata_formatting(self):
+        solution = {"format_version": "1.0", "placements": []}
+        result = SolverRunResult(
+            solver="greedy",
+            status="COMPLETED",
+            solution=solution,
+            metadata=self._portfolio_metadata(one_failed=True),
+            validation=ValidationResult((), 16, 16, 1.0, 2),
+            candidate_box_count=2,
+            container_volume=16,
+            end_to_end_runtime_seconds=0.04,
+        )
+        details = format_result_details(result)
+        self.assertIn("Solver: Greedy Portfolio", details)
+        self.assertIn("Winning constituent: geometry-first", details)
+        self.assertIn("planar-inclusive: status=ERROR", details)
+        self.assertIn("injected constituent failure", details)
+        self.assertIn("geometry-first: status=COMPLETED", details)
+        self.assertIs(portfolio_sidecar_metadata(result), result.metadata)
+
+    def test_only_selected_valid_solution_is_visualizable(self):
+        solution = {"format_version": "1.0", "placements": []}
+        valid = SolverRunResult(
+            "greedy", "COMPLETED", solution, self._portfolio_metadata(),
+            ValidationResult((), 16, 16, 1.0, 2), 2, 16, 0.04,
+        )
+        invalid = SolverRunResult(
+            "greedy", "COMPLETED", {"stale": True}, self._portfolio_metadata(),
+            ValidationResult((object(),), 0, 16, 0.0, 0), 2, 16, 0.04,
+        )
+        self.assertIs(visualizable_solution(valid), solution)
+        self.assertIsNone(visualizable_solution(invalid))
 
 
 if __name__ == "__main__":
