@@ -435,6 +435,7 @@ def run_diagnostic_solve(
     volume_bound: bool = False,
     hint_solution: Mapping[str, Any] | None = None,
     hint_source: str | None = None,
+    symmetry_level: int | None = None,
 ) -> tuple[dict[str, Any] | None, dict[str, Any]]:
     import ortools
     from ortools.sat.python import cp_model
@@ -454,6 +455,10 @@ def run_diagnostic_solve(
     solver.parameters.num_search_workers = 1
     solver.parameters.random_seed = 0
     solver.parameters.max_time_in_seconds = time_limit_seconds
+    if symmetry_level is not None:
+        if symmetry_level < 0 or symmetry_level > 4:
+            raise ValueError("symmetry_level must be between 0 and 4")
+        solver.parameters.symmetry_level = symmetry_level
     if max_deterministic_time is not None:
         if max_deterministic_time <= 0:
             raise ValueError("max_deterministic_time must be positive")
