@@ -4,12 +4,9 @@
 #include <algorithm>
 #include <set>
 #include <string>
-<<<<<<< Updated upstream
-=======
 #include <sstream>
 #include <chrono>
 #include <iomanip>
->>>>>>> Stashed changes
 #include <fstream> // 添加头文件
 #ifdef _WIN32
 #include <windows.h>
@@ -45,7 +42,17 @@ struct Cargo {
     int _length, _width, _height;
     CargoPose::Type _pose;
     Point _point;
-    Cargo(int l, int w, int h) : _length(l), _width(w), _height(h), _pose(CargoPose::tall_thin), _point(-1, -1, -1) {}
+    string _box_id;
+    string _type_id;
+    unsigned int _allowed_pose_mask;
+    Cargo(int l, int w, int h)
+        : _length(l), _width(w), _height(h), _pose(CargoPose::tall_thin),
+          _point(-1, -1, -1), _allowed_pose_mask((1u << 6) - 1) {}
+    Cargo(int l, int w, int h, const string& box_id, const string& type_id,
+          unsigned int allowed_pose_mask)
+        : _length(l), _width(w), _height(h), _pose(CargoPose::tall_thin),
+          _point(-1, -1, -1), _box_id(box_id), _type_id(type_id),
+          _allowed_pose_mask(allowed_pose_mask) {}
     tuple<int,int,int> shape() const {
         // 参考Python版，返回不同姿态下的三边
         int l = _length, w = _width, h = _height;
@@ -63,6 +70,9 @@ struct Cargo {
     int width()  const { return get<1>(shape()); }
     int height() const { return get<2>(shape()); }
     int volume() const { return _length * _width * _height; }
+    bool is_pose_allowed(CargoPose::Type pose) const {
+        return (_allowed_pose_mask & (1u << static_cast<unsigned int>(pose))) != 0;
+    }
     // 坐标相关h
     int x() const { return _point.x; }
     int y() const { return _point.y; }
@@ -211,7 +221,18 @@ bool is_rectangles_overlap(std::tuple<int,int,int,int> rec1, std::tuple<int,int,
 // 策略基类
 struct Strategy {
     virtual vector<CargoPose::Type> choose_cargo_poses(const Cargo& cargo, const Container& container) const {
-        return {CargoPose::tall_wide, CargoPose::tall_thin, CargoPose::mid_wide, CargoPose::mid_thin, CargoPose::short_wide, CargoPose::short_thin};
+        // Preserve the historical trial order, filtering only orientations that
+        // the canonical instance explicitly disallows.
+        const vector<CargoPose::Type> historical_order = {
+            CargoPose::tall_wide, CargoPose::tall_thin,
+            CargoPose::mid_wide, CargoPose::mid_thin,
+            CargoPose::short_wide, CargoPose::short_thin
+        };
+        vector<CargoPose::Type> allowed;
+        for (CargoPose::Type pose : historical_order) {
+            if (cargo.is_pose_allowed(pose)) allowed.push_back(pose);
+        }
+        return allowed;
     }
     virtual vector<Cargo> encasement_sequence(const vector<Cargo>& cargos) const {
         return cargos;
@@ -281,10 +302,6 @@ void save_encasement_as_file(const Container& container, const std::string& file
     file.close();
 }
 
-<<<<<<< Updated upstream
-// 示例主函数
-int main() {
-=======
 // Explicit mapping between the canonical orientation names and the historical
 // internal pose enum. Repeated dimensions do not collapse orientation IDs: the
 // exact allowed/chosen orientation remains identifiable even when shapes match.
@@ -349,7 +366,6 @@ int run_machine_mode() {
     const double core_runtime_seconds = high_resolution_seconds() - core_start;
 
     long long packed_volume = 0;
-    cout << "CORE_RUNTIME_SECONDS\t" << setprecision(17) << core_runtime_seconds << "\n";
     for (const auto& cargo : container._setted_cargos) {
         if (cargo.x() < 0 || cargo.y() < 0 || cargo.z() < 0) continue;
         packed_volume += cargo.volume();
@@ -363,6 +379,7 @@ int run_machine_mode() {
              << "\t" << cargo.width()
              << "\t" << cargo.height() << "\n";
     }
+    cout << "CORE_RUNTIME_SECONDS\t" << setprecision(17) << core_runtime_seconds << "\n";
     cout << "SUMMARY\t" << container._setted_cargos.size()
          << "\t" << packed_volume
          << "\t" << static_cast<long long>(container_length) * container_width * container_height
@@ -372,7 +389,6 @@ int run_machine_mode() {
 
 // 示例交互路径（保留原有行为）
 int run_interactive_mode() {
->>>>>>> Stashed changes
     cout<< "3D Bin Packing Example" << endl;
     int container_length, container_width, container_height;
     cout << "input container length, width, height: " << endl;
@@ -414,5 +430,15 @@ int run_interactive_mode() {
     cout<< "input anything to exit"<<endl;
     cin>> is_continue;
     return 0;
-    
+}
+
+int main(int argc, char* argv[]) {
+    if (argc == 2 && string(argv[1]) == "--machine") {
+        return run_machine_mode();
+    }
+    if (argc != 1) {
+        cerr << "usage: " << argv[0] << " [--machine]" << endl;
+        return 2;
+    }
+    return run_interactive_mode();
 }
