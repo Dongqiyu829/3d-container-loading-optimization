@@ -44,7 +44,9 @@ from gui.models import (
     list_examples,
     load_canonical_instance_file,
     load_example,
+    portfolio_sidecar_metadata,
     rows_from_instance,
+    visualizable_solution,
 )
 from gui.visualization import PackingCanvas
 from gui.worker import SolverWorker
@@ -164,7 +166,7 @@ class MainWindow(QMainWindow):
         solver_group = QGroupBox("Solver")
         solver_form = QFormLayout(solver_group)
         self.solver_combo = QComboBox()
-        self.solver_combo.addItem("Greedy", "greedy")
+        self.solver_combo.addItem("Greedy Portfolio", "greedy")
         self.solver_combo.addItem("CP-SAT", "cpsat")
         self.solver_combo.addItem("Compare Both", "all")
         self.solver_combo.currentIndexChanged.connect(self._update_cpsat_controls)
@@ -377,11 +379,56 @@ class MainWindow(QMainWindow):
         filename, _ = QFileDialog.getSaveFileName(
             self,
             "Save canonical solution",
-            f"{result.solution['instance_id']}.{result.solver}.solution.json",
+            (
+                f"{result.solution['instance_id']}."
+                f"{result.metadata.get('portfolio_id', result.solver)}.solution.json"
+            ),
             "JSON files (*.json)",
         )
         if filename:
-            self._save_json_with_confirmation(Path(filename), result.solution)
+            solution_path = Path(filename)
+            metadata = portfolio_sidecar_metadata(result)
+            metadata_path = (
+                self._portfolio_metadata_path(solution_path) if metadata is not None else None
+            )
+            targets = [solution_path] + ([metadata_path] if metadata_path is not None else [])
+            existing = [path for path in targets if path.exists()]
+            if existing:
+                answer = QMessageBox.question(
+                    self,
+                    "Confirm overwrite",
+                    "Replace existing file(s)?\n" + "\n".join(path.name for path in existing),
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    QMessageBox.StandardButton.No,
+                )
+                if answer != QMessageBox.StandardButton.Yes:
+                    return
+            try:
+                self._write_json(solution_path, result.solution)
+                if metadata_path is not None and metadata is not None:
+                    self._write_json(metadata_path, metadata)
+            except Exception as exc:
+                self._handle_exception("Could not save solution", exc)
+                return
+            message = f"Saved {solution_path}"
+            if metadata_path is not None:
+                message += f" and {metadata_path.name}"
+            self.statusBar().showMessage(message, 5000)
+
+    @staticmethod
+    def _portfolio_metadata_path(solution_path: Path) -> Path:
+        suffix = ".solution.json"
+        if solution_path.name.endswith(suffix):
+            return solution_path.with_name(
+                solution_path.name[: -len(suffix)] + ".metadata.json"
+            )
+        return solution_path.with_name(solution_path.name + ".metadata.json")
+
+    @staticmethod
+    def _write_json(path: Path, data: dict[str, Any]) -> None:
+        with path.open("w", encoding="utf-8", newline="\n") as handle:
+            json.dump(data, handle, indent=2, ensure_ascii=False)
+            handle.write("\n")
 
     def _save_json_with_confirmation(self, path: Path, data: dict[str, Any]) -> None:
         if path.exists():
@@ -395,9 +442,7 @@ class MainWindow(QMainWindow):
             if answer != QMessageBox.StandardButton.Yes:
                 return
         try:
-            with path.open("w", encoding="utf-8", newline="\n") as handle:
-                json.dump(data, handle, indent=2, ensure_ascii=False)
-                handle.write("\n")
+            self._write_json(path, data)
         except Exception as exc:
             self._handle_exception("Could not save JSON", exc)
             return
@@ -419,6 +464,10 @@ class MainWindow(QMainWindow):
             return
         self._instance_data = instance_data
         self._results.clear()
+        self.result_selector.clear()
+        self.comparison_table.setRowCount(0)
+        self.details_text.clear()
+        self.canvas.clear_message("Running solver; no current solution to display.")
         self.run_button.setEnabled(False)
         self.statusBar().showMessage("Starting solver...")
         self._log(
@@ -469,6 +518,11 @@ class MainWindow(QMainWindow):
         self.run_button.setEnabled(True)
         self._active_worker = None
         self.statusBar().showMessage("Solver failed", 5000)
+        self._results.clear()
+        self.result_selector.clear()
+        self.comparison_table.setRowCount(0)
+        self.details_text.clear()
+        self.canvas.clear_message("Solver failed; no valid solution to display.")
         self._log(diagnostic)
         self._show_error(message or "Solver execution failed.", title="Solver error")
 
@@ -500,7 +554,7 @@ class MainWindow(QMainWindow):
         self.result_selector.blockSignals(True)
         self.result_selector.clear()
         for result in results:
-            label = "Greedy" if result.solver == "greedy" else "CP-SAT"
+            label = "Greedy Portfolio" if result.solver == "greedy" else "CP-SAT"
             self.result_selector.addItem(label, result.solver)
         self.result_selector.blockSignals(False)
         if results:
@@ -518,15 +572,16 @@ class MainWindow(QMainWindow):
         details = format_result_details(result)
         self.details_text.setPlainText(details)
         self._log(details)
+        solution = visualizable_solution(result)
         if result.solution is None:
             self.canvas.clear_message(f"{result.status}: no feasible solution to display.")
-        elif result.validation is None or not result.validation.valid:
+        elif solution is None:
             self.canvas.clear_message("INVALID solution: visualization withheld.")
         elif self._instance_data is not None:
-            label = "Greedy" if result.solver == "greedy" else "CP-SAT"
+            label = "Greedy Portfolio" if result.solver == "greedy" else "CP-SAT"
             self.canvas.plot_solution(
                 self._instance_data,
-                result.solution,
+                solution,
                 title=f"{label} — {result.status}",
             )
 

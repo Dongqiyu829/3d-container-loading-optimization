@@ -13,7 +13,8 @@ from typing import Any, Callable, Mapping, Sequence
 
 from baseline_common import CanonicalInstance, load_instance
 from cpsat_baseline import run_cpsat
-from greedy_baseline import compile_greedy, run_greedy
+from greedy_baseline import compile_greedy
+from greedy_portfolio import run_greedy_portfolio
 from validate_solution import ORIENTATION_AXES, ValidationResult, load_json, validate_solution
 
 
@@ -236,7 +237,7 @@ def execute_backends(
         instance = _load_instance_data(instance_data, temporary_path)
         greedy_executable: Path | None = None
         if "greedy" in solvers:
-            callback("Compiling Greedy backend...")
+            callback("Compiling Greedy Portfolio backend...")
             executable_name = "Bin_packing_3D.exe" if os.name == "nt" else "Bin_packing_3D"
             greedy_executable = temporary_path / executable_name
             compile_greedy(
@@ -246,10 +247,25 @@ def execute_backends(
             )
 
         for solver_name in solvers:
-            callback(f"Running {solver_name.upper()}...")
+            callback(
+                "Running Greedy Portfolio..."
+                if solver_name == "greedy"
+                else "Running CP-SAT..."
+            )
             started = time.perf_counter()
             if solver_name == "greedy":
-                solution, metadata = run_greedy(instance, greedy_executable)  # type: ignore[arg-type]
+                solution, metadata = run_greedy_portfolio(
+                    instance,
+                    greedy_executable,  # type: ignore[arg-type]
+                    portfolio_id="portfolio-ig",
+                )
+                status = "COMPLETED"
+                metadata["solver_core_runtime_seconds"] = sum(
+                    constituent["solver_core_runtime_seconds"]
+                    for constituent in metadata["constituents"]
+                    if constituent.get("eligible")
+                    and constituent.get("solver_core_runtime_seconds") is not None
+                )
             else:
                 solution, metadata = run_cpsat(
                     instance,
@@ -258,6 +274,7 @@ def execute_backends(
                     num_search_workers=worker_count,
                     random_seed=random_seed,
                 )
+                status = metadata["solver_status"]
             validation = (
                 validate_solution(instance.raw, solution) if solution is not None else None
             )
@@ -265,7 +282,7 @@ def execute_backends(
             results.append(
                 SolverRunResult(
                     solver=solver_name,
-                    status=metadata["solver_status"],
+                    status=status,
                     solution=solution,
                     metadata=metadata,
                     validation=validation,
@@ -284,7 +301,7 @@ def comparison_rows(results: Sequence[SolverRunResult]) -> list[dict[str, Any]]:
         validation = result.validation
         rows.append(
             {
-                "solver": "Greedy" if result.solver == "greedy" else "CP-SAT",
+                "solver": "Greedy Portfolio" if result.solver == "greedy" else "CP-SAT",
                 "status": result.status,
                 "packed_boxes": validation.placement_count if validation else None,
                 "packed_volume": validation.packed_volume if validation else None,
@@ -302,7 +319,7 @@ def comparison_rows(results: Sequence[SolverRunResult]) -> list[dict[str, Any]]:
 def format_result_details(result: SolverRunResult) -> str:
     validation = result.validation
     lines = [
-        f"Solver: {'Greedy' if result.solver == 'greedy' else 'CP-SAT'}",
+        f"Solver: {'Greedy Portfolio' if result.solver == 'greedy' else 'CP-SAT'}",
         f"Status: {result.status}",
         f"Candidate boxes: {result.candidate_box_count}",
         f"Validation: {result.validation_label}",
@@ -318,9 +335,37 @@ def format_result_details(result: SolverRunResult) -> str:
             f"Utilization: {validation.utilization:.6f}",
             f"Container empty fraction: {(validation.container_volume - validation.packed_volume) / validation.container_volume:.6f}",
             f"Solver-core runtime: {result.metadata.get('solver_core_runtime_seconds', 0.0):.6f} s",
-            f"End-to-end runtime: {result.end_to_end_runtime_seconds:.6f} s",
+            (
+                "Total portfolio end-to-end runtime: "
+                if result.solver == "greedy" and result.metadata.get("portfolio_id")
+                else "End-to-end runtime: "
+            )
+            + f"{result.end_to_end_runtime_seconds:.6f} s",
         ]
     )
+    if result.solver == "greedy" and result.metadata.get("portfolio_id"):
+        lines.extend(
+            [
+                f"Portfolio: {result.metadata['portfolio_id']}",
+                f"Winning constituent: {result.metadata.get('winner_mode', 'unknown')}",
+                "Constituents:",
+            ]
+        )
+        for constituent in result.metadata.get("constituents", []):
+            packed_volume = constituent.get("packed_volume")
+            utilization = constituent.get("utilization")
+            runtime = constituent.get("end_to_end_runtime_seconds")
+            volume_text = "—" if packed_volume is None else str(packed_volume)
+            utilization_text = "—" if utilization is None else f"{utilization:.6f}"
+            runtime_text = "—" if runtime is None else f"{runtime:.6f} s"
+            line = (
+                f"- {constituent['mode']}: status={constituent.get('solver_status')}, "
+                f"validation={constituent.get('validation')}, packed volume={volume_text}, "
+                f"utilization={utilization_text}, runtime={runtime_text}"
+            )
+            if constituent.get("error"):
+                line += f", diagnostic={constituent['error']}"
+            lines.append(line)
     if result.solver == "cpsat":
         raw_bound = result.metadata.get("raw_solver_best_bound")
         raw_absolute_gap = result.metadata.get("raw_solver_absolute_gap")
@@ -355,6 +400,22 @@ def format_result_details(result: SolverRunResult) -> str:
         lines.append("Validation issues:")
         lines.extend(f"- {issue.code}: {issue.message}" for issue in validation.issues)
     return "\n".join(lines)
+
+
+def visualizable_solution(result: SolverRunResult) -> dict[str, Any] | None:
+    """Return only a selected, independently valid canonical solution for plotting."""
+
+    if result.solution is None or result.validation is None or not result.validation.valid:
+        return None
+    return result.solution
+
+
+def portfolio_sidecar_metadata(result: SolverRunResult) -> dict[str, Any] | None:
+    """Return portfolio metadata for saving beside its selected canonical solution."""
+
+    if result.solver != "greedy" or result.metadata.get("portfolio_id") is None:
+        return None
+    return result.metadata
 
 
 def box_type_by_id(instance_data: Mapping[str, Any]) -> dict[str, str]:
