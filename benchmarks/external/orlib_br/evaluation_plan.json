@@ -1,0 +1,20 @@
+{
+  "evaluation_plan_version": "1.0",
+  "primary_metric": "paired packed-volume difference",
+  "predeclared_decision_metrics": [
+    "paired win/tie/loss",
+    "mean paired utilization change",
+    "median paired utilization change",
+    "regression frequency",
+    "worst regression magnitude",
+    "regression concentration by BR class",
+    "independent validator correctness",
+    "solver-core runtime effect"
+  ],
+  "interpretation_rules": [
+    "Zero losses are not required for a useful heuristic.",
+    "Mean utilization alone is insufficient to promote a policy.",
+    "Published BR values are not compared unless identical constraints and subsets are established.",
+    "Results are reported separately from repository-designed deterministic and synthetic distributional suites."
+  ]
+}
