@@ -1,4 +1,5 @@
 import importlib.util
+import copy
 import json
 import shutil
 import subprocess
@@ -13,7 +14,14 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from baseline_common import load_instance  # noqa: E402
-from greedy_baseline import allowed_pose_mask, compile_greedy  # noqa: E402
+from greedy_baseline import (  # noqa: E402
+    allowed_pose_mask,
+    compile_greedy,
+    run_greedy,
+    run_greedy_with_trace,
+    validate_greedy_trace,
+)
+from greedy_diagnostics import summarize_greedy_trace  # noqa: E402
 from validate_solution import load_json, validate_solution  # noqa: E402
 
 
@@ -139,6 +147,59 @@ class GreedyBaselineIntegrationTests(unittest.TestCase):
             solution["placements"][0]["dimensions"],
             {"length": 3, "width": 2, "height": 2},
         )
+
+    def test_diagnostics_disabled_and_enabled_produce_identical_solution(self):
+        instance = load_instance(
+            ROOT / "benchmarks" / "instances" / "benchmark-medium-mixed-24.json"
+        )
+        normal_solution, normal_metadata = run_greedy(instance, self.executable)
+        traced_solution, traced_metadata, trace = run_greedy_with_trace(
+            instance, self.executable
+        )
+
+        self.assertEqual(traced_solution, normal_solution)
+        self.assertNotIn("TRACE_", normal_metadata["solver_stdout"])
+        self.assertIn("TRACE_BEGIN", traced_metadata["solver_stdout"])
+        self.assertEqual(
+            trace["final_summary"]["attempt_count"], len(trace["attempts"])
+        )
+        self.assertEqual(
+            len({attempt["box_id"] for attempt in trace["attempts"]}),
+            len(instance.boxes),
+        )
+
+    def test_trace_summary_and_successes_match_canonical_solution(self):
+        instance = load_instance(ROOT / "tests" / "data" / "two_cubes.instance.json")
+        solution, _, trace = run_greedy_with_trace(instance, self.executable)
+
+        final = trace["final_summary"]
+        summary = summarize_greedy_trace(instance, solution, trace)
+        self.assertEqual(final["packed_box_count"], len(solution["placements"]))
+        self.assertEqual(final["packed_volume"], solution["metrics"]["packed_volume"])
+        self.assertEqual(final["utilization"], solution["metrics"]["utilization"])
+        self.assertEqual(summary["packed_volume"], solution["metrics"]["packed_volume"])
+        self.assertEqual(summary["attempt_count"], len(trace["attempts"]))
+        successes = [step for step in trace["attempts"] if step["placement_succeeded"]]
+        for step, placement in zip(successes, solution["placements"]):
+            self.assertEqual(step["box_id"], placement["box_id"])
+            self.assertEqual(step["selected_orientation"], placement["orientation"])
+            self.assertEqual(step["selected_position"], placement["position"])
+            self.assertIn(step["selected_orientation"], step["allowed_orientations"])
+            self.assertEqual(
+                step["placement_candidates_evaluated"],
+                step["boundary_rejections"]
+                + step["collision_rejections"]
+                + step["geometrically_feasible_candidates"],
+            )
+
+    def test_malformed_diagnostic_trace_is_rejected(self):
+        instance = load_instance(ROOT / "tests" / "data" / "two_cubes.instance.json")
+        solution, _, trace = run_greedy_with_trace(instance, self.executable)
+        malformed = copy.deepcopy(trace)
+        malformed["attempts"][0]["selected_position"]["x"] += 1
+
+        with self.assertRaisesRegex(ValueError, "coordinates differ"):
+            validate_greedy_trace(instance, solution, malformed)
 
 
 @unittest.skipUnless(CP_SAT_RUNTIME_WORKS, "OR-Tools CP-SAT cannot execute in this environment")
