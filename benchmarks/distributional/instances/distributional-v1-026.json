@@ -1,0 +1,103 @@
+{
+  "format_version": "1.0",
+  "instance_id": "distributional-v1-026",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 10,
+    "width": 8,
+    "height": 18
+  },
+  "box_types": [
+    {
+      "type_id": "dist-type-01",
+      "dimensions": {
+        "length": 6,
+        "width": 2,
+        "height": 9
+      },
+      "quantity": 7,
+      "box_ids": [
+        "dist-type-01-001",
+        "dist-type-01-002",
+        "dist-type-01-003",
+        "dist-type-01-004",
+        "dist-type-01-005",
+        "dist-type-01-006",
+        "dist-type-01-007"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW",
+        "WLH",
+        "WHL",
+        "HLW",
+        "HWL"
+      ]
+    },
+    {
+      "type_id": "dist-type-02",
+      "dimensions": {
+        "length": 3,
+        "width": 1,
+        "height": 5
+      },
+      "quantity": 3,
+      "box_ids": [
+        "dist-type-02-001",
+        "dist-type-02-002",
+        "dist-type-02-003"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW",
+        "WLH",
+        "WHL",
+        "HLW",
+        "HWL"
+      ]
+    },
+    {
+      "type_id": "dist-type-03",
+      "dimensions": {
+        "length": 1,
+        "width": 1,
+        "height": 1
+      },
+      "quantity": 1,
+      "box_ids": [
+        "dist-type-03-001"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW",
+        "WLH",
+        "WHL",
+        "HLW",
+        "HWL"
+      ]
+    },
+    {
+      "type_id": "dist-type-04",
+      "dimensions": {
+        "length": 5,
+        "width": 5,
+        "height": 4
+      },
+      "quantity": 4,
+      "box_ids": [
+        "dist-type-04-001",
+        "dist-type-04-002",
+        "dist-type-04-003",
+        "dist-type-04-004"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW",
+        "WLH",
+        "WHL",
+        "HLW",
+        "HWL"
+      ]
+    }
+  ]
+}

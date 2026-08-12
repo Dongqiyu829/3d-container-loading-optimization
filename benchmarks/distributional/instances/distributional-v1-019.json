@@ -1,0 +1,101 @@
+{
+  "format_version": "1.0",
+  "instance_id": "distributional-v1-019",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 13,
+    "width": 9,
+    "height": 6
+  },
+  "box_types": [
+    {
+      "type_id": "dist-type-01",
+      "dimensions": {
+        "length": 2,
+        "width": 2,
+        "height": 2
+      },
+      "quantity": 1,
+      "box_ids": [
+        "dist-type-01-001"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "WLH",
+        "HWL"
+      ]
+    },
+    {
+      "type_id": "dist-type-02",
+      "dimensions": {
+        "length": 2,
+        "width": 2,
+        "height": 3
+      },
+      "quantity": 6,
+      "box_ids": [
+        "dist-type-02-001",
+        "dist-type-02-002",
+        "dist-type-02-003",
+        "dist-type-02-004",
+        "dist-type-02-005",
+        "dist-type-02-006"
+      ],
+      "allowed_orientations": [
+        "HLW",
+        "WLH"
+      ]
+    },
+    {
+      "type_id": "dist-type-03",
+      "dimensions": {
+        "length": 4,
+        "width": 4,
+        "height": 4
+      },
+      "quantity": 7,
+      "box_ids": [
+        "dist-type-03-001",
+        "dist-type-03-002",
+        "dist-type-03-003",
+        "dist-type-03-004",
+        "dist-type-03-005",
+        "dist-type-03-006",
+        "dist-type-03-007"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW",
+        "WHL",
+        "HLW"
+      ]
+    },
+    {
+      "type_id": "dist-type-04",
+      "dimensions": {
+        "length": 3,
+        "width": 3,
+        "height": 4
+      },
+      "quantity": 12,
+      "box_ids": [
+        "dist-type-04-001",
+        "dist-type-04-002",
+        "dist-type-04-003",
+        "dist-type-04-004",
+        "dist-type-04-005",
+        "dist-type-04-006",
+        "dist-type-04-007",
+        "dist-type-04-008",
+        "dist-type-04-009",
+        "dist-type-04-010",
+        "dist-type-04-011",
+        "dist-type-04-012"
+      ],
+      "allowed_orientations": [
+        "LHW",
+        "HWL"
+      ]
+    }
+  ]
+}

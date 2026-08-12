@@ -1,0 +1,96 @@
+{
+  "format_version": "1.0",
+  "instance_id": "distributional-v1-036",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 17,
+    "width": 11,
+    "height": 8
+  },
+  "box_types": [
+    {
+      "type_id": "dist-type-01",
+      "dimensions": {
+        "length": 6,
+        "width": 6,
+        "height": 4
+      },
+      "quantity": 12,
+      "box_ids": [
+        "dist-type-01-001",
+        "dist-type-01-002",
+        "dist-type-01-003",
+        "dist-type-01-004",
+        "dist-type-01-005",
+        "dist-type-01-006",
+        "dist-type-01-007",
+        "dist-type-01-008",
+        "dist-type-01-009",
+        "dist-type-01-010",
+        "dist-type-01-011",
+        "dist-type-01-012"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW",
+        "WLH",
+        "WHL",
+        "HLW",
+        "HWL"
+      ]
+    },
+    {
+      "type_id": "dist-type-02",
+      "dimensions": {
+        "length": 1,
+        "width": 1,
+        "height": 2
+      },
+      "quantity": 8,
+      "box_ids": [
+        "dist-type-02-001",
+        "dist-type-02-002",
+        "dist-type-02-003",
+        "dist-type-02-004",
+        "dist-type-02-005",
+        "dist-type-02-006",
+        "dist-type-02-007",
+        "dist-type-02-008"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW",
+        "WLH",
+        "WHL",
+        "HLW",
+        "HWL"
+      ]
+    },
+    {
+      "type_id": "dist-type-03",
+      "dimensions": {
+        "length": 1,
+        "width": 1,
+        "height": 1
+      },
+      "quantity": 7,
+      "box_ids": [
+        "dist-type-03-001",
+        "dist-type-03-002",
+        "dist-type-03-003",
+        "dist-type-03-004",
+        "dist-type-03-005",
+        "dist-type-03-006",
+        "dist-type-03-007"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW",
+        "WLH",
+        "WHL",
+        "HLW",
+        "HWL"
+      ]
+    }
+  ]
+}
