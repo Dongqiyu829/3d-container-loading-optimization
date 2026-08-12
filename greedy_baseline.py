@@ -111,9 +111,14 @@ def run_greedy(
 
     placements: list[dict[str, Any]] = []
     reported_summary: tuple[int, int, int] | None = None
+    core_runtime_seconds: float | None = None
     for line in completed.stdout.splitlines():
         fields = line.split("\t")
-        if fields[0] == "PLACEMENT" and len(fields) == 10:
+        if fields[0] == "CORE_RUNTIME_SECONDS" and len(fields) == 2:
+            core_runtime_seconds = float(fields[1])
+            if core_runtime_seconds < 0:
+                raise RuntimeError("greedy core runtime cannot be negative")
+        elif fields[0] == "PLACEMENT" and len(fields) == 10:
             box_id = _decode_identifier(fields[1])
             type_id = _decode_identifier(fields[2])
             if type_by_box_id.get(box_id) != type_id:
@@ -141,6 +146,8 @@ def run_greedy(
 
     if reported_summary is None:
         raise RuntimeError("greedy output did not contain a SUMMARY record")
+    if core_runtime_seconds is None:
+        raise RuntimeError("greedy output did not contain a CORE_RUNTIME_SECONDS record")
     solution = build_solution(instance, placements)
     actual_summary = (
         len(placements),
@@ -157,6 +164,7 @@ def run_greedy(
         "solver_status": "COMPLETED",
         "executable": str(Path(executable).resolve()),
         "command": command,
+        "solver_core_runtime_seconds": core_runtime_seconds,
         "selected_box_types": [
             {"box_id": placement["box_id"], "type_id": type_by_box_id[placement["box_id"]]}
             for placement in placements

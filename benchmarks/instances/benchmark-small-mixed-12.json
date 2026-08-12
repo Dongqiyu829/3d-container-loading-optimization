@@ -1,0 +1,74 @@
+{
+  "format_version": "1.0",
+  "instance_id": "benchmark-small-mixed-12",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 8,
+    "width": 6,
+    "height": 5
+  },
+  "box_types": [
+    {
+      "type_id": "small-brick",
+      "dimensions": {
+        "length": 4,
+        "width": 3,
+        "height": 2
+      },
+      "quantity": 4,
+      "box_ids": [
+        "small-brick-001",
+        "small-brick-002",
+        "small-brick-003",
+        "small-brick-004"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW",
+        "WLH",
+        "WHL",
+        "HLW",
+        "HWL"
+      ]
+    },
+    {
+      "type_id": "small-bar",
+      "dimensions": {
+        "length": 3,
+        "width": 2,
+        "height": 2
+      },
+      "quantity": 4,
+      "box_ids": [
+        "small-bar-001",
+        "small-bar-002",
+        "small-bar-003",
+        "small-bar-004"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW",
+        "WLH"
+      ]
+    },
+    {
+      "type_id": "small-flat",
+      "dimensions": {
+        "length": 2,
+        "width": 2,
+        "height": 1
+      },
+      "quantity": 4,
+      "box_ids": [
+        "small-flat-001",
+        "small-flat-002",
+        "small-flat-003",
+        "small-flat-004"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "HLW"
+      ]
+    }
+  ]
+}

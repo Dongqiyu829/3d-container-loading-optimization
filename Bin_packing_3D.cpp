@@ -5,8 +5,26 @@
 #include <set>
 #include <string>
 #include <sstream>
+#include <chrono>
+#include <iomanip>
 #include <fstream> // 添加头文件
+#ifdef _WIN32
+#include <windows.h>
+#endif
 using namespace std;
+
+double high_resolution_seconds() {
+#ifdef _WIN32
+    LARGE_INTEGER frequency, counter;
+    QueryPerformanceFrequency(&frequency);
+    QueryPerformanceCounter(&counter);
+    return static_cast<double>(counter.QuadPart) / frequency.QuadPart;
+#else
+    return chrono::duration<double>(
+        chrono::steady_clock::now().time_since_epoch()
+    ).count();
+#endif
+}
 
 // 货物的6种放置姿态
 struct CargoPose {
@@ -343,7 +361,9 @@ int run_machine_mode() {
 
     Container container(container_length, container_width, container_height);
     VolumeGreedyStrategy strategy;
+    const double core_start = high_resolution_seconds();
     encase_cargos_into_container(cargos, container, strategy);
+    const double core_runtime_seconds = high_resolution_seconds() - core_start;
 
     long long packed_volume = 0;
     for (const auto& cargo : container._setted_cargos) {
@@ -359,6 +379,7 @@ int run_machine_mode() {
              << "\t" << cargo.width()
              << "\t" << cargo.height() << "\n";
     }
+    cout << "CORE_RUNTIME_SECONDS\t" << setprecision(17) << core_runtime_seconds << "\n";
     cout << "SUMMARY\t" << container._setted_cargos.size()
          << "\t" << packed_volume
          << "\t" << static_cast<long long>(container_length) * container_width * container_height

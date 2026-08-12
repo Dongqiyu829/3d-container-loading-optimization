@@ -1,0 +1,27 @@
+{
+  "format_version": "1.0",
+  "instance_id": "benchmark-tiny-orientation-gate",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 3,
+    "width": 2,
+    "height": 2
+  },
+  "box_types": [
+    {
+      "type_id": "panel",
+      "dimensions": {
+        "length": 2,
+        "width": 2,
+        "height": 3
+      },
+      "quantity": 1,
+      "box_ids": [
+        "panel-001"
+      ],
+      "allowed_orientations": [
+        "HLW"
+      ]
+    }
+  ]
+}

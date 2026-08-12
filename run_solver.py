@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import platform
 import re
 import sys
 import time
@@ -40,6 +41,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--solver", required=True, choices=("greedy", "cpsat"))
     parser.add_argument("--instance", required=True, type=Path)
     parser.add_argument("--output", type=Path, help="new solution path; existing files are refused")
+    parser.add_argument(
+        "--metadata-output",
+        type=Path,
+        help="new sidecar metadata path; defaults beside the solution",
+    )
     parser.add_argument("--time-limit", type=float, default=60.0, help="CP-SAT limit in seconds")
     parser.add_argument(
         "--objective",
@@ -49,15 +55,27 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     parser.add_argument("--greedy-executable", type=Path)
     parser.add_argument("--cxx", help="C++ compiler executable for the greedy baseline")
+    parser.add_argument("--workers", type=int, help="explicit CP-SAT search worker count")
+    parser.add_argument("--random-seed", type=int, help="explicit CP-SAT random seed")
     args = parser.parse_args(argv)
 
     if args.time_limit <= 0:
         parser.error("--time-limit must be positive")
+    if args.workers is not None and args.workers <= 0:
+        parser.error("--workers must be positive")
+    if args.random_seed is not None and args.random_seed < 0:
+        parser.error("--random-seed must be non-negative")
+    if args.solver == "greedy" and (args.workers is not None or args.random_seed is not None):
+        parser.error("--workers and --random-seed apply only to CP-SAT")
 
     try:
         instance = load_instance(args.instance)
         output = (args.output or _default_output(instance.instance_id, args.solver)).resolve()
-        metadata_path = _metadata_path(output)
+        metadata_path = (
+            args.metadata_output.resolve() if args.metadata_output else _metadata_path(output)
+        )
+        if output == metadata_path:
+            raise ValueError("solution and metadata paths must be different")
         if output.exists():
             raise FileExistsError(f"refusing to overwrite solution: {output}")
         if metadata_path.exists():
@@ -86,6 +104,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 instance,
                 time_limit_seconds=args.time_limit,
                 maximize_volume=args.objective == "volume",
+                num_search_workers=args.workers,
+                random_seed=args.random_seed,
             )
 
         elapsed = time.perf_counter() - started
@@ -95,6 +115,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             "instance_path": str(args.instance.resolve()),
             "solver": args.solver,
             "runtime_python": sys.version,
+            "runtime_python_executable": sys.executable,
+            "runtime_platform": platform.platform(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "elapsed_seconds": elapsed,
             **solver_metadata,
         }

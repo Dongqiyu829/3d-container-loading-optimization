@@ -1,0 +1,41 @@
+{
+  "suite_version": "1.0",
+  "name": "repository-deterministic-baselines",
+  "description": "Small deterministic research fixtures created for this repository; they are not claimed to be industry-standard datasets.",
+  "generation": {
+    "kind": "fixed deterministic definitions",
+    "script": "generate_instances.py",
+    "box_id_rule": "<type_id>-<one-based index padded to three digits>",
+    "type_and_box_order": "the committed order in generate_instances.build_instances"
+  },
+  "instances": [
+    {
+      "instance_id": "benchmark-tiny-two-cubes",
+      "difficulty": "tiny",
+      "path": "instances/benchmark-tiny-two-cubes.json",
+      "candidate_box_count": 2,
+      "description": "Two face-touching cubes exactly fill the container."
+    },
+    {
+      "instance_id": "benchmark-tiny-orientation-gate",
+      "difficulty": "tiny",
+      "path": "instances/benchmark-tiny-orientation-gate.json",
+      "candidate_box_count": 1,
+      "description": "A repeated-dimension box fits using its sole allowed canonical orientation."
+    },
+    {
+      "instance_id": "benchmark-small-mixed-12",
+      "difficulty": "small",
+      "path": "instances/benchmark-small-mixed-12.json",
+      "candidate_box_count": 12,
+      "description": "Three box types and restricted rotations create a small nontrivial packing case."
+    },
+    {
+      "instance_id": "benchmark-medium-mixed-24",
+      "difficulty": "medium",
+      "path": "instances/benchmark-medium-mixed-24.json",
+      "candidate_box_count": 24,
+      "description": "Twenty-four optional boxes with candidate volume greater than container volume; intended for time-limited CP-SAT runs."
+    }
+  ]
+}

@@ -111,6 +111,7 @@ class GreedyBaselineIntegrationTests(unittest.TestCase):
             metadata["selected_box_types"],
             [{"box_id": "panel-01", "type_id": "panel"}],
         )
+        self.assertGreater(metadata["solver_core_runtime_seconds"], 0)
 
     def test_repeated_dimensions_keep_exact_allowed_orientation_identity(self):
         instance_path = self.temporary_directory / "repeated-dimensions.instance.json"
@@ -157,6 +158,10 @@ class CpSatBaselineIntegrationTests(unittest.TestCase):
                 str(output),
                 "--time-limit",
                 "10",
+                "--workers",
+                "1",
+                "--random-seed",
+                "0",
             ]
             completed = subprocess.run(command, capture_output=True, text=True, check=False)
             self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
@@ -169,6 +174,17 @@ class CpSatBaselineIntegrationTests(unittest.TestCase):
             metadata_path = output.with_name("cpsat.metadata.json")
             metadata = load_json(metadata_path)
             self.assertIn(metadata["solver_status"], ("FEASIBLE", "OPTIMAL"))
+            self.assertEqual(metadata["worker_count"], 1)
+            self.assertEqual(metadata["random_seed"], 0)
+            self.assertIn("raw_solver_best_bound", metadata)
+            self.assertIn("raw_solver_absolute_gap", metadata)
+            self.assertIn("raw_solver_relative_gap", metadata)
+            self.assertIn("physical_volume_upper_bound", metadata)
+            self.assertIn("effective_upper_bound", metadata)
+            self.assertIn("effective_absolute_gap", metadata)
+            self.assertIn("effective_incumbent_normalized_gap", metadata)
+            self.assertIn("container_empty_fraction", metadata)
+            self.assertGreaterEqual(metadata["solver_core_runtime_seconds"], 0)
             self.assertEqual(
                 {item["box_id"] for item in metadata["selected_box_types"]},
                 {"cube-01", "cube-02"},
