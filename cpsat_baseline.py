@@ -381,6 +381,7 @@ def run_cpsat(
     hint_source: str | None = None,
     capture_search_progress: bool = False,
     progress_target_objective: float | None = None,
+    max_deterministic_time: float | None = None,
 ) -> tuple[dict[str, Any] | None, dict[str, Any]]:
     """Build and solve the existing formulation using canonical box identities."""
 
@@ -411,6 +412,10 @@ def run_cpsat(
 
     solver = cp_model.CpSolver()
     solver.parameters.max_time_in_seconds = time_limit_seconds
+    if max_deterministic_time is not None:
+        if max_deterministic_time <= 0:
+            raise ValueError("max_deterministic_time must be positive")
+        solver.parameters.max_deterministic_time = max_deterministic_time
     if num_search_workers is not None:
         solver.parameters.num_search_workers = num_search_workers
     if random_seed is not None:
@@ -435,6 +440,7 @@ def run_cpsat(
         "solver_status": status_name,
         "ortools_version": ortools.__version__,
         "time_limit_seconds": time_limit_seconds,
+        "max_deterministic_time": max_deterministic_time,
         "objective": "packed_volume" if maximize_volume else "selected_box_count",
         "wall_time_seconds": solver.WallTime(),
         "solver_core_runtime_seconds": solver.WallTime(),
@@ -460,6 +466,9 @@ def run_cpsat(
         ),
         "incumbent_trace": recorder.events if recorder is not None else [],
         "model_structure_sha256": model_structure_sha256,
+        "num_conflicts": solver.NumConflicts(),
+        "num_branches": solver.NumBranches(),
+        "deterministic_time": solver.ResponseProto().deterministic_time,
     }
     if maximize_volume:
         physical_volume_upper_bound = min(total_candidate_volume, instance.container_volume)
