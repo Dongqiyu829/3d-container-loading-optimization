@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import time
 from dataclasses import dataclass
 from typing import Any, Mapping
 
@@ -234,6 +235,7 @@ def _build_cpsat_model(
     cp_model: Any,
     *,
     maximize_volume: bool,
+    volume_bound: bool,
 ) -> CpSatModelArtifacts:
     """Build the unchanged baseline formulation and expose its variables."""
 
@@ -307,10 +309,16 @@ def _build_cpsat_model(
             model.Add(both_selected == 0).OnlyEnforceIf(selected[second].Not())
             model.Add(sum(separators) >= 1).OnlyEnforceIf(both_selected)
 
-    if maximize_volume:
-        model.Maximize(
-            sum(selected[index] * boxes[index].volume for index in range(box_count))
+    selected_volume = sum(
+        selected[index] * boxes[index].volume for index in range(box_count)
+    )
+    if volume_bound:
+        model.Add(selected_volume <= instance.container_volume).WithName(
+            "aggregate_selected_volume_capacity"
         )
+
+    if maximize_volume:
+        model.Maximize(selected_volume)
     else:
         model.Maximize(sum(selected))
 
@@ -330,6 +338,7 @@ def build_cpsat_model(
     instance: CanonicalInstance,
     *,
     maximize_volume: bool = True,
+    volume_bound: bool = False,
 ) -> CpSatModelArtifacts:
     """Public model builder used by equivalence and hint-mapping tests."""
 
@@ -337,7 +346,12 @@ def build_cpsat_model(
         from ortools.sat.python import cp_model
     except (ImportError, OSError) as exc:
         raise RuntimeError(f"OR-Tools CP-SAT is unavailable: {exc}") from exc
-    return _build_cpsat_model(instance, cp_model, maximize_volume=maximize_volume)
+    return _build_cpsat_model(
+        instance,
+        cp_model,
+        maximize_volume=maximize_volume,
+        volume_bound=volume_bound,
+    )
 
 
 def _new_incumbent_recorder(cp_model: Any, target_objective: float | None) -> Any:
@@ -382,6 +396,7 @@ def run_cpsat(
     capture_search_progress: bool = False,
     progress_target_objective: float | None = None,
     max_deterministic_time: float | None = None,
+    volume_bound: bool = False,
 ) -> tuple[dict[str, Any] | None, dict[str, Any]]:
     """Build and solve the existing formulation using canonical box identities."""
 
@@ -393,9 +408,14 @@ def run_cpsat(
 
     boxes = list(instance.boxes)
     box_count = len(boxes)
+    model_build_started = time.perf_counter()
     artifacts = _build_cpsat_model(
-        instance, cp_model, maximize_volume=maximize_volume
+        instance,
+        cp_model,
+        maximize_volume=maximize_volume,
+        volume_bound=volume_bound,
     )
+    model_build_runtime_seconds = time.perf_counter() - model_build_started
     model = artifacts.model
     selected = artifacts.selected
     pose = artifacts.pose
@@ -442,6 +462,9 @@ def run_cpsat(
         "time_limit_seconds": time_limit_seconds,
         "max_deterministic_time": max_deterministic_time,
         "objective": "packed_volume" if maximize_volume else "selected_box_count",
+        "volume_bound_enabled": volume_bound,
+        "model_variant": "baseline-plus-volume-bound" if volume_bound else "baseline",
+        "model_build_runtime_seconds": model_build_runtime_seconds,
         "wall_time_seconds": solver.WallTime(),
         "solver_core_runtime_seconds": solver.WallTime(),
         "raw_solver_best_bound": raw_solver_best_bound,
