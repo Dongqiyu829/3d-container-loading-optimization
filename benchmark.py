@@ -79,8 +79,8 @@ class BenchmarkInstance:
 def load_suite(path: str | Path = DEFAULT_SUITE) -> tuple[dict[str, Any], list[BenchmarkInstance]]:
     manifest_path = Path(path).resolve()
     manifest = load_json(manifest_path)
-    if not isinstance(manifest, Mapping) or manifest.get("suite_version") != "1.0":
-        raise ValueError("benchmark suite must be a version 1.0 JSON object")
+    if not isinstance(manifest, Mapping) or manifest.get("suite_version") not in ("1.0", "1.1"):
+        raise ValueError("benchmark suite must be a version 1.0 or 1.1 JSON object")
     raw_entries = manifest.get("instances")
     if not isinstance(raw_entries, list) or not raw_entries:
         raise ValueError("benchmark suite must contain at least one instance")

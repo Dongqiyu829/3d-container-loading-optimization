@@ -1,0 +1,90 @@
+{
+  "format_version": "1.0",
+  "instance_id": "benchmark-competing-structures-04",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 10,
+    "width": 8,
+    "height": 6
+  },
+  "box_types": [
+    {
+      "type_id": "compete-block",
+      "dimensions": {
+        "length": 6,
+        "width": 4,
+        "height": 3
+      },
+      "quantity": 4,
+      "box_ids": [
+        "compete-block-001",
+        "compete-block-002",
+        "compete-block-003",
+        "compete-block-004"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW",
+        "WLH",
+        "WHL",
+        "HLW",
+        "HWL"
+      ]
+    },
+    {
+      "type_id": "compete-carton",
+      "dimensions": {
+        "length": 4,
+        "width": 3,
+        "height": 2
+      },
+      "quantity": 10,
+      "box_ids": [
+        "compete-carton-001",
+        "compete-carton-002",
+        "compete-carton-003",
+        "compete-carton-004",
+        "compete-carton-005",
+        "compete-carton-006",
+        "compete-carton-007",
+        "compete-carton-008",
+        "compete-carton-009",
+        "compete-carton-010"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW",
+        "WLH",
+        "WHL",
+        "HLW",
+        "HWL"
+      ]
+    },
+    {
+      "type_id": "compete-cube",
+      "dimensions": {
+        "length": 2,
+        "width": 2,
+        "height": 2
+      },
+      "quantity": 12,
+      "box_ids": [
+        "compete-cube-001",
+        "compete-cube-002",
+        "compete-cube-003",
+        "compete-cube-004",
+        "compete-cube-005",
+        "compete-cube-006",
+        "compete-cube-007",
+        "compete-cube-008",
+        "compete-cube-009",
+        "compete-cube-010",
+        "compete-cube-011",
+        "compete-cube-012"
+      ],
+      "allowed_orientations": [
+        "LWH"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "format_version": "1.0",
+  "instance_id": "benchmark-long-thin-residual-02",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 10,
+    "width": 6,
+    "height": 4
+  },
+  "box_types": [
+    {
+      "type_id": "channel-slab",
+      "dimensions": {
+        "length": 4,
+        "width": 5,
+        "height": 4
+      },
+      "quantity": 2,
+      "box_ids": [
+        "channel-slab-001",
+        "channel-slab-002"
+      ],
+      "allowed_orientations": [
+        "LWH"
+      ]
+    },
+    {
+      "type_id": "channel-beam",
+      "dimensions": {
+        "length": 6,
+        "width": 1,
+        "height": 2
+      },
+      "quantity": 4,
+      "box_ids": [
+        "channel-beam-001",
+        "channel-beam-002",
+        "channel-beam-003",
+        "channel-beam-004"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW"
+      ]
+    },
+    {
+      "type_id": "channel-cube",
+      "dimensions": {
+        "length": 2,
+        "width": 2,
+        "height": 2
+      },
+      "quantity": 4,
+      "box_ids": [
+        "channel-cube-001",
+        "channel-cube-002",
+        "channel-cube-003",
+        "channel-cube-004"
+      ],
+      "allowed_orientations": [
+        "LWH"
+      ]
+    }
+  ]
+}

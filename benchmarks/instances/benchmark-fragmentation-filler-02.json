@@ -1,0 +1,82 @@
+{
+  "format_version": "1.0",
+  "instance_id": "benchmark-fragmentation-filler-02",
+  "units": "arbitrary_unit",
+  "container": {
+    "length": 8,
+    "width": 6,
+    "height": 5
+  },
+  "box_types": [
+    {
+      "type_id": "frag-slab",
+      "dimensions": {
+        "length": 5,
+        "width": 4,
+        "height": 2
+      },
+      "quantity": 3,
+      "box_ids": [
+        "frag-slab-001",
+        "frag-slab-002",
+        "frag-slab-003"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW",
+        "WLH",
+        "WHL",
+        "HLW",
+        "HWL"
+      ]
+    },
+    {
+      "type_id": "frag-medium",
+      "dimensions": {
+        "length": 3,
+        "width": 2,
+        "height": 3
+      },
+      "quantity": 6,
+      "box_ids": [
+        "frag-medium-001",
+        "frag-medium-002",
+        "frag-medium-003",
+        "frag-medium-004",
+        "frag-medium-005",
+        "frag-medium-006"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "LHW",
+        "WLH",
+        "WHL",
+        "HLW",
+        "HWL"
+      ]
+    },
+    {
+      "type_id": "frag-filler",
+      "dimensions": {
+        "length": 1,
+        "width": 2,
+        "height": 2
+      },
+      "quantity": 8,
+      "box_ids": [
+        "frag-filler-001",
+        "frag-filler-002",
+        "frag-filler-003",
+        "frag-filler-004",
+        "frag-filler-005",
+        "frag-filler-006",
+        "frag-filler-007",
+        "frag-filler-008"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "WLH"
+      ]
+    }
+  ]
+}
