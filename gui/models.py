@@ -15,6 +15,7 @@ from baseline_common import CanonicalInstance, load_instance
 from cpsat_baseline import run_cpsat
 from greedy_baseline import compile_greedy
 from greedy_portfolio import run_greedy_portfolio
+from hybrid_optimizer import run_hybrid_optimizer
 from validate_solution import ORIENTATION_AXES, ValidationResult, load_json, validate_solution
 
 
@@ -220,8 +221,10 @@ def execute_backends(
     """Run existing backends on one immutable canonical instance."""
 
     selection = solver_selection.lower().strip()
-    if selection not in ("greedy", "cpsat", "all"):
-        raise GuiInputError("Solver must be Greedy, CP-SAT, or Compare Both.")
+    aliases = {"greedy": "fast", "all": "compare"}
+    selection = aliases.get(selection, selection)
+    if selection not in ("fast", "optimize", "compare", "cpsat"):
+        raise GuiInputError("Solver must be Fast, Optimize, or Compare.")
     if time_limit_seconds <= 0:
         raise GuiInputError("CP-SAT time limit must be positive.")
     if worker_count <= 0:
@@ -229,15 +232,14 @@ def execute_backends(
     if random_seed < 0:
         raise GuiInputError("CP-SAT random seed must be non-negative.")
 
-    solvers = ("greedy", "cpsat") if selection == "all" else (selection,)
     callback = status_callback or (lambda _message: None)
     results: list[SolverRunResult] = []
     with tempfile.TemporaryDirectory(prefix="container-loading-gui-") as temporary_directory:
         temporary_path = Path(temporary_directory)
         instance = _load_instance_data(instance_data, temporary_path)
         greedy_executable: Path | None = None
-        if "greedy" in solvers:
-            callback("Compiling Greedy Portfolio backend...")
+        if selection in ("fast", "optimize", "compare"):
+            callback("Preparing Fast backend...")
             executable_name = "Bin_packing_3D.exe" if os.name == "nt" else "Bin_packing_3D"
             greedy_executable = temporary_path / executable_name
             compile_greedy(
@@ -246,49 +248,95 @@ def execute_backends(
                 compiler=compiler,
             )
 
-        for solver_name in solvers:
-            callback(
-                "Running Greedy Portfolio..."
-                if solver_name == "greedy"
-                else "Running CP-SAT..."
-            )
+        portfolio_candidate: tuple[dict[str, Any], dict[str, Any]] | None = None
+        portfolio_candidate_runtime_seconds: float | None = None
+
+        def run_fast() -> SolverRunResult:
+            nonlocal portfolio_candidate, portfolio_candidate_runtime_seconds
+            callback("Building fast solution...")
             started = time.perf_counter()
-            if solver_name == "greedy":
-                solution, metadata = run_greedy_portfolio(
-                    instance,
-                    greedy_executable,  # type: ignore[arg-type]
-                    portfolio_id="portfolio-ig",
-                )
-                status = "COMPLETED"
-                metadata["solver_core_runtime_seconds"] = sum(
-                    constituent["solver_core_runtime_seconds"]
-                    for constituent in metadata["constituents"]
-                    if constituent.get("eligible")
-                    and constituent.get("solver_core_runtime_seconds") is not None
-                )
-            else:
-                solution, metadata = run_cpsat(
-                    instance,
-                    time_limit_seconds=time_limit_seconds,
-                    maximize_volume=True,
-                    num_search_workers=worker_count,
-                    random_seed=random_seed,
-                )
-                status = metadata["solver_status"]
-            validation = (
-                validate_solution(instance.raw, solution) if solution is not None else None
+            solution, metadata = run_greedy_portfolio(
+                instance,
+                greedy_executable,  # type: ignore[arg-type]
+                portfolio_id="portfolio-ig",
             )
+            metadata["solver_core_runtime_seconds"] = sum(
+                constituent["solver_core_runtime_seconds"]
+                for constituent in metadata["constituents"]
+                if constituent.get("eligible")
+                and constituent.get("solver_core_runtime_seconds") is not None
+            )
+            validation = validate_solution(instance.raw, solution)
             elapsed = time.perf_counter() - started
+            portfolio_candidate = (solution, metadata)
+            portfolio_candidate_runtime_seconds = elapsed
+            return SolverRunResult(
+                solver="fast",
+                status="COMPLETED",
+                solution=solution,
+                metadata=metadata,
+                validation=validation,
+                candidate_box_count=len(instance.boxes),
+                container_volume=instance.container_volume,
+                end_to_end_runtime_seconds=elapsed,
+            )
+
+        def run_optimize() -> SolverRunResult:
+            started = time.perf_counter()
+            solution, metadata = run_hybrid_optimizer(
+                instance,
+                greedy_executable,  # type: ignore[arg-type]
+                time_limit_seconds=time_limit_seconds,
+                num_search_workers=worker_count,
+                random_seed=random_seed,
+                portfolio_candidate=portfolio_candidate,
+                portfolio_candidate_runtime_seconds=portfolio_candidate_runtime_seconds,
+                status_callback=callback,
+            )
+            validation = validate_solution(instance.raw, solution)
+            incremental_elapsed = time.perf_counter() - started
+            elapsed = metadata.get("total_hybrid_end_to_end_runtime_seconds")
+            if elapsed is None:
+                elapsed = incremental_elapsed
+            return SolverRunResult(
+                solver="optimize",
+                status=metadata["solver_status"],
+                solution=solution,
+                metadata=metadata,
+                validation=validation,
+                candidate_box_count=len(instance.boxes),
+                container_volume=instance.container_volume,
+                end_to_end_runtime_seconds=elapsed,
+            )
+
+        if selection == "fast":
+            results.append(run_fast())
+        elif selection == "optimize":
+            results.append(run_optimize())
+        elif selection == "compare":
+            results.append(run_fast())
+            results.append(run_optimize())
+        else:  # retained backend/research access; not exposed by the GUI
+            callback("Running standalone cold CP-SAT...")
+            started = time.perf_counter()
+            solution, metadata = run_cpsat(
+                instance,
+                time_limit_seconds=time_limit_seconds,
+                maximize_volume=True,
+                num_search_workers=worker_count,
+                random_seed=random_seed,
+            )
+            validation = validate_solution(instance.raw, solution) if solution else None
             results.append(
                 SolverRunResult(
-                    solver=solver_name,
-                    status=status,
+                    solver="cpsat",
+                    status=metadata["solver_status"],
                     solution=solution,
                     metadata=metadata,
                     validation=validation,
                     candidate_box_count=len(instance.boxes),
                     container_volume=instance.container_volume,
-                    end_to_end_runtime_seconds=elapsed,
+                    end_to_end_runtime_seconds=time.perf_counter() - started,
                 )
             )
     callback("Finished.")
@@ -301,11 +349,14 @@ def comparison_rows(results: Sequence[SolverRunResult]) -> list[dict[str, Any]]:
         validation = result.validation
         rows.append(
             {
-                "solver": "Greedy Portfolio" if result.solver == "greedy" else "CP-SAT",
+                "solver": _solver_label(result.solver),
                 "status": result.status,
                 "packed_boxes": validation.placement_count if validation else None,
                 "packed_volume": validation.packed_volume if validation else None,
                 "utilization": validation.utilization if validation else None,
+                "empty_fraction": (
+                    1.0 - validation.utilization if validation else None
+                ),
                 "solver_core_runtime_seconds": result.metadata.get(
                     "solver_core_runtime_seconds"
                 ),
@@ -319,7 +370,7 @@ def comparison_rows(results: Sequence[SolverRunResult]) -> list[dict[str, Any]]:
 def format_result_details(result: SolverRunResult) -> str:
     validation = result.validation
     lines = [
-        f"Solver: {'Greedy Portfolio' if result.solver == 'greedy' else 'CP-SAT'}",
+        f"Solver: {_solver_label(result.solver)}",
         f"Status: {result.status}",
         f"Candidate boxes: {result.candidate_box_count}",
         f"Validation: {result.validation_label}",
@@ -337,13 +388,13 @@ def format_result_details(result: SolverRunResult) -> str:
             f"Solver-core runtime: {result.metadata.get('solver_core_runtime_seconds', 0.0):.6f} s",
             (
                 "Total portfolio end-to-end runtime: "
-                if result.solver == "greedy" and result.metadata.get("portfolio_id")
+                if result.solver in ("fast", "greedy") and result.metadata.get("portfolio_id")
                 else "End-to-end runtime: "
             )
             + f"{result.end_to_end_runtime_seconds:.6f} s",
         ]
     )
-    if result.solver == "greedy" and result.metadata.get("portfolio_id"):
+    if result.solver in ("fast", "greedy") and result.metadata.get("portfolio_id"):
         lines.extend(
             [
                 f"Portfolio: {result.metadata['portfolio_id']}",
@@ -366,6 +417,41 @@ def format_result_details(result: SolverRunResult) -> str:
             if constituent.get("error"):
                 line += f", diagnostic={constituent['error']}"
             lines.append(line)
+    if result.solver == "optimize":
+        portfolio = result.metadata.get("portfolio", {})
+        cpsat = result.metadata.get("cpsat", {})
+        cpsat_backend = cpsat.get("backend_metadata", {})
+        improvement = result.metadata.get("improvement_over_portfolio")
+        selected = result.metadata.get("selected_final_source")
+        portfolio_runtime = result.metadata.get("portfolio_end_to_end_runtime_seconds")
+        portfolio_runtime_text = (
+            "not available"
+            if portfolio_runtime is None
+            else f"{portfolio_runtime:.6f} s"
+        )
+        lines.extend(
+            [
+                f"Final source: {'CP-SAT improvement' if selected == 'cpsat' else 'Portfolio fallback'}",
+                f"Improvement over Fast: {improvement if improvement is not None else 'not available'}",
+                f"Selection reason: {result.metadata.get('selection_reason', 'unknown')}",
+                "Fast Portfolio:",
+                f"- packed volume: {portfolio.get('packed_volume', 'not available')}",
+                f"- utilization: {portfolio.get('utilization', 'not available')}",
+                f"- runtime: {portfolio_runtime_text}",
+                "CP-SAT optimization:",
+                f"- status: {cpsat.get('status', 'unknown')}",
+                f"- packed volume: {cpsat.get('packed_volume', 'not available')}",
+                f"- raw bound: {cpsat_backend.get('raw_solver_best_bound', 'not available')}",
+                f"- effective bound: {cpsat_backend.get('effective_upper_bound', 'not available')}",
+                f"- solver time: {result.metadata.get('cpsat_solver_core_runtime_seconds', 'not available')} s",
+            ]
+        )
+        if result.metadata.get("portfolio_candidate_reused"):
+            lines.append("Compare reused the displayed Fast Portfolio candidate.")
+            lines.append(
+                "Additional optimization runtime: "
+                f"{result.metadata.get('incremental_hybrid_runtime_seconds', 0.0):.6f} s"
+            )
     if result.solver == "cpsat":
         raw_bound = result.metadata.get("raw_solver_best_bound")
         raw_absolute_gap = result.metadata.get("raw_solver_absolute_gap")
@@ -410,12 +496,47 @@ def visualizable_solution(result: SolverRunResult) -> dict[str, Any] | None:
     return result.solution
 
 
-def portfolio_sidecar_metadata(result: SolverRunResult) -> dict[str, Any] | None:
-    """Return portfolio metadata for saving beside its selected canonical solution."""
+def result_sidecar_metadata(result: SolverRunResult) -> dict[str, Any] | None:
+    """Return Fast/Optimize orchestration metadata for saving beside a solution."""
 
-    if result.solver != "greedy" or result.metadata.get("portfolio_id") is None:
-        return None
-    return result.metadata
+    if result.solver in ("fast", "greedy") and result.metadata.get("portfolio_id") is not None:
+        return result.metadata
+    if result.solver == "optimize" and result.metadata.get("hybrid_format_version") is not None:
+        return result.metadata
+    return None
+
+
+def portfolio_sidecar_metadata(result: SolverRunResult) -> dict[str, Any] | None:
+    """Backward-compatible alias for result-sidecar selection."""
+
+    return result_sidecar_metadata(result)
+
+
+def optimize_completion_message(result: SolverRunResult) -> str:
+    """Return concise non-error user messaging for a completed Optimize run."""
+
+    if result.solver != "optimize":
+        raise ValueError("completion messaging requires an Optimize result")
+    improvement = result.metadata.get("improvement_over_portfolio")
+    if result.metadata.get("selected_final_source") == "cpsat":
+        return f"Optimization improved packed volume by {improvement}."
+    if result.metadata.get("cpsat", {}).get("status") in (
+        "UNKNOWN", "INFEASIBLE", "MODEL_INVALID", "ERROR"
+    ):
+        return (
+            "No better solution was found within the selected optimization time. "
+            "The validated Fast solution was retained."
+        )
+    return "Optimization completed. The Fast solution remained best."
+
+
+def _solver_label(solver: str) -> str:
+    return {
+        "fast": "Fast",
+        "greedy": "Fast",
+        "optimize": "Optimize",
+        "cpsat": "CP-SAT",
+    }.get(solver, solver)
 
 
 def box_type_by_id(instance_data: Mapping[str, Any]) -> dict[str, str]:

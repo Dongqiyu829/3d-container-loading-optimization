@@ -20,8 +20,10 @@ from gui.models import (  # noqa: E402
     format_result_details,
     list_examples,
     load_example,
+    optimize_completion_message,
     parse_orientations,
     portfolio_sidecar_metadata,
+    result_sidecar_metadata,
     rows_from_instance,
     visualizable_solution,
 )
@@ -143,12 +145,13 @@ class GuiResultFormattingTests(unittest.TestCase):
 
     def test_comparison_rows_include_validation_and_both_runtime_terms(self):
         rows = comparison_rows(
-            [self._result("greedy", "COMPLETED"), self._result("cpsat", "OPTIMAL")]
+            [self._result("fast", "COMPLETED"), self._result("cpsat", "OPTIMAL")]
         )
         self.assertEqual(
-            [row["solver"] for row in rows], ["Greedy Portfolio", "CP-SAT"]
+            [row["solver"] for row in rows], ["Fast", "CP-SAT"]
         )
         self.assertTrue(all(row["validation"] == "VALID" for row in rows))
+        self.assertTrue(all(row["empty_fraction"] == 0.5 for row in rows))
         self.assertTrue(all("solver_core_runtime_seconds" in row for row in rows))
         self.assertTrue(all("end_to_end_runtime_seconds" in row for row in rows))
 
@@ -208,6 +211,31 @@ class GuiPortfolioIntegrationTests(unittest.TestCase):
             "total_portfolio_end_to_end_runtime_seconds": 0.04,
         }
 
+    @classmethod
+    def _hybrid_metadata(cls, *, source="portfolio", cpsat_status="FEASIBLE", improvement=0):
+        return {
+            "hybrid_format_version": "1.0",
+            "solver_status": "COMPLETED",
+            "selected_final_source": source,
+            "selection_reason": (
+                "cpsat_improved_packed_volume"
+                if source == "cpsat"
+                else "equal_packed_volume_portfolio_tie_policy"
+            ),
+            "improvement_over_portfolio": improvement,
+            "portfolio_end_to_end_runtime_seconds": 0.04,
+            "cpsat_solver_core_runtime_seconds": 0.03,
+            "portfolio": {"packed_volume": 16, "utilization": 1.0},
+            "cpsat": {
+                "status": cpsat_status,
+                "packed_volume": 16 + improvement if cpsat_status != "UNKNOWN" else None,
+                "backend_metadata": {
+                    "raw_solver_best_bound": 16.0,
+                    "effective_upper_bound": 16.0,
+                },
+            },
+        }
+
     def test_gui_greedy_backend_calls_portfolio_ig(self):
         observed = {}
 
@@ -219,41 +247,64 @@ class GuiPortfolioIntegrationTests(unittest.TestCase):
         with patch("gui.models.compile_greedy"), patch(
             "gui.models.run_greedy_portfolio", side_effect=fake_portfolio
         ):
-            results = execute_backends(self.instance_data, "greedy")
+            results = execute_backends(self.instance_data, "fast")
         self.assertEqual(observed["portfolio_id"], "portfolio-ig")
         self.assertEqual(observed["instance"], self.instance_data)
         self.assertEqual(len(results), 1)
+        self.assertEqual(results[0].solver, "fast")
         self.assertEqual(results[0].metadata["winner_mode"], "geometry-first")
         self.assertTrue(results[0].validation.valid)
 
-    def test_compare_both_uses_portfolio_and_cpsat_on_identical_instance(self):
+    def test_compare_uses_one_shared_portfolio_then_hybrid_on_identical_instance(self):
         observed = []
 
         def fake_portfolio(instance, executable, *, portfolio_id):
             observed.append(("portfolio", id(instance), deepcopy(instance.raw), portfolio_id))
             return self._solution(instance), self._portfolio_metadata()
 
-        def fake_cpsat(instance, **kwargs):
-            observed.append(("cpsat", id(instance), deepcopy(instance.raw), kwargs))
-            return self._solution(instance), {
-                "solver_status": "OPTIMAL",
-                "solver_core_runtime_seconds": 0.003,
-            }
+        def fake_hybrid(instance, executable, **kwargs):
+            observed.append(("hybrid", id(instance), deepcopy(instance.raw), kwargs))
+            self.assertIsNotNone(kwargs["portfolio_candidate"])
+            return self._solution(instance), self._hybrid_metadata()
 
         with patch("gui.models.compile_greedy"), patch(
             "gui.models.run_greedy_portfolio", side_effect=fake_portfolio
-        ), patch("gui.models.run_cpsat", side_effect=fake_cpsat):
-            results = execute_backends(self.instance_data, "all")
-        self.assertEqual([result.solver for result in results], ["greedy", "cpsat"])
+        ), patch("gui.models.run_hybrid_optimizer", side_effect=fake_hybrid):
+            results = execute_backends(self.instance_data, "compare")
+        self.assertEqual([result.solver for result in results], ["fast", "optimize"])
+        self.assertEqual(len([item for item in observed if item[0] == "portfolio"]), 1)
         self.assertEqual(observed[0][1], observed[1][1])
         self.assertEqual(observed[0][2], observed[1][2])
         self.assertEqual(observed[0][2], self.instance_data)
         self.assertEqual(observed[0][3], "portfolio-ig")
+        self.assertEqual(observed[1][3]["time_limit_seconds"], 10.0)
+
+    def test_optimize_routes_to_hybrid_with_time_budget(self):
+        observed = {}
+
+        def fake_hybrid(instance, executable, **kwargs):
+            observed.update(kwargs)
+            return self._solution(instance), self._hybrid_metadata()
+
+        with patch("gui.models.compile_greedy"), patch(
+            "gui.models.run_hybrid_optimizer", side_effect=fake_hybrid
+        ):
+            results = execute_backends(
+                self.instance_data,
+                "optimize",
+                time_limit_seconds=2.5,
+                worker_count=1,
+                random_seed=0,
+            )
+        self.assertEqual(results[0].solver, "optimize")
+        self.assertEqual(observed["time_limit_seconds"], 2.5)
+        self.assertEqual(observed["num_search_workers"], 1)
+        self.assertEqual(observed["random_seed"], 0)
 
     def test_winner_and_constituent_metadata_formatting(self):
         solution = {"format_version": "1.0", "placements": []}
         result = SolverRunResult(
-            solver="greedy",
+            solver="fast",
             status="COMPLETED",
             solution=solution,
             metadata=self._portfolio_metadata(one_failed=True),
@@ -263,7 +314,7 @@ class GuiPortfolioIntegrationTests(unittest.TestCase):
             end_to_end_runtime_seconds=0.04,
         )
         details = format_result_details(result)
-        self.assertIn("Solver: Greedy Portfolio", details)
+        self.assertIn("Solver: Fast", details)
         self.assertIn("Winning constituent: geometry-first", details)
         self.assertIn("planar-inclusive: status=ERROR", details)
         self.assertIn("injected constituent failure", details)
@@ -273,15 +324,40 @@ class GuiPortfolioIntegrationTests(unittest.TestCase):
     def test_only_selected_valid_solution_is_visualizable(self):
         solution = {"format_version": "1.0", "placements": []}
         valid = SolverRunResult(
-            "greedy", "COMPLETED", solution, self._portfolio_metadata(),
+            "fast", "COMPLETED", solution, self._portfolio_metadata(),
             ValidationResult((), 16, 16, 1.0, 2), 2, 16, 0.04,
         )
         invalid = SolverRunResult(
-            "greedy", "COMPLETED", {"stale": True}, self._portfolio_metadata(),
+            "fast", "COMPLETED", {"stale": True}, self._portfolio_metadata(),
             ValidationResult((object(),), 0, 16, 0.0, 0), 2, 16, 0.04,
         )
         self.assertIs(visualizable_solution(valid), solution)
         self.assertIsNone(visualizable_solution(invalid))
+
+    def test_optimize_fallback_improvement_and_unknown_messages(self):
+        base = dict(
+            solver="optimize",
+            status="COMPLETED",
+            solution={"format_version": "1.0", "instance_id": "benchmark-tiny-two-cubes", "placements": []},
+            validation=ValidationResult((), 16, 16, 1.0, 2),
+            candidate_box_count=2,
+            container_volume=16,
+            end_to_end_runtime_seconds=0.1,
+        )
+        fallback = SolverRunResult(metadata=self._hybrid_metadata(), **base)
+        improved = SolverRunResult(
+            metadata=self._hybrid_metadata(source="cpsat", improvement=8), **base
+        )
+        unknown = SolverRunResult(
+            metadata=self._hybrid_metadata(cpsat_status="UNKNOWN"), **base
+        )
+        self.assertIn("remained best", optimize_completion_message(fallback))
+        self.assertIn("improved packed volume by 8", optimize_completion_message(improved))
+        self.assertIn("No better solution", optimize_completion_message(unknown))
+        self.assertIs(result_sidecar_metadata(improved), improved.metadata)
+        details = format_result_details(improved)
+        self.assertIn("Final source: CP-SAT improvement", details)
+        self.assertIn("Improvement over Fast: 8", details)
 
 
 if __name__ == "__main__":
