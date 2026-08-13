@@ -25,6 +25,16 @@
       "minLength": 1,
       "description": "Length unit used consistently throughout the instance, for example mm or arbitrary_unit."
     },
+    "weight_unit": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional integer cargo-weight unit used consistently by box-type weights and max_total_weight, for example g."
+    },
+    "max_total_weight": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Optional scalar capacity. When present, every box type must declare a positive integer weight and selected total weight may not exceed this value."
+    },
     "container": {
       "$ref": "#/$defs/dimensions"
     },
@@ -100,8 +110,44 @@
           "items": {
             "$ref": "#/$defs/orientation"
           }
+        },
+        "weight": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Optional weight of each physical box of this type, expressed in the top-level weight_unit."
         }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": ["max_total_weight"]
+      },
+      "then": {
+        "required": ["weight_unit"],
+        "properties": {
+          "box_types": {
+            "items": {
+              "required": ["weight"]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "box_types": {
+            "contains": {
+              "required": ["weight"]
+            }
+          }
+        }
+      },
+      "then": {
+        "required": ["weight_unit"]
+      }
+    }
+  ]
 }

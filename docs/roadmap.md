@@ -34,7 +34,7 @@ No trained model is currently part of Fast, Optimize, or Compare. See `docs/ml_f
 Potential future model extensions include:
 
 - support and stability;
-- weights and container balance;
+- weight distribution and container balance beyond the supported scalar total cargo weight capacity;
 - load-bearing limits;
 - loading/unloading order and accessibility;
 - routing or multi-container constraints.

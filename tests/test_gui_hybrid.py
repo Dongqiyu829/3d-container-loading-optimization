@@ -15,7 +15,7 @@ from PySide6.QtWidgets import QApplication  # noqa: E402
 
 from gui.main_window import MainWindow  # noqa: E402
 from gui.models import SolverRunResult, load_example  # noqa: E402
-from validate_solution import ValidationResult  # noqa: E402
+from validate_solution import ValidationResult, load_json  # noqa: E402
 
 
 class HybridGuiStateTests(unittest.TestCase):
@@ -30,22 +30,74 @@ class HybridGuiStateTests(unittest.TestCase):
         self.window.close()
         self.app.processEvents()
 
-    def test_primary_choices_are_fast_optimize_compare(self):
+    def test_primary_choices_include_standalone_cpsat_with_mode_gating(self):
         choices = [
             (self.window.solver_combo.itemText(index), self.window.solver_combo.itemData(index))
             for index in range(self.window.solver_combo.count())
         ]
         self.assertEqual(
             choices,
-            [("Fast", "fast"), ("Optimize", "optimize"), ("Compare", "compare")],
+            [
+                ("Fast", "fast"),
+                ("Optimize", "optimize"),
+                ("Compare", "compare"),
+                ("CP-SAT", "cpsat"),
+            ],
         )
         self.window.solver_combo.setCurrentIndex(0)
         self.assertFalse(self.window.time_limit.isEnabled())
+        self.assertFalse(self.window.objective_combo.isEnabled())
+        self.assertFalse(self.window.weight_limit_checkbox.isEnabled())
         self.assertIn("Quick", self.window.mode_help.text())
         self.window.solver_combo.setCurrentIndex(1)
         self.assertTrue(self.window.time_limit.isEnabled())
+        self.assertFalse(self.window.objective_combo.isEnabled())
         self.assertIn("search budget", self.window.time_limit.toolTip())
         self.assertIn("safely retains Fast", self.window.mode_help.text())
+        self.window.solver_combo.setCurrentIndex(3)
+        self.assertTrue(self.window.objective_combo.isEnabled())
+        self.assertTrue(self.window.weight_limit_checkbox.isEnabled())
+        self.window.objective_combo.setCurrentIndex(1)
+        self.window.weight_limit_checkbox.setChecked(True)
+        self.assertTrue(self.window.max_total_weight.isEnabled())
+        self.assertTrue(self.window.weight_unit_edit.isEnabled())
+        self.window.solver_combo.setCurrentIndex(0)
+        self.assertEqual(self.window.objective_combo.currentData(), "packed_volume")
+        self.assertFalse(self.window.weight_limit_checkbox.isChecked())
+        self.assertFalse(self.window.max_total_weight.isEnabled())
+
+    def test_weighted_instance_save_model_round_trip(self):
+        weighted = load_json(ROOT / "tests" / "data" / "weighted_objectives.instance.json")
+        self.window._apply_instance(weighted)
+        self.assertEqual(self.window.solver_combo.currentData(), "cpsat")
+        self.assertTrue(self.window.weight_limit_checkbox.isChecked())
+        self.assertEqual(self.window.weight_unit_edit.text(), "g")
+        self.assertEqual(self.window.max_total_weight.value(), 6)
+        self.assertEqual(self.window._current_instance(), weighted)
+
+    def test_large_weight_capacity_is_not_clamped(self):
+        weighted = load_json(ROOT / "tests" / "data" / "weighted_objectives.instance.json")
+        weighted["max_total_weight"] = 30_000_000
+        self.window._apply_instance(weighted)
+        self.assertEqual(self.window.max_total_weight.maximum(), 2_147_483_647)
+        self.assertEqual(self.window.max_total_weight.value(), 30_000_000)
+        self.assertEqual(self.window._current_instance(), weighted)
+
+    def test_weighted_data_without_capacity_survives_round_trip(self):
+        weighted = load_json(ROOT / "tests" / "data" / "weighted_objectives.instance.json")
+        del weighted["max_total_weight"]
+        self.window._apply_instance(weighted)
+        self.assertFalse(self.window.weight_limit_checkbox.isChecked())
+        self.assertEqual(self.window._current_instance(), weighted)
+
+    def test_legacy_instance_round_trip_does_not_invent_weight_data(self):
+        legacy = load_example("benchmark-tiny-two-cubes")
+        self.window._apply_instance(legacy)
+        rebuilt = self.window._current_instance()
+        self.assertEqual(rebuilt, legacy)
+        self.assertNotIn("weight_unit", rebuilt)
+        self.assertNotIn("max_total_weight", rebuilt)
+        self.assertTrue(all("weight" not in item for item in rebuilt["box_types"]))
 
     def test_editing_input_clears_stale_results_and_visualization(self):
         stale = SolverRunResult(

@@ -9,16 +9,23 @@ Fast heuristic packing and CP-SAT optimization for axis-aligned 3D container loa
 - **Fast — Greedy Portfolio-IG:** deterministic, independently validated, low-latency packing.
 - **Optimize — Hybrid Optimize:** validates the Fast solution, uses it as a CP-SAT hint with aggregate-volume tightening, validates the CP-SAT candidate, and returns the better valid result.
 - **Compare:** runs Fast and Optimize on the same canonical instance and reports the packed-volume gain and additional optimization effort.
-- **Standalone CP-SAT backend:** an OR-Tools model with selection, orientation, non-overlap, and correct `FEASIBLE`/`OPTIMAL` status handling.
+- **Standalone CP-SAT:** an OR-Tools model with selectable packed-volume or packed-box-count objectives, optional total cargo weight capacity, and honest `FEASIBLE`/`OPTIMAL` status handling.
 - **Interactive desktop GUI:** PySide6 with background solving, Matplotlib 3D visualization, result details, and canonical solution export.
 - **Reproducible benchmarks:** deterministic internal cases, fixed-seed distributional data, and all 700 Bischoff–Ratcliff OR-Library instances.
 - **Independent validator:** every selected result is checked for identity, orientation, bounds, and non-overlap.
 
 ## Quick Start
 
+For command-line solvers, validation, and benchmarks:
+
 ```cmd
 python -m pip install -r requirements.txt
-python -m pip install -r requirements-gui.txt    # GUI only
+```
+
+For the desktop GUI, install the GUI requirements instead; they include the core requirements:
+
+```cmd
+python -m pip install -r requirements-gui.txt
 ```
 
 Run a solver on a canonical instance:
@@ -40,15 +47,29 @@ Run tests:
 python -m unittest discover -s tests -v
 ```
 
-CP-SAT requires a working native OR-Tools runtime; a dedicated virtual environment is recommended. The large precompiled OR-Tools C++ SDK is not vendored.
+Independently recheck a committed fixture solution:
+
+```cmd
+python validate_solution.py --json tests/data/two_cubes.instance.json tests/data/two_cubes.valid.solution.json
+```
+
+Export a small deterministic, label-free learning dataset:
+
+```cmd
+python -m learning.export_dataset --output learning_exports/internal.jsonl --families internal --limit 10
+```
+
+Greedy execution compiles `Bin_packing_3D.cpp` and therefore requires `g++` with C++17 support (or an explicit compatible compiler via `--cxx`). CP-SAT requires a working native OR-Tools runtime; a dedicated virtual environment is recommended. The large precompiled OR-Tools C++ SDK is not vendored.
+Optional legacy notebook/data-analysis conveniences are listed in `requirements-research.txt`; TensorFlow is deliberately excluded because the unfinished RL notebook is unsupported.
 
 ## Desktop GUI
 
-The PySide6 application accepts canonical instances and provides three user-facing modes:
+The PySide6 application accepts canonical instances and provides four user-facing modes:
 
 - **Fast:** run validated Portfolio-IG for low-latency packing.
 - **Optimize:** run Portfolio-IG, validate it, seed CP-SAT with that solution, enable the aggregate-volume bound, validate the CP-SAT candidate, and retain the better valid result. A tie, `UNKNOWN`, backend failure, invalid candidate, or lack of improvement retains the valid Portfolio result.
 - **Compare:** show Fast beside the final Optimize result for the same instance, including gain and additional optimization effort. The Fast candidate is reused rather than recomputed.
+- **CP-SAT:** run the standalone solver with either a packed-volume objective or packed-box-count objective and, optionally, an integer total cargo weight capacity.
 
 Solving runs in a background worker so the interface remains responsive. The **Optimize time** setting is the CP-SAT search budget, not a strict end-to-end deadline: Portfolio construction, model/setup work, validation, and orchestration add a small amount of elapsed time.
 
@@ -57,6 +78,12 @@ On Windows, use the bundled launchers:
 ```cmd
 Launch_GUI.bat          # normal
 Launch_GUI_Debug.bat    # with console output
+```
+
+On any supported platform, the direct entry point is:
+
+```cmd
+python -m gui.app
 ```
 
 The launchers prefer a repository-local `.venv`, then Python on `PATH`; `GUI_PYTHONW` or `GUI_PYTHON` can select a specific interpreter. Research-only model switches are not exposed in the GUI.
@@ -78,9 +105,11 @@ Portfolio-IG -> validate -> CP-SAT hint + aggregate-volume bound
 
 Exact packed-volume ties retain Portfolio deterministically. If a valid Portfolio fallback exists, orchestration prevents the selected Hybrid result from having lower packed volume than that fallback. This is not an approximation ratio, a guarantee that CP-SAT improves Portfolio, or a proof of global optimality.
 
-### CP-SAT backend
+### Standalone CP-SAT
 
-The standalone OR-Tools model uses per-box selection Booleans, exactly-one orientation logic, integer coordinates, container boundaries, pairwise separating-axis non-overlap, and a maximum-packed-volume objective. A time-limited `FEASIBLE` result is a validated incumbent; only `OPTIMAL` proves optimality.
+The standalone OR-Tools model uses per-box selection Booleans, exactly-one orientation logic, integer coordinates, container boundaries, and pairwise separating-axis non-overlap. **Maximize packed volume** maximizes total selected box volume; **maximize packed box count** maximizes the number of selected physical boxes without a secondary volume tie-break. A time-limited `FEASIBLE` result is a validated incumbent; only `OPTIMAL` proves optimality.
+
+Canonical instances may optionally declare a top-level integer `max_total_weight` and `weight_unit`, with a positive integer `weight` on every box type. CP-SAT then enforces `sum(weight_i * selected_i) <= max_total_weight`, and the independent validator recomputes selected weight from box IDs. There is no implicit zero weight. Use a finer integer unit for fractional real-world values—for example, represent 1.25 kg as 1250 g. This is only a scalar cargo-capacity constraint: it does not model center of gravity, balance, structural or floor loading, support, stability, axle load, stacking strength, or unloading order.
 
 Direct cold CP-SAT remains available through the CLI and research runners. Its low-level hint and aggregate-volume options keep their existing opt-in defaults; Hybrid Optimize enables both deliberately inside its orchestration.
 
@@ -92,7 +121,7 @@ The repository includes three benchmark families:
 - **Distributional:** 60 fixed-seed generated instances (`benchmarks/distributional/`).
 - **External:** all 700 Bischoff–Ratcliff instances from OR-Library (`benchmarks/external/orlib_br/`).
 
-Runs record canonical solutions, independent validation, solver metadata, Git provenance, and machine-readable JSON/CSV summaries. Reference runs require a clean Git worktree by default; `--allow-dirty` records a source-state digest.
+Runs record canonical solutions, independent validation, solver metadata, Git provenance, and machine-readable JSON/CSV summaries. Reference runs require a clean Git worktree by default; `--allow-dirty` records a source-state digest. Generated `results/` directories are Git-ignored and are not expected to exist in a fresh clone.
 
 ## Research Findings
 
@@ -116,7 +145,7 @@ In the controlled 46-instance Hybrid campaign (28 internal, 11 preselected distr
 
 For experimental methodology, results, negative findings, and the decisions that led to this architecture, see [Experiments and Research Findings](docs/experiments_and_findings.md).
 
-Developer references: [Architecture](docs/architecture.md), [Learning Framework](docs/ml_framework.md), and [Roadmap](docs/roadmap.md). The learning package is data/feature infrastructure only; no trained ML or RL policy is part of Fast, Optimize, or Compare.
+Developer references: [Architecture](docs/architecture.md), [Learning Framework](docs/ml_framework.md), [Roadmap](docs/roadmap.md), [Release Checklist](docs/release_checklist.md), and [Draft v1.0.0 Release Notes](docs/release_notes_v1.0.0-draft.md). The learning package is data/feature infrastructure only; no trained ML or RL policy is part of Fast, Optimize, or Compare.
 
 ## Component Status
 
@@ -129,7 +158,7 @@ Developer references: [Architecture](docs/architecture.md), [Learning Framework]
 
 **Backend / research capability**
 
-- Standalone cold CP-SAT and the direct historical Greedy baseline.
+- Standalone CP-SAT with volume/count objective selection and optional total weight capacity, plus the direct historical Greedy baseline.
 - Portfolio-HIG.
 - Individual Portfolio-hint and aggregate-volume controls; both remain opt-in in the low-level CP-SAT API.
 - Label-free learning feature/dataset infrastructure, isolated from solver behavior.
@@ -184,11 +213,11 @@ Tests
 
 Earlier C++ prototypes and the historical CP-SAT notebook are preserved for attribution and reproducibility. `historical_artifacts.md` classifies legacy outputs by provenance. The notebook's 55-box / 87.7007% packing was independently validated as feasible but not proven optimal; legacy utilization comparisons without raw data are not treated as reproducible benchmarks.
 
-The unfinished reinforcement-learning notebook is preserved for development history only. It is not part of the validated solver stack, and no RL performance claim is made.
+The unfinished reinforcement-learning notebook and root `test.py` TensorFlow environment probe are preserved for development history only. They are not part of the validated solver stack or supported test command, and no RL performance claim is made.
 
 ## Scope and Limitations
 
-The model does not include support/stability, weight, balance, load-bearing strength, unloading order, or routing constraints. Future work may add stronger exact formulations, support-aware constraints, and learning-guided search; any learning component must first be completed and independently evaluated.
+The model does not include support/stability, balance, center of gravity, load-bearing strength, floor or axle loading, unloading order, or routing constraints. Optional total cargo weight is only a scalar capacity. Future work may add stronger exact formulations, support-aware constraints, and learning-guided search; any learning component must first be completed and independently evaluated.
 
 ## External Attribution
 

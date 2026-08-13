@@ -464,7 +464,8 @@ Closed means the current evidence does not justify production complexity. The re
 ## 18. Open questions / future work
 
 - Stronger exact formulations and bounds that are evaluated one change at a time.
-- Support, stability, weight, balance, load-bearing, and unloading-order constraints.
+- Support, stability, weight distribution and balance, load-bearing, and
+  unloading-order constraints beyond the supported scalar total cargo weight capacity.
 - Broader external validation with explicitly matched feasible-set semantics.
 - Adaptive budget policies for Hybrid Optimize based on instance/model size.
 - Parallel or diversified exact search, evaluated separately from the deterministic one-worker baseline.
