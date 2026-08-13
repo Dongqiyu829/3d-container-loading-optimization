@@ -1,162 +1,131 @@
 # 3D Container Loading Optimization
 
-A reproducible research and engineering framework for axis-aligned 3D container loading. The repository combines canonical instance and solution formats, independent geometric validation, deterministic Greedy policies and portfolios, OR-Tools CP-SAT optimization, a local desktop GUI, and controlled benchmark experiments.
-
-The project studies solution quality and solver/search behavior separately. It includes deterministic internal benchmarks, fixed-seed distributional benchmarks, and external Bischoff-Ratcliff instances from OR-Library.
-
-> **Status:** active experimental framework. The validated Greedy Portfolio-IG, normal CP-SAT solver, validator, benchmark infrastructure, and GUI are usable. Research switches and notebooks have the narrower statuses documented below.
+Fast heuristic packing and CP-SAT optimization for axis-aligned 3D container loading, with independent geometric validation, desktop visualization, and reproducible benchmarks.
 
 ![CP-SAT packing example](assets/cp_sat_packing_example.png)
 
-## Problem and canonical data
+## Highlights
 
-Given a rectangular container and candidate rectangular boxes, select boxes, orientations, and integer `(x, y, z)` coordinates so that every selected box stays inside the container and no two boxes overlap. The default objective is maximum packed volume.
+- **Fast validated Greedy Portfolio-IG** — deterministic, independently checked, and designed for low-latency packing.
+- **CP-SAT optimization** — OR-Tools model with selection, orientation, and non-overlap constraints, with optimality proofs when reached.
+- **Experimental hybrid pipeline** — Portfolio solution hint + aggregate-volume tightening for CP-SAT.
+- **Interactive desktop GUI** — PySide6 with Matplotlib 3D visualization and side-by-side comparison.
+- **Reproducible benchmarks** — deterministic internal suite, fixed-seed distributional data, and all 700 Bischoff-Ratcliff OR-Library instances.
+- **Independent validator** — every solver output is checked for identity, orientation, bounds, and non-overlap.
 
-Canonical JSON schemas define:
-
-- container dimensions;
-- box type and physical box identities, dimensions, quantities, and allowed axis-aligned orientations;
-- selected box IDs, orientations, coordinates, and realized dimensions in solutions.
-
-`validate_solution.py` independently checks identity, legal orientations, container boundaries, pairwise non-overlap, packed volume, and utilization. Selection is optional by design: candidate boxes not selected by a solver may be absent from a solution.
-
-## User-facing solvers
-
-### Greedy Portfolio-IG
-
-The GUI's fast Greedy path is a deterministic sequential portfolio:
-
-```text
-planar-inclusive + geometry-first
-    -> independently validate both solutions
-    -> select the valid solution with maximum packed volume
-```
-
-This is `portfolio-ig` in `greedy_portfolio.py`. A fixed documented priority resolves equal-volume ties. The larger research portfolio, Portfolio-HIG, also includes the historical policy; it was slightly more robust in the project experiments but has higher latency.
-
-The historical, planar-inclusive, and geometry-first Greedy policies are complementary on the tested benchmark families. Every portfolio constituent is independently validated before it can be selected. The external evaluation covers all 700 Bischoff-Ratcliff OR-Library instances. These empirical results do not imply optimality or generalization to every industrial loading distribution.
-
-For reproducibility, the direct Greedy baseline API and `run_solver.py --solver greedy` keep the historical placement behavior. Portfolio-IG is the preferred user-facing fast solver; the historical direct path is not the GUI default.
-
-### OR-Tools CP-SAT
-
-The CP-SAT model uses:
-
-- an optional-selection Boolean for each physical box;
-- allowed-orientation Boolean variables and exactly-one-if-selected logic;
-- realized dimensions and integer placement coordinates;
-- container boundary constraints;
-- pairwise non-overlap through separating-axis alternatives;
-- a maximum-packed-volume objective by default.
-
-Solver statuses are preserved. A time-limited `FEASIBLE` result is a validated incumbent, not a proof of optimality; only `OPTIMAL` means OR-Tools proved the optimum. Runs without a feasible incumbent do not emit a fake solution.
-
-### Hybrid Greedy to CP-SAT
-
-Portfolio-IG can provide a validated feasible packing as an optional CP-SAT solution hint. Controlled experiments show that this mainly helps obtain strong incumbents earlier. It does not consistently improve CP-SAT upper bounds or proof progress, and it does not guarantee a better final result. Warm starting therefore stays an explicit experimental/backend capability rather than unconditional GUI behavior.
-
-### Optional aggregate-volume tightening
-
-The CP-SAT backend can optionally add the valid redundant inequality
-
-```text
-sum_i(box_volume_i * selected_i) <= container_volume
-```
-
-Containment, non-overlap, and orientation-invariant box volume make this inequality valid for the current model. It can materially tighten the raw solver bound when candidate volume exceeds container volume, especially when combined with a strong Portfolio incumbent. `benchmark-medium-mixed-24` demonstrated this complementary primal/dual effect. The option defaults to off, and the experiments do not show that it improves every finite-cutoff incumbent.
-
-## Desktop GUI
-
-The PySide6 desktop application provides:
-
-- canonical instance entry and loading;
-- **Greedy Portfolio**, **CP-SAT**, and **Compare Both** runs;
-- independent validation and side-by-side metrics;
-- interactive Matplotlib 3D packing visualization;
-- canonical solution JSON saving;
-- a Portfolio metadata sidecar when a Greedy portfolio solution is saved.
-
-On the configured Windows environment, launch with:
+## Quick Start
 
 ```cmd
-Launch_GUI.bat
+python -m pip install -r requirements.txt
+python -m pip install -r requirements-gui.txt    # GUI only
 ```
 
-For a visible console and diagnostic output:
+Run a solver on a canonical instance:
 
 ```cmd
-Launch_GUI_Debug.bat
+python run_solver.py --solver greedy --instance benchmarks/instances/benchmark-tiny-two-cubes.json
+python run_solver.py --solver cpsat  --instance benchmarks/instances/benchmark-tiny-two-cubes.json --time-limit 10 --workers 1 --random-seed 0
 ```
 
-The launchers explicitly use `C:\Users\dongqiyu\anaconda3\envs\ortools_env`. GUI dependencies are pinned separately in `requirements-gui.txt`. Research-only model switches are not exposed as normal GUI controls.
-
-## Command-line use
-
-Run either baseline from the same canonical instance and write a new canonical solution plus metadata sidecar:
-
-```cmd
-python run_solver.py --solver greedy --instance benchmarks\instances\benchmark-tiny-two-cubes.json
-python run_solver.py --solver cpsat --instance benchmarks\instances\benchmark-tiny-two-cubes.json --time-limit 10 --workers 1 --random-seed 0
-```
-
-Run the committed internal benchmark suite with non-overwriting result storage:
+Run the internal benchmark suite (non-overwriting results):
 
 ```cmd
 python benchmark.py --solver all --time-limit 10 --workers 1 --random-seed 0
 ```
 
-Benchmark runs record canonical solutions, independent validation, solver metadata, runtime terminology, Git provenance, and machine-readable JSON/CSV summaries. By default, reference benchmark runs require a clean Git worktree; `--allow-dirty` explicitly permits a run and records a source-state digest.
-
-Use the dedicated OR-Tools environment for CP-SAT on this machine:
+Run tests:
 
 ```cmd
-C:\Users\dongqiyu\anaconda3\envs\ortools_env\python.exe run_solver.py --solver cpsat --instance benchmarks\instances\benchmark-tiny-two-cubes.json --time-limit 10 --workers 1 --random-seed 0
+python -m unittest discover -s tests -v
 ```
 
-## Research findings and negative results
+CP-SAT requires a working native OR-Tools runtime; a dedicated virtual environment is recommended. The large precompiled OR-Tools C++ SDK is not vendored.
 
-Controlled experiments keep incumbent quality, objective bounds/proof progress, search counters, solver time, and end-to-end time distinct. A key result is that exploring fewer branches does not necessarily produce a better finite-time incumbent.
+## Desktop GUI
 
-- **Universal box-level incompatibility cuts:** the geometric criterion is valid, but there were zero opportunities among 6,927,817 physical pairs across the current 788-instance audit corpus. It is not production-enabled.
-- **Orientation-pair incompatibility:** only 117 genuine incompatible canonical orientation-pair combinations affecting 14 physical pairs were found among 146,168,337 combinations. None occurred in the 700 BR instances, and no physical pair was universally incompatible. This tightening was not pursued.
-- **Identical-copy symmetry:** quantity-expanded copies are extensively interchangeable. Simple manual selection-prefix constraints can sharply reduce branches, but often damage incumbent-improvement trajectories; forward and reverse representative orders are search-sensitive. The option remains research-only and default-off. Deeper manual coordinate or lexicographic symmetry breaking is not currently justified.
-- **OR-Tools built-in symmetry processing:** a controlled no-prefix deterministic-time ablation compared `symmetry_level` 0, 1, and 2 over 46 representative internal, distributional, and BR instances, for cold and Portfolio-hinted runs. Levels 1 and 2 produced identical deterministic outcomes and exposed counters throughout this campaign. Level 0 had mixed incumbent and proof effects, including both wins and losses, with no consistent advantage. The project therefore keeps OR-Tools' level-2 default and exposes no normal user setting.
+The PySide6 application supports instance entry, **Greedy Portfolio**, **CP-SAT**, and **Compare Both** runs, independent validation, interactive 3D visualization, and canonical solution JSON export.
 
-These are empirical findings on the stated corpus and budgets. They do not change the mathematical guarantees of the formulation or establish universal solver behavior.
-
-## Reproducibility
-
-The repository uses:
-
-- versioned canonical instance and solution schemas;
-- an independent validator shared by all solver pipelines;
-- deterministic benchmark generation and fixed seeds where appropriate;
-- explicit solver configuration and model fingerprints;
-- non-overwriting experiment result directories;
-- per-run Git commit, dirty-state, and source digest provenance;
-- authoritative OR-Library source hashes and `-text` line-ending protection for raw BR files;
-- separate raw solver bounds and problem-specific physical upper bounds;
-- separate solver-core and end-to-end runtime measurements.
-
-The internal suite is defined by `benchmarks/suite.json`; fixed-seed distributional data and its generation configuration live under `benchmarks/distributional/`. The OR-Library source manifest, license, hashes, and conversion rules live under `benchmarks/external/orlib_br/`.
-
-Expensive full-dataset prevalence and research campaigns are intentionally opt-in rather than part of every ordinary development test run. For example, the orientation-incompatibility audit is reproduced explicitly with:
+On Windows, use the bundled launchers:
 
 ```cmd
-C:\Users\dongqiyu\anaconda3\envs\ortools_env\python.exe orientation_incompatibility_audit.py --run-id <unique-run-id>
+Launch_GUI.bat          # normal
+Launch_GUI_Debug.bat    # with console output
 ```
 
-## Tests
+The `.bat` files are configured for a local Windows environment; edit them to point at your own Python interpreter if needed. Research-only model switches are not exposed in the GUI.
 
-Run the normal suite with the working OR-Tools interpreter:
+## Solver Modes
 
-```cmd
-C:\Users\dongqiyu\anaconda3\envs\ortools_env\python.exe -m unittest discover -s tests -v
+### Fast — Greedy Portfolio-IG
+
+A deterministic sequential portfolio of `planar-inclusive` and `geometry-first` policies. Both solutions are independently validated and the higher-volume valid result is returned (fixed tie-break priority). This is the GUI's fast solver and the recommended default for quick packing.
+
+The larger research portfolio, Portfolio-HIG, additionally includes the historical policy; it was slightly more robust in experiments but has higher latency.
+
+### Optimize — CP-SAT
+
+The OR-Tools CP-SAT model uses per-box selection Booleans, exactly-one orientation logic, integer coordinates, container boundary constraints, pairwise separating-axis non-overlap, and a maximum-packed-volume objective. Solver statuses are preserved: a time-limited `FEASIBLE` result is a validated incumbent, not a proof of optimality; only `OPTIMAL` is proven optimal.
+
+### Experimental — Hybrid Greedy to CP-SAT
+
+Portfolio-IG can feed a validated feasible packing as an optional CP-SAT solution hint. Controlled experiments show this mainly improves early incumbent quality; it does not consistently improve upper bounds or guarantee a better final result. The optional aggregate-volume inequality
+
+```text
+sum_i(box_volume_i * selected_i) <= container_volume
 ```
 
-The normal suite contains fast validator, solver-pipeline, GUI-model, benchmark, metadata, and focused research correctness tests. Long all-dataset research scans have explicit runners instead.
+can materially tighten the solver bound when candidate volume exceeds container volume, especially with a strong Portfolio incumbent. Both warm start and volume tightening default to off and remain backend experimental capabilities.
 
-## Repository structure
+## Benchmarks
+
+The repository includes three benchmark families:
+
+- **Internal** — committed deterministic instances (`benchmarks/suite.json`).
+- **Distributional** — fixed-seed generated instances (`benchmarks/distributional/`).
+- **External** — all 700 Bischoff-Ratcliff instances from OR-Library (`benchmarks/external/orlib_br/`).
+
+Each run records canonical solutions, independent validation, solver metadata, Git provenance, and machine-readable JSON/CSV summaries. Reference runs require a clean Git worktree by default; `--allow-dirty` records a source-state digest.
+
+## Research Findings
+
+Extensive controlled experiments found no production-worthy manual symmetry or incompatibility cuts, so OR-Tools' built-in symmetry processing is kept at its default. Two positive results stand out:
+
+- **Greedy Portfolio-IG** is fast, robust across benchmark families, and independently validated.
+- **Portfolio hint + aggregate-volume bound** gives complementary primal/dual improvement in CP-SAT (stronger incumbent and tighter bound).
+
+<details>
+<summary>Detailed negative results</summary>
+
+- **Universal box-level incompatibility:** valid geometric criterion, but zero opportunities among 6,927,817 physical pairs across 788 instances. Not production-enabled.
+- **Orientation-pair incompatibility:** only 117 genuine incompatible orientation-pair combinations (affecting 14 physical pairs) among 146,168,337 combinations; none in the 700 BR instances. Not pursued.
+- **Manual selection-prefix symmetry:** sharply reduces branches but often damages incumbent-improvement trajectories; forward/reverse orders are search-sensitive. Research-only, default-off.
+- **Built-in `symmetry_level` ablation (0/1/2, 46 instances, cold and hinted runs):** levels 1 and 2 identical throughout; level 0 has mixed wins and losses with no consistent advantage. Project retains the level-2 default.
+
+</details>
+
+These are empirical findings on the stated corpus and budgets; they do not change the formulation's mathematical guarantees.
+
+## Component Status
+
+**User-facing / stable**
+
+- Portfolio-IG as the GUI fast solver.
+- CP-SAT with OR-Tools' default symmetry processing.
+- Independent validator, canonical formats, benchmark infrastructure, and GUI.
+
+**Experimental**
+
+- Portfolio-to-CP-SAT solution hints.
+- Aggregate-volume tightening (off by default).
+
+**Research-only / reproducibility**
+
+- Manual selection-prefix symmetry (off by default, not recommended).
+- Historical Greedy modes (kept for reproducibility; `run_solver.py --solver greedy` preserves the historical default).
+- Universal box-level and orientation-pair incompatibility cuts (negative results).
+- Overriding OR-Tools' default `symmetry_level` (not supported by the completed ablation).
+
+## Repository Structure
 
 ```text
 Core solving
@@ -189,59 +158,16 @@ Tests
   tests/data/                   hand-verifiable canonical fixtures
 ```
 
-Earlier C++ prototypes, the historical CP-SAT script/notebook, and preserved output artifacts remain in place for attribution and reproducibility.
+## Historical Notes
 
-## Component status
+Earlier C++ prototypes and the historical CP-SAT notebook are preserved for attribution and reproducibility. `historical_artifacts.md` classifies legacy outputs by provenance. The notebook's 55-box / 87.7007% packing was independently validated as feasible but not proven optimal; legacy utilization comparisons without raw data are not treated as reproducible benchmarks.
 
-**Production / user-facing**
+An unfinished reinforcement-learning exploration notebook is preserved for development history only and is not part of the validated solver stack; no RL performance claim is made.
 
-- Portfolio-IG as the GUI fast solver;
-- normal no-prefix CP-SAT with OR-Tools' default symmetry processing;
-- independent validation, canonical formats, benchmark infrastructure, and GUI.
+## Scope and Limitations
 
-**Available but experimental**
+The current geometric model does not include support/stability, weight, balance, load-bearing strength, unloading order, or routing constraints. Future work may add stronger exact formulations, support-aware constraints, and learning-guided search — any learning component must be completed and independently evaluated before presentation as a solver.
 
-- Portfolio-to-CP-SAT solution hints;
-- aggregate-volume tightening (`False` by default);
-- manual selection-prefix symmetry (`False` by default and not recommended as a production default);
-- direct historical Greedy modes and controlled experiment runners.
+## External Attribution
 
-**Research negative result / not recommended**
-
-- universal box-level incompatibility injection on the current corpus;
-- orientation-pair incompatibility tightening on the current corpus;
-- manual prefix symmetry as a production default;
-- deeper manual symmetry breaking without new evidence;
-- overriding OR-Tools' default `symmetry_level` based on the completed ablation.
-
-## Historical and unfinished work
-
-Historical files are preserved rather than silently rewritten. `historical_artifacts.md` distinguishes independently validated records, geometric-only checks, unknown provenance, and unsupported claims. In particular, the notebook's 55-box / 87.7007% CP-SAT packing was independently validated as feasible but not proven optimal; other legacy utilization comparisons without raw supporting data are not treated as reproducible benchmarks.
-
-`Reinforce_learning_bin_packing.ipynb` is an **unfinished exploratory notebook**. Its related CSV and image are development remnants, not implemented or benchmarked reinforcement-learning results. No RL performance claim is made by this project.
-
-![RL development visualization](assets/rl_training_demo.png)
-
-## Installation
-
-Backend dependencies are listed in `requirements.txt`:
-
-```cmd
-python -m pip install -r requirements.txt
-```
-
-GUI dependencies are pinned separately:
-
-```cmd
-python -m pip install -r requirements-gui.txt
-```
-
-The large precompiled OR-Tools C++ SDK is intentionally not vendored. The active CP-SAT Python environment must have a working native OR-Tools runtime; on this repository's configured machine, Anaconda base is not suitable and `ortools_env` is used explicitly.
-
-## Scope and future work
-
-The current geometric model does not include support/stability, weight, balance, load-bearing strength, unloading order, or routing constraints. Promising future work includes stronger exact formulations with isolated validation, better finite-time search diagnostics, support-aware loading constraints, and learning-guided search. Any learning component must first be completed and independently evaluated before it is presented as a solver.
-
-## External attribution
-
-The Bischoff-Ratcliff datasets are sourced from J. E. Beasley's OR-Library and attributed to E. E. Bischoff and M. S. W. Ratcliff, *Issues in the Development of Approaches to Container Loading*, OMEGA 23(4), 1995, 377-390. See `benchmarks/external/orlib_br/source_manifest.json` and `benchmarks/external/orlib_br/LICENSE-ORLIB.txt` for authoritative URLs, hashes, retrieval metadata, and license text.
+The Bischoff-Ratcliff datasets are sourced from J. E. Beasley's OR-Library and attributed to E. E. Bischoff and M. S. W. Ratcliff, *Issues in the Development of Approaches to Container Loading*, OMEGA 23(4), 1995, 377-390. See `benchmarks/external/orlib_br/source_manifest.json` and `benchmarks/external/orlib_br/LICENSE-ORLIB.txt` for authoritative URLs, hashes, and license text.
