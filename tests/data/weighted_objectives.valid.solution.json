@@ -1,0 +1,28 @@
+{
+  "format_version": "1.0",
+  "instance_id": "test-weighted-objectives",
+  "placements": [
+    {
+      "box_id": "small-001",
+      "orientation": "LWH",
+      "position": {"x": 0, "y": 0, "z": 0},
+      "dimensions": {"length": 2, "width": 1, "height": 1}
+    },
+    {
+      "box_id": "small-002",
+      "orientation": "LWH",
+      "position": {"x": 2, "y": 0, "z": 0},
+      "dimensions": {"length": 2, "width": 1, "height": 1}
+    },
+    {
+      "box_id": "small-003",
+      "orientation": "LWH",
+      "position": {"x": 0, "y": 1, "z": 0},
+      "dimensions": {"length": 2, "width": 1, "height": 1}
+    }
+  ],
+  "metrics": {
+    "packed_volume": 6,
+    "utilization": 0.75
+  }
+}
