@@ -42,6 +42,12 @@ models/
 *.h5
 *.keras
 *.ckpt
+*.pt
+*.pth
+*.onnx
+learning_exports/
+learning_outputs/
+training_logs/
 
 # ============================================
 # Generated output
