@@ -29,6 +29,12 @@ jobs:
             requirements.txt
             requirements-gui.txt
 
+      - name: Install system runtime libraries for PySide6
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            libegl1 libgl1 libopengl0
+
       - name: Install core and GUI dependencies
         run: |
           python -m pip install --upgrade pip
