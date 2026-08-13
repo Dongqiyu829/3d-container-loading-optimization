@@ -1,0 +1,8 @@
+# Optional legacy notebook and data-analysis conveniences.
+# TensorFlow is intentionally excluded: the unfinished RL notebook is not supported.
+-r requirements.txt
+pandas
+numpy
+matplotlib
+openpyxl
+jupyter
