@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      QT_QPA_PLATFORM: offscreen
+      MPLBACKEND: Agg
+      PYTHONUNBUFFERED: "1"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-gui.txt
+
+      - name: Install system runtime libraries for PySide6
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            libegl1 libgl1 libopengl0
+
+      - name: Install core and GUI dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-gui.txt
+          python -m pip check
+
+      - name: Compile Python sources
+        run: python -m compileall -q .
+
+      - name: Check core imports
+        run: >-
+          python -c "import baseline_common, greedy_baseline, cpsat_baseline,
+          hybrid_optimizer, validate_solution, benchmark, gui.app, learning"
+
+      - name: Run unit and integration tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Compile Greedy backend
+        run: >-
+          g++ -std=c++17 -O2 Bin_packing_3D.cpp
+          -o "${RUNNER_TEMP}/Bin_packing_3D-ci"
+
+      - name: Run and independently validate tiny Greedy smoke
+        run: |
+          python run_solver.py \
+            --solver greedy \
+            --instance benchmarks/instances/benchmark-tiny-two-cubes.json \
+            --greedy-executable "${RUNNER_TEMP}/Bin_packing_3D-ci" \
+            --output "${RUNNER_TEMP}/tiny-greedy.solution.json" \
+            --metadata-output "${RUNNER_TEMP}/tiny-greedy.metadata.json"
+          python validate_solution.py --json \
+            benchmarks/instances/benchmark-tiny-two-cubes.json \
+            "${RUNNER_TEMP}/tiny-greedy.solution.json"

@@ -8,9 +8,11 @@
 - Reproducible historical Greedy and standalone CP-SAT execution paths.
 - Validated Greedy Portfolio-IG/Portfolio-HIG orchestration.
 - Hybrid Optimize with validated Portfolio fallback, CP-SAT hinting, aggregate-volume tightening, and strict best-valid selection.
-- PySide6 Fast / Optimize / Compare desktop interface with background solving and 3D visualization.
+- PySide6 Fast / Optimize / Compare / standalone CP-SAT desktop interface with background solving and 3D visualization.
+- Standalone CP-SAT packed-volume/packed-box-count objective selection and optional independently validated integer total cargo weight capacity.
 - Deterministic internal, fixed-seed distributional, and OR-Library BR benchmark infrastructure.
 - Lightweight `learning_features_v1` extraction, dataset, split, label-provenance, interface, and export scaffold for future research.
+- GitHub Actions CI for Python 3.12 tests, offscreen GUI coverage, core imports, and a validated C++ Greedy smoke.
 
 ### Research
 
@@ -27,3 +29,4 @@
 - Curated experiment findings and engineering decisions.
 - Architecture, learning-framework, and roadmap documentation.
 - Historical-artifact provenance classification.
+- Practical release checklist and draft v1.0.0 release notes.

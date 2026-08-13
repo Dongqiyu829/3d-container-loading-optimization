@@ -16,6 +16,7 @@ class CanonicalBox:
     type_id: str
     dimensions: tuple[int, int, int]
     allowed_orientations: tuple[str, ...]
+    weight: int | None = None
 
     @property
     def volume(self) -> int:
@@ -28,6 +29,8 @@ class CanonicalInstance:
     container: tuple[int, int, int]
     boxes: tuple[CanonicalBox, ...]
     raw: Mapping[str, Any]
+    weight_unit: str | None = None
+    max_total_weight: int | None = None
 
     @property
     def container_volume(self) -> int:
@@ -86,6 +89,7 @@ def load_instance(path: str | Path) -> CanonicalInstance:
                     type_id=box_type["type_id"],
                     dimensions=dimensions,  # type: ignore[arg-type]
                     allowed_orientations=allowed,
+                    weight=box_type.get("weight"),
                 )
             )
 
@@ -94,6 +98,8 @@ def load_instance(path: str | Path) -> CanonicalInstance:
         container=container,  # type: ignore[arg-type]
         boxes=tuple(boxes),
         raw=raw,
+        weight_unit=raw.get("weight_unit"),
+        max_total_weight=raw.get("max_total_weight"),
     )
 
 

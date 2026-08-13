@@ -11,6 +11,7 @@ from PySide6.QtCore import Qt, QThreadPool
 from PySide6.QtGui import QCloseEvent
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QCheckBox,
     QComboBox,
     QDoubleSpinBox,
     QFileDialog,
@@ -139,9 +140,17 @@ class MainWindow(QMainWindow):
 
         box_group = QGroupBox("Box types")
         box_layout = QVBoxLayout(box_group)
-        self.box_table = QTableWidget(0, 6)
+        self.box_table = QTableWidget(0, 7)
         self.box_table.setHorizontalHeaderLabels(
-            ["Type ID", "Length", "Width", "Height", "Quantity", "Allowed orientations"]
+            [
+                "Type ID",
+                "Length",
+                "Width",
+                "Height",
+                "Quantity",
+                "Allowed orientations",
+                "Weight",
+            ]
         )
         self.box_table.horizontalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.ResizeToContents
@@ -172,6 +181,7 @@ class MainWindow(QMainWindow):
         self.solver_combo.addItem("Fast", "fast")
         self.solver_combo.addItem("Optimize", "optimize")
         self.solver_combo.addItem("Compare", "compare")
+        self.solver_combo.addItem("CP-SAT", "cpsat")
         self.solver_combo.currentIndexChanged.connect(self._update_cpsat_controls)
         solver_form.addRow("Selection", self.solver_combo)
         self.mode_help = QLabel()
@@ -186,7 +196,7 @@ class MainWindow(QMainWindow):
             "CP-SAT search budget. Fast Portfolio and validation add a small amount "
             "of end-to-end time."
         )
-        solver_form.addRow("Optimize time", self.time_limit)
+        solver_form.addRow("CP-SAT time limit", self.time_limit)
         budget_note = QLabel(
             "Optimize time is the CP-SAT search budget; total elapsed time may be longer."
         )
@@ -200,6 +210,27 @@ class MainWindow(QMainWindow):
         self.random_seed.setRange(0, 2_147_483_647)
         self.random_seed.setValue(0)
         solver_form.addRow("CP-SAT random seed", self.random_seed)
+        self.objective_combo = QComboBox()
+        self.objective_combo.addItem("Maximize packed volume", "packed_volume")
+        self.objective_combo.addItem("Maximize packed box count", "packed_box_count")
+        solver_form.addRow("Objective", self.objective_combo)
+        self.weight_limit_checkbox = QCheckBox("Enforce total weight limit")
+        self.weight_limit_checkbox.toggled.connect(self._update_cpsat_controls)
+        solver_form.addRow("Weight", self.weight_limit_checkbox)
+        self.max_total_weight = QSpinBox()
+        self.max_total_weight.setRange(1, 2_147_483_647)
+        self.max_total_weight.setValue(1)
+        solver_form.addRow("Maximum total weight", self.max_total_weight)
+        self.weight_unit_edit = QLineEdit("g")
+        self.weight_unit_edit.setToolTip(
+            "Use one explicit integer unit consistently. For example, enter 1250 g instead of 1.25 kg."
+        )
+        solver_form.addRow("Weight unit", self.weight_unit_edit)
+        weight_note = QLabel(
+            "Scalar cargo capacity only; this does not model balance, support, stability, or structural loading."
+        )
+        weight_note.setWordWrap(True)
+        solver_form.addRow("", weight_note)
         layout.addWidget(solver_group)
 
         self.run_button = QPushButton("Run")
@@ -275,11 +306,17 @@ class MainWindow(QMainWindow):
             str(row.height if row else 2),
             str(row.quantity if row else 1),
             ",".join(row.allowed_orientations if row else CANONICAL_ORIENTATIONS),
+            str(row.weight) if row and row.weight is not None else "",
         )
         for column, value in enumerate(values):
             item = QTableWidgetItem(value)
             if column == 0 and row is not None and row.box_ids is not None:
                 item.setData(Qt.ItemDataRole.UserRole, list(row.box_ids))
+            if column == 6 and not (
+                self.solver_combo.currentData() == "cpsat"
+                and self.weight_limit_checkbox.isChecked()
+            ):
+                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.box_table.setItem(row_index, column, item)
 
     def _remove_selected_types(self) -> None:
@@ -300,6 +337,10 @@ class MainWindow(QMainWindow):
         ):
             editor.valueChanged.connect(self._input_changed)
         self.box_table.itemChanged.connect(self._input_changed)
+        self.objective_combo.currentIndexChanged.connect(self._input_changed)
+        self.weight_limit_checkbox.toggled.connect(self._input_changed)
+        self.max_total_weight.valueChanged.connect(self._input_changed)
+        self.weight_unit_edit.textEdited.connect(self._input_changed)
 
     def _input_changed(self, *_args: object) -> None:
         if self._active_worker is not None or not self._results:
@@ -318,6 +359,10 @@ class MainWindow(QMainWindow):
 
     def _read_box_rows(self) -> list[BoxTypeRow]:
         rows: list[BoxTypeRow] = []
+        weight_required = (
+            self.solver_combo.currentData() == "cpsat"
+            and self.weight_limit_checkbox.isChecked()
+        )
         for row_index in range(self.box_table.rowCount()):
             try:
                 dimensions_and_quantity = [
@@ -329,6 +374,19 @@ class MainWindow(QMainWindow):
                 ) from exc
             type_item = self.box_table.item(row_index, 0)
             stored_ids = type_item.data(Qt.ItemDataRole.UserRole) if type_item else None
+            weight = None
+            weight_text = self._table_text(row_index, 6)
+            if weight_text:
+                try:
+                    weight = int(weight_text)
+                except ValueError as exc:
+                    raise GuiInputError(
+                        f"Box row {row_index + 1}: weight must be an integer."
+                    ) from exc
+            elif weight_required:
+                raise GuiInputError(
+                    f"Box row {row_index + 1}: weight is required when the weight limit is enabled."
+                )
             rows.append(
                 BoxTypeRow(
                     type_id=self._table_text(row_index, 0),
@@ -342,11 +400,18 @@ class MainWindow(QMainWindow):
                         if token.strip()
                     ),
                     box_ids=tuple(stored_ids) if stored_ids is not None else None,
+                    weight=weight,
                 )
             )
         return rows
 
     def _current_instance(self) -> dict[str, Any]:
+        weight_enabled = (
+            self.solver_combo.currentData() == "cpsat"
+            and self.weight_limit_checkbox.isChecked()
+        )
+        rows = self._read_box_rows()
+        weight_data_present = any(row.weight is not None for row in rows)
         return build_canonical_instance(
             instance_id=self.instance_id_edit.text(),
             container=(
@@ -354,8 +419,14 @@ class MainWindow(QMainWindow):
                 self.container_width.value(),
                 self.container_height.value(),
             ),
-            rows=self._read_box_rows(),
+            rows=rows,
             units=self._units,
+            weight_unit=(
+                self.weight_unit_edit.text()
+                if weight_enabled or weight_data_present
+                else None
+            ),
+            max_total_weight=self.max_total_weight.value() if weight_enabled else None,
         )
 
     def _apply_instance(self, instance_data: dict[str, Any]) -> None:
@@ -372,6 +443,15 @@ class MainWindow(QMainWindow):
         self.box_table.setRowCount(0)
         for row in rows_from_instance(instance_data):
             self._add_type_row(row)
+        self.weight_unit_edit.setText(instance_data.get("weight_unit", "g"))
+        if instance_data.get("max_total_weight") is not None:
+            cpsat_index = self.solver_combo.findData("cpsat")
+            self.solver_combo.setCurrentIndex(cpsat_index)
+            self.max_total_weight.setValue(instance_data["max_total_weight"])
+            self.weight_limit_checkbox.setChecked(True)
+        else:
+            self.weight_limit_checkbox.setChecked(False)
+        self._update_cpsat_controls()
         self._instance_data = instance_data
         self._results.clear()
         self.result_selector.clear()
@@ -495,10 +575,29 @@ class MainWindow(QMainWindow):
 
     def _update_cpsat_controls(self) -> None:
         selection = self.solver_combo.currentData()
-        enabled = selection in ("optimize", "compare")
+        enabled = selection in ("optimize", "compare", "cpsat")
         self.time_limit.setEnabled(enabled)
         self.worker_count.setEnabled(enabled)
         self.random_seed.setEnabled(enabled)
+        standalone_cpsat = selection == "cpsat"
+        self.objective_combo.setEnabled(standalone_cpsat)
+        if not standalone_cpsat:
+            self.objective_combo.setCurrentIndex(
+                self.objective_combo.findData("packed_volume")
+            )
+            self.weight_limit_checkbox.setChecked(False)
+        self.weight_limit_checkbox.setEnabled(standalone_cpsat)
+        weight_enabled = standalone_cpsat and self.weight_limit_checkbox.isChecked()
+        self.max_total_weight.setEnabled(weight_enabled)
+        self.weight_unit_edit.setEnabled(weight_enabled)
+        for row_index in range(self.box_table.rowCount()):
+            item = self.box_table.item(row_index, 6)
+            if item is None:
+                continue
+            if weight_enabled:
+                item.setFlags(item.flags() | Qt.ItemFlag.ItemIsEditable)
+            else:
+                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
         descriptions = {
             "fast": "Quick independently validated packing.",
             "optimize": (
@@ -508,6 +607,9 @@ class MainWindow(QMainWindow):
             "compare": (
                 "Runs Fast and Optimize on the same instance and compares their "
                 "validated results."
+            ),
+            "cpsat": (
+                "Runs standalone CP-SAT with a volume or box-count objective and an optional scalar total-weight capacity."
             ),
         }
         self.mode_help.setText(descriptions.get(selection, ""))
@@ -544,6 +646,7 @@ class MainWindow(QMainWindow):
             time_limit_seconds=self.time_limit.value(),
             worker_count=self.worker_count.value(),
             random_seed=self.random_seed.value(),
+            objective_kind=self.objective_combo.currentData(),
         )
         worker.signals.status.connect(self._solver_status)
         worker.signals.finished.connect(self._solver_finished)

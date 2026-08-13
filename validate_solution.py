@@ -41,6 +41,9 @@ class ValidationResult:
     container_volume: int
     utilization: float
     placement_count: int
+    packed_weight: int | None = None
+    max_total_weight: int | None = None
+    weight_unit: str | None = None
 
     @property
     def valid(self) -> bool:
@@ -53,6 +56,7 @@ class _BoxDefinition:
     type_id: str
     dimensions: tuple[int, int, int]
     allowed_orientations: frozenset[str]
+    weight: int | None
 
 
 @dataclass(frozen=True)
@@ -152,6 +156,23 @@ def validate_solution(
         issue = ValidationIssue("invalid_solution", "solution must be a JSON object")
         return ValidationResult((issue,), 0, 0, 0.0, 0)
 
+    allowed_instance_properties = {
+        "format_version",
+        "instance_id",
+        "units",
+        "container",
+        "box_types",
+        "weight_unit",
+        "max_total_weight",
+    }
+    for property_name in sorted(set(instance) - allowed_instance_properties):
+        issues.append(
+            ValidationIssue(
+                "unknown_instance_property",
+                f"instance contains unsupported property {property_name!r}",
+            )
+        )
+
     if instance.get("format_version") != FORMAT_VERSION:
         issues.append(
             ValidationIssue(
@@ -183,6 +204,44 @@ def validate_solution(
     )
     container_volume = math.prod(container_dimensions) if container_dimensions else 0
 
+    weight_unit_declared = "weight_unit" in instance
+    if weight_unit_declared:
+        raw_weight_unit = instance["weight_unit"]
+        if not isinstance(raw_weight_unit, str) or not raw_weight_unit.strip():
+            issues.append(
+                ValidationIssue(
+                    "invalid_weight_unit",
+                    "instance.weight_unit must be a non-empty string when present",
+                )
+            )
+            weight_unit = None
+        else:
+            weight_unit = raw_weight_unit
+    else:
+        weight_unit = None
+    weight_limit_declared = "max_total_weight" in instance
+    if weight_limit_declared:
+        raw_max_total_weight = instance["max_total_weight"]
+        if not _is_int(raw_max_total_weight) or raw_max_total_weight <= 0:
+            issues.append(
+                ValidationIssue(
+                    "invalid_max_total_weight",
+                    "instance.max_total_weight must be a positive integer when present",
+                )
+            )
+            max_total_weight = None
+        else:
+            max_total_weight = raw_max_total_weight
+    else:
+        max_total_weight = None
+    if weight_limit_declared and not weight_unit_declared:
+        issues.append(
+            ValidationIssue(
+                "missing_weight_unit",
+                "instance.weight_unit is required when max_total_weight is present",
+            )
+        )
+
     box_definitions: dict[str, _BoxDefinition] = {}
     seen_type_ids: set[str] = set()
     box_types = instance.get("box_types")
@@ -196,6 +255,22 @@ def validate_solution(
             issues.append(ValidationIssue("invalid_box_type", f"{location} must be an object"))
             continue
 
+        allowed_box_type_properties = {
+            "type_id",
+            "dimensions",
+            "quantity",
+            "box_ids",
+            "allowed_orientations",
+            "weight",
+        }
+        for property_name in sorted(set(box_type) - allowed_box_type_properties):
+            issues.append(
+                ValidationIssue(
+                    "unknown_box_type_property",
+                    f"{location} contains unsupported property {property_name!r}",
+                )
+            )
+
         type_id = box_type.get("type_id")
         if not isinstance(type_id, str) or not type_id:
             issues.append(ValidationIssue("missing_type_id", f"{location}.type_id is required"))
@@ -205,6 +280,35 @@ def validate_solution(
         seen_type_ids.add(type_id)
 
         dimensions = _positive_dimensions(box_type.get("dimensions"), f"{location}.dimensions", issues)
+
+        if "weight" in box_type:
+            raw_weight = box_type["weight"]
+            if not _is_int(raw_weight) or raw_weight <= 0:
+                issues.append(
+                    ValidationIssue(
+                        "invalid_box_weight",
+                        f"{location}.weight must be a positive integer when present",
+                    )
+                )
+                weight = None
+            else:
+                weight = raw_weight
+        else:
+            weight = None
+        if weight_limit_declared and "weight" not in box_type:
+            issues.append(
+                ValidationIssue(
+                    "missing_box_weight",
+                    f"{location}.weight is required when max_total_weight is present",
+                )
+            )
+        if weight is not None and not weight_unit_declared and not weight_limit_declared:
+            issues.append(
+                ValidationIssue(
+                    "missing_weight_unit",
+                    f"instance.weight_unit is required because {location}.weight is present",
+                )
+            )
 
         quantity = box_type.get("quantity")
         if not _is_int(quantity) or quantity <= 0:
@@ -259,6 +363,7 @@ def validate_solution(
                     type_id,
                     dimensions,
                     frozenset(allowed_set),
+                    weight,
                 )
 
     raw_placements = solution.get("placements")
@@ -269,6 +374,8 @@ def validate_solution(
     placements: list[_Placement] = []
     selected_box_ids: set[str] = set()
     packed_volume = 0
+    packed_weight = 0
+    packed_weight_known = True
 
     for index, raw in enumerate(raw_placements):
         location = f"solution.placements[{index}]"
@@ -287,6 +394,10 @@ def validate_solution(
         definition = box_definitions.get(box_id)
         if definition is None:
             issues.append(ValidationIssue("unknown_box_id", f"box_id {box_id!r} is not declared by the instance"))
+        elif definition.weight is None:
+            packed_weight_known = False
+        else:
+            packed_weight += definition.weight
 
         orientation = raw.get("orientation")
         if orientation not in ORIENTATION_AXES:
@@ -341,6 +452,19 @@ def validate_solution(
                 )
 
     utilization = packed_volume / container_volume if container_volume else 0.0
+    computed_packed_weight = packed_weight if packed_weight_known else None
+    if (
+        weight_limit_declared
+        and max_total_weight is not None
+        and computed_packed_weight is not None
+        and computed_packed_weight > max_total_weight
+    ):
+        issues.append(
+            ValidationIssue(
+                "weight_limit_exceeded",
+                f"packed weight {computed_packed_weight} exceeds maximum total weight {max_total_weight} {weight_unit or ''}".rstrip(),
+            )
+        )
     metrics = solution.get("metrics")
     if not isinstance(metrics, Mapping):
         issues.append(ValidationIssue("missing_metrics", "solution.metrics is required"))
@@ -389,6 +513,9 @@ def validate_solution(
         container_volume,
         utilization,
         len(raw_placements),
+        computed_packed_weight,
+        max_total_weight,
+        weight_unit,
     )
 
 
@@ -406,6 +533,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         "packed_volume": result.packed_volume,
         "container_volume": result.container_volume,
         "utilization": result.utilization,
+        "packed_weight": result.packed_weight,
+        "max_total_weight": result.max_total_weight,
+        "weight_unit": result.weight_unit,
         "issues": [issue.__dict__ for issue in result.issues],
     }
 

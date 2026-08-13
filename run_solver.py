@@ -67,9 +67,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         parser.error("--random-seed must be non-negative")
     if args.solver == "greedy" and (args.workers is not None or args.random_seed is not None):
         parser.error("--workers and --random-seed apply only to CP-SAT")
+    if args.solver == "greedy" and args.objective != "volume":
+        parser.error("--objective count applies only to CP-SAT")
 
     try:
         instance = load_instance(args.instance)
+        if args.solver == "greedy" and instance.max_total_weight is not None:
+            raise ValueError(
+                "the Greedy baseline does not support max_total_weight; use CP-SAT"
+            )
         output = (args.output or _default_output(instance.instance_id, args.solver)).resolve()
         metadata_path = (
             args.metadata_output.resolve() if args.metadata_output else _metadata_path(output)

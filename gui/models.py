@@ -37,6 +37,7 @@ class BoxTypeRow:
     quantity: int
     allowed_orientations: tuple[str, ...]
     box_ids: tuple[str, ...] | None = None
+    weight: int | None = None
 
 
 @dataclass(frozen=True)
@@ -85,6 +86,8 @@ def build_canonical_instance(
     container: tuple[int, int, int],
     rows: Sequence[BoxTypeRow],
     units: str = "arbitrary_unit",
+    weight_unit: str | None = None,
+    max_total_weight: int | None = None,
 ) -> dict[str, Any]:
     instance_id = instance_id.strip()
     units = units.strip()
@@ -99,6 +102,12 @@ def build_canonical_instance(
         raise GuiInputError("Container length, width, and height must be positive integers.")
     if not rows:
         raise GuiInputError("Add at least one box type.")
+    if max_total_weight is not None:
+        if not isinstance(max_total_weight, int) or isinstance(max_total_weight, bool) or max_total_weight <= 0:
+            raise GuiInputError("Maximum total weight must be a positive integer.")
+        if weight_unit is None or not weight_unit.strip():
+            raise GuiInputError("Weight unit is required when the weight limit is enabled.")
+        weight_unit = weight_unit.strip()
 
     box_types: list[dict[str, Any]] = []
     seen_type_ids: set[str] = set()
@@ -130,8 +139,7 @@ def build_canonical_instance(
             duplicate = sorted(duplicates or {item for item in box_ids if box_ids.count(item) > 1})[0]
             raise GuiInputError(f"Duplicate box ID: {duplicate!r}.")
         seen_box_ids.update(box_ids)
-        box_types.append(
-            {
+        box_type = {
                 "type_id": type_id,
                 "dimensions": {
                     "length": row.length,
@@ -142,9 +150,19 @@ def build_canonical_instance(
                 "box_ids": box_ids,
                 "allowed_orientations": list(orientations),
             }
-        )
+        if row.weight is not None:
+            if not isinstance(row.weight, int) or isinstance(row.weight, bool) or row.weight <= 0:
+                raise GuiInputError(
+                    f"Box type {type_id!r}: weight must be a positive integer."
+                )
+            box_type["weight"] = row.weight
+        elif max_total_weight is not None:
+            raise GuiInputError(
+                f"Box type {type_id!r}: weight is required when the weight limit is enabled."
+            )
+        box_types.append(box_type)
 
-    return {
+    result = {
         "format_version": "1.0",
         "instance_id": instance_id,
         "units": units,
@@ -155,6 +173,13 @@ def build_canonical_instance(
         },
         "box_types": box_types,
     }
+    if any(row.weight is not None for row in rows):
+        if weight_unit is None or not weight_unit.strip():
+            raise GuiInputError("Weight unit is required when box weights are present.")
+        result["weight_unit"] = weight_unit.strip()
+    if max_total_weight is not None:
+        result["max_total_weight"] = max_total_weight
+    return result
 
 
 def rows_from_instance(instance: Mapping[str, Any]) -> list[BoxTypeRow]:
@@ -170,6 +195,7 @@ def rows_from_instance(instance: Mapping[str, Any]) -> list[BoxTypeRow]:
                 quantity=box_type["quantity"],
                 allowed_orientations=tuple(box_type["allowed_orientations"]),
                 box_ids=tuple(box_type["box_ids"]),
+                weight=box_type.get("weight"),
             )
         )
     return rows
@@ -215,6 +241,7 @@ def execute_backends(
     time_limit_seconds: float = 10.0,
     worker_count: int = 1,
     random_seed: int = 0,
+    objective_kind: str = "packed_volume",
     status_callback: Callable[[str], None] | None = None,
     compiler: str | None = None,
 ) -> list[SolverRunResult]:
@@ -224,7 +251,15 @@ def execute_backends(
     aliases = {"greedy": "fast", "all": "compare"}
     selection = aliases.get(selection, selection)
     if selection not in ("fast", "optimize", "compare", "cpsat"):
-        raise GuiInputError("Solver must be Fast, Optimize, or Compare.")
+        raise GuiInputError("Solver must be Fast, Optimize, Compare, or CP-SAT.")
+    if objective_kind not in ("packed_volume", "packed_box_count"):
+        raise GuiInputError("Objective must be packed_volume or packed_box_count.")
+    if selection != "cpsat" and objective_kind != "packed_volume":
+        raise GuiInputError("Packed-box-count objective is supported only by standalone CP-SAT.")
+    if selection != "cpsat" and instance_data.get("max_total_weight") is not None:
+        raise GuiInputError(
+            "Total weight capacity is supported only by standalone CP-SAT."
+        )
     if time_limit_seconds <= 0:
         raise GuiInputError("CP-SAT time limit must be positive.")
     if worker_count <= 0:
@@ -316,13 +351,13 @@ def execute_backends(
         elif selection == "compare":
             results.append(run_fast())
             results.append(run_optimize())
-        else:  # retained backend/research access; not exposed by the GUI
+        else:
             callback("Running standalone cold CP-SAT...")
             started = time.perf_counter()
             solution, metadata = run_cpsat(
                 instance,
                 time_limit_seconds=time_limit_seconds,
-                maximize_volume=True,
+                maximize_volume=objective_kind == "packed_volume",
                 num_search_workers=worker_count,
                 random_seed=random_seed,
             )
@@ -453,6 +488,11 @@ def format_result_details(result: SolverRunResult) -> str:
                 f"{result.metadata.get('incremental_hybrid_runtime_seconds', 0.0):.6f} s"
             )
     if result.solver == "cpsat":
+        objective_kind = result.metadata.get("objective_kind", "packed_volume")
+        objective_label = (
+            "packed volume" if objective_kind == "packed_volume" else "packed box count"
+        )
+        lines.append(f"Objective: maximize {objective_label}")
         raw_bound = result.metadata.get("raw_solver_best_bound")
         raw_absolute_gap = result.metadata.get("raw_solver_absolute_gap")
         raw_relative_gap = result.metadata.get("raw_solver_relative_gap")
@@ -464,7 +504,7 @@ def format_result_details(result: SolverRunResult) -> str:
         )
         objective = result.metadata.get("objective_value")
         if raw_bound is not None:
-            lines.append(f"Raw solver best bound: {raw_bound:g}")
+            lines.append(f"Raw solver best bound ({objective_label}): {raw_bound:g}")
         if raw_absolute_gap is not None:
             lines.append(f"Raw solver absolute gap: {raw_absolute_gap:g}")
         if raw_relative_gap is not None:
@@ -472,7 +512,7 @@ def format_result_details(result: SolverRunResult) -> str:
         if physical_bound is not None:
             lines.append(f"Physical volume upper bound: {physical_bound:g}")
         if effective_bound is not None:
-            lines.append(f"Effective upper bound: {effective_bound:g}")
+            lines.append(f"Effective upper bound ({objective_label}): {effective_bound:g}")
         if effective_absolute_gap is not None:
             lines.append(f"Effective absolute gap: {effective_absolute_gap:g}")
         if effective_normalized_gap is not None:
@@ -480,8 +520,23 @@ def format_result_details(result: SolverRunResult) -> str:
                 "Effective incumbent-normalized gap: "
                 f"{effective_normalized_gap:.6f}"
             )
-        if objective is not None and effective_bound is not None:
-            lines.append(f"Certified interval: {objective:g} <= OPT <= {effective_bound:g}")
+        certified_upper_bound = effective_bound if effective_bound is not None else raw_bound
+        if objective is not None and certified_upper_bound is not None:
+            lines.append(
+                f"Certified interval ({objective_label}): "
+                f"{objective:g} <= OPT <= {certified_upper_bound:g}"
+            )
+        if validation.packed_weight is not None and validation.weight_unit is not None:
+            lines.extend(
+                [
+                    f"Packed weight: {validation.packed_weight} {validation.weight_unit}",
+                ]
+            )
+            if validation.max_total_weight is not None:
+                lines.append(
+                    f"Maximum total weight: {validation.max_total_weight} "
+                    f"{validation.weight_unit}"
+                )
     if validation.issues:
         lines.append("Validation issues:")
         lines.extend(f"- {issue.code}: {issue.message}" for issue in validation.issues)
@@ -502,6 +557,8 @@ def result_sidecar_metadata(result: SolverRunResult) -> dict[str, Any] | None:
     if result.solver in ("fast", "greedy") and result.metadata.get("portfolio_id") is not None:
         return result.metadata
     if result.solver == "optimize" and result.metadata.get("hybrid_format_version") is not None:
+        return result.metadata
+    if result.solver == "cpsat":
         return result.metadata
     return None
 

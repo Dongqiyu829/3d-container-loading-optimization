@@ -27,7 +27,7 @@ from gui.models import (  # noqa: E402
     rows_from_instance,
     visualizable_solution,
 )
-from validate_solution import ValidationResult  # noqa: E402
+from validate_solution import ValidationResult, load_json  # noqa: E402
 
 
 class GuiInputConversionTests(unittest.TestCase):
@@ -90,6 +90,44 @@ class GuiInputConversionTests(unittest.TestCase):
         with self.assertRaisesRegex(GuiInputError, "must not contain duplicates"):
             parse_orientations("LWH,LWH")
 
+    def test_weighted_rows_round_trip_without_changing_legacy_defaults(self):
+        weighted = build_canonical_instance(
+            instance_id="weighted",
+            container=(4, 2, 1),
+            rows=[BoxTypeRow("box", 1, 1, 1, 2, ("LWH",), weight=3)],
+            weight_unit="g",
+            max_total_weight=6,
+        )
+        self.assertEqual(weighted["weight_unit"], "g")
+        self.assertEqual(weighted["max_total_weight"], 6)
+        self.assertEqual(weighted["box_types"][0]["weight"], 3)
+        self.assertEqual(rows_from_instance(weighted)[0].weight, 3)
+        legacy = build_canonical_instance(
+            instance_id="legacy",
+            container=(1, 1, 1),
+            rows=[BoxTypeRow("box", 1, 1, 1, 1, ("LWH",))],
+        )
+        self.assertNotIn("weight_unit", legacy)
+        self.assertNotIn("max_total_weight", legacy)
+        self.assertNotIn("weight", legacy["box_types"][0])
+
+    def test_active_weight_requires_unit_and_every_positive_integer_weight(self):
+        with self.assertRaisesRegex(GuiInputError, "Weight unit is required"):
+            build_canonical_instance(
+                instance_id="bad",
+                container=(1, 1, 1),
+                rows=[BoxTypeRow("box", 1, 1, 1, 1, ("LWH",), weight=1)],
+                max_total_weight=1,
+            )
+        with self.assertRaisesRegex(GuiInputError, "weight is required"):
+            build_canonical_instance(
+                instance_id="bad",
+                container=(1, 1, 1),
+                rows=[BoxTypeRow("box", 1, 1, 1, 1, ("LWH",))],
+                weight_unit="g",
+                max_total_weight=1,
+            )
+
 
 class ExampleLoadingTests(unittest.TestCase):
     def test_examples_come_from_committed_suite(self):
@@ -111,6 +149,7 @@ class GuiResultFormattingTests(unittest.TestCase):
         if solver == "cpsat":
             metadata.update(
                 {
+                    "objective_kind": "packed_volume",
                     "objective_value": 8.0,
                     "raw_solver_best_bound": 12.0,
                     "raw_solver_absolute_gap": 4.0,
@@ -135,7 +174,7 @@ class GuiResultFormattingTests(unittest.TestCase):
     def test_cpsat_feasible_result_shows_certified_interval_without_optimal_claim(self):
         text = format_result_details(self._result("cpsat", "FEASIBLE"))
         self.assertIn("Status: FEASIBLE", text)
-        self.assertIn("Certified interval: 8 <= OPT <= 12", text)
+        self.assertIn("Certified interval (packed volume): 8 <= OPT <= 12", text)
         self.assertNotIn("proven optimal", text.lower())
 
     def test_greedy_completed_is_not_formatted_as_optimal(self):
@@ -154,6 +193,46 @@ class GuiResultFormattingTests(unittest.TestCase):
         self.assertTrue(all(row["empty_fraction"] == 0.5 for row in rows))
         self.assertTrue(all("solver_core_runtime_seconds" in row for row in rows))
         self.assertTrue(all("end_to_end_runtime_seconds" in row for row in rows))
+
+    def test_count_bounds_are_labeled_as_box_count_not_volume(self):
+        result = self._result("cpsat", "FEASIBLE")
+        result.metadata["objective_kind"] = "packed_box_count"
+        result.metadata["objective_value"] = 1.0
+        result.metadata["raw_solver_best_bound"] = 2.0
+        for key in (
+            "physical_volume_upper_bound",
+            "effective_upper_bound",
+            "effective_absolute_gap",
+            "effective_incumbent_normalized_gap",
+        ):
+            result.metadata.pop(key, None)
+        text = format_result_details(result)
+        self.assertIn("Objective: maximize packed box count", text)
+        self.assertIn("Raw solver best bound (packed box count): 2", text)
+        self.assertIn("Certified interval (packed box count): 1 <= OPT <= 2", text)
+        self.assertNotIn("Physical volume upper bound", text)
+
+    def test_weight_display_uses_independent_validator_not_solver_metadata(self):
+        result = self._result("cpsat", "OPTIMAL")
+        result.metadata.update(
+            {
+                "weight_limit_enabled": True,
+                "packed_weight": 999,
+                "max_total_weight": 999,
+                "weight_unit": "wrong-unit",
+            }
+        )
+        object.__setattr__(
+            result,
+            "validation",
+            ValidationResult((), 6, 8, 0.75, 3, 6, 6, "g"),
+        )
+        text = format_result_details(result)
+        self.assertIn("Packed weight: 6 g", text)
+        self.assertIn("Maximum total weight: 6 g", text)
+        self.assertNotIn("999", text)
+        self.assertNotIn("wrong-unit", text)
+        self.assertEqual(result_sidecar_metadata(result)["packed_weight"], 999)
 
 
 class GuiPortfolioIntegrationTests(unittest.TestCase):
@@ -300,6 +379,45 @@ class GuiPortfolioIntegrationTests(unittest.TestCase):
         self.assertEqual(observed["time_limit_seconds"], 2.5)
         self.assertEqual(observed["num_search_workers"], 1)
         self.assertEqual(observed["random_seed"], 0)
+
+    def test_backend_guards_reject_count_or_weight_for_frozen_workflows(self):
+        with self.assertRaisesRegex(GuiInputError, "only by standalone CP-SAT"):
+            execute_backends(
+                self.instance_data,
+                "fast",
+                objective_kind="packed_box_count",
+            )
+        weighted = load_json(ROOT / "tests" / "data" / "weighted_objectives.instance.json")
+        for selection in ("fast", "optimize", "compare"):
+            with self.subTest(selection=selection), self.assertRaisesRegex(
+                GuiInputError, "only by standalone CP-SAT"
+            ):
+                execute_backends(weighted, selection)
+
+    def test_standalone_cpsat_receives_selected_count_objective(self):
+        observed = {}
+
+        def fake_cpsat(instance, **kwargs):
+            observed.update(kwargs)
+            return self._solution(instance), {
+                "solver_status": "OPTIMAL",
+                "solver_core_runtime_seconds": 0.01,
+                "objective_kind": "packed_box_count",
+                "objective_value": 2,
+                "raw_solver_best_bound": 2,
+                "weight_limit_enabled": False,
+            }
+
+        with patch("gui.models.run_cpsat", side_effect=fake_cpsat):
+            result = execute_backends(
+                self.instance_data,
+                "cpsat",
+                objective_kind="packed_box_count",
+            )[0]
+        self.assertFalse(observed["maximize_volume"])
+        self.assertEqual(result.solver, "cpsat")
+        self.assertTrue(result.validation.valid)
+        self.assertIs(result_sidecar_metadata(result), result.metadata)
 
     def test_winner_and_constituent_metadata_formatting(self):
         solution = {"format_version": "1.0", "placements": []}

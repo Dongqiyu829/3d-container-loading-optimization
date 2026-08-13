@@ -1,0 +1,38 @@
+{
+  "format_version": "1.0",
+  "instance_id": "test-weighted-objectives",
+  "units": "arbitrary_length_unit",
+  "weight_unit": "g",
+  "max_total_weight": 6,
+  "container": {
+    "length": 4,
+    "width": 2,
+    "height": 1
+  },
+  "box_types": [
+    {
+      "type_id": "large",
+      "dimensions": {
+        "length": 4,
+        "width": 2,
+        "height": 1
+      },
+      "quantity": 1,
+      "box_ids": ["large-001"],
+      "allowed_orientations": ["LWH"],
+      "weight": 10
+    },
+    {
+      "type_id": "small",
+      "dimensions": {
+        "length": 2,
+        "width": 1,
+        "height": 1
+      },
+      "quantity": 3,
+      "box_ids": ["small-001", "small-002", "small-003"],
+      "allowed_orientations": ["LWH"],
+      "weight": 2
+    }
+  ]
+}

@@ -34,9 +34,9 @@ The standalone CP-SAT path and Hybrid path share the same model builder. Hybrid 
 
 ### Canonical data and validation
 
-- `baseline_common.py` loads semantically valid canonical instances, expands physical box identities, builds canonical solutions, and provides non-overwriting JSON writes.
+- `baseline_common.py` loads semantically valid canonical instances, expands physical box identities and optional integer weights, builds canonical solutions, and provides non-overwriting JSON writes.
 - `schemas/` contains the backend-independent versioned instance and solution JSON schemas.
-- `validate_solution.py` independently verifies instance/solution identity, allowed orientations, realized dimensions, container bounds, pairwise non-overlap, packed volume, and utilization.
+- `validate_solution.py` independently verifies instance/solution identity, allowed orientations, realized dimensions, container bounds, pairwise non-overlap, packed volume/utilization, and optional total weight capacity.
 
 ### Greedy path
 
@@ -44,9 +44,9 @@ The standalone CP-SAT path and Hybrid path share the same model builder. Hybrid 
 - `greedy_baseline.py` converts canonical instances to that protocol, preserves physical IDs/type IDs/orientations, and converts output back to the canonical solution format.
 - `greedy_portfolio.py` runs validated Greedy constituents sequentially. Portfolio-IG evaluates planar-inclusive and geometry-first; Portfolio-HIG additionally evaluates historical. Selection is maximum validated packed volume with a fixed tie priority.
 
-### Exact and Hybrid paths
+### CP-SAT and Hybrid paths
 
-- `cpsat_baseline.py` owns the canonical OR-Tools CP-SAT formulation, solution extraction, solver-status semantics, optional solution hints, and opt-in aggregate-volume tightening. Research switches default off.
+- `cpsat_baseline.py` owns the canonical OR-Tools CP-SAT formulation, packed-volume/packed-box-count objectives, optional canonical total-weight capacity, solution extraction, solver-status semantics, optional solution hints, and opt-in aggregate-volume tightening. Research switches default off.
 - `hybrid_optimizer.py` runs/accepts Portfolio-IG, validates it, uses it as a CP-SAT hint with the aggregate-volume bound, validates the CP-SAT candidate, selects the better valid result, and validates the final selection.
 - `run_solver.py` is the common single-instance baseline CLI. Direct cold CP-SAT and the historical Greedy baseline remain available for reproducibility and backend use.
 
@@ -62,7 +62,7 @@ The standalone CP-SAT path and Hybrid path share the same model builder. Hybrid 
 
 - `gui/models.py` converts form data to canonical instances, invokes existing backend/orchestration APIs, formats user-facing results, and exposes only independently valid solutions for visualization.
 - `gui/worker.py` runs solver work in a Qt thread-pool worker and reports status, success, or failure through signals; it does not touch widgets.
-- `gui/main_window.py` owns Fast/Optimize/Compare controls, lifecycle state, result hierarchy, visualization selection, and canonical solution/metadata saving.
+- `gui/main_window.py` owns Fast/Optimize/Compare/CP-SAT controls, standalone objective/weight gating, lifecycle state, result hierarchy, visualization selection, and canonical solution/metadata saving.
 - `gui/visualization.py` renders only the canonical solution selected by `gui.models.visualizable_solution`.
 
 ### Future learning infrastructure
@@ -83,6 +83,7 @@ The standalone CP-SAT path and Hybrid path share the same model builder. Hybrid 
 10. Historical Greedy behavior remains available for reproducibility.
 11. With a valid Portfolio fallback, Hybrid selects CP-SAT only for strictly greater validated packed volume; exact ties retain Portfolio.
 12. Learning outputs cannot bypass canonical geometry or the independent validator.
+13. Fast, Optimize, and Compare are fixed packed-volume workflows and reject active weight limits; only standalone CP-SAT accepts count or weight controls.
 
 ## Failure semantics
 

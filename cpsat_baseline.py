@@ -332,6 +332,19 @@ def _build_cpsat_model(
             "aggregate_selected_volume_capacity"
         )
 
+    if instance.max_total_weight is not None:
+        if any(box.weight is None for box in boxes):
+            raise ValueError(
+                "every physical box must have a weight when max_total_weight is active"
+            )
+        selected_weight = sum(
+            selected[index] * boxes[index].weight  # type: ignore[operator]
+            for index in range(box_count)
+        )
+        model.Add(selected_weight <= instance.max_total_weight).WithName(
+            "total_cargo_weight_capacity"
+        )
+
     if maximize_volume:
         model.Maximize(selected_volume)
     else:
@@ -481,13 +494,19 @@ def run_cpsat(
         "time_limit_seconds": time_limit_seconds,
         "max_deterministic_time": max_deterministic_time,
         "objective": "packed_volume" if maximize_volume else "selected_box_count",
+        "objective_kind": "packed_volume" if maximize_volume else "packed_box_count",
+        "objective_unit": "volume" if maximize_volume else "box_count",
         "volume_bound_enabled": volume_bound,
+        "weight_limit_enabled": instance.max_total_weight is not None,
         "selection_prefix_symmetry_enabled": selection_prefix_symmetry,
         "model_variant": "baseline" + (
             "-plus-volume-bound" if volume_bound else ""
         ) + (
             "-plus-selection-prefix-symmetry"
             if selection_prefix_symmetry else ""
+        ) + (
+            "-plus-total-weight-capacity"
+            if instance.max_total_weight is not None else ""
         ),
         "model_build_runtime_seconds": model_build_runtime_seconds,
         "wall_time_seconds": solver.WallTime(),
@@ -525,6 +544,9 @@ def run_cpsat(
         metadata["effective_upper_bound"] = min(
             raw_solver_best_bound, physical_volume_upper_bound
         )
+    if instance.max_total_weight is not None:
+        metadata["max_total_weight"] = instance.max_total_weight
+        metadata["weight_unit"] = instance.weight_unit
     if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
         return None, metadata
 
@@ -568,11 +590,18 @@ def run_cpsat(
     metadata["raw_solver_absolute_gap"] = raw_solver_absolute_gap
     metadata["raw_solver_relative_gap"] = raw_solver_relative_gap
     metadata["selected_box_types"] = selected_box_types
+    metadata["selected_box_count"] = len(placements)
     solution = build_solution(instance, placements)
     packed_volume = solution["metrics"]["packed_volume"]
     metadata["container_empty_fraction"] = (
         instance.container_volume - packed_volume
     ) / instance.container_volume
+    if instance.max_total_weight is not None:
+        metadata["packed_weight"] = sum(
+            box.weight  # type: ignore[misc]
+            for box_index, box in enumerate(boxes)
+            if solver.Value(selected[box_index])
+        )
     if maximize_volume:
         metadata.update(
             calculate_volume_bound_metrics(

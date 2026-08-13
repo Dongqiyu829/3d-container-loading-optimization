@@ -1,0 +1,16 @@
+{
+  "format_version": "1.0",
+  "instance_id": "test-weighted-objectives",
+  "placements": [
+    {
+      "box_id": "large-001",
+      "orientation": "LWH",
+      "position": {"x": 0, "y": 0, "z": 0},
+      "dimensions": {"length": 4, "width": 2, "height": 1}
+    }
+  ],
+  "metrics": {
+    "packed_volume": 8,
+    "utilization": 1.0
+  }
+}

@@ -1,6 +1,1 @@
-ortools
-pandas
-numpy
-matplotlib
-openpyxl
-jupyter
+ortools==9.14.6206

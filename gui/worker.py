@@ -25,6 +25,7 @@ class SolverWorker(QRunnable):
         time_limit_seconds: float,
         worker_count: int,
         random_seed: int,
+        objective_kind: str = "packed_volume",
     ) -> None:
         super().__init__()
         self.instance_data = dict(instance_data)
@@ -32,6 +33,7 @@ class SolverWorker(QRunnable):
         self.time_limit_seconds = time_limit_seconds
         self.worker_count = worker_count
         self.random_seed = random_seed
+        self.objective_kind = objective_kind
         self.signals = WorkerSignals()
 
     @Slot()
@@ -43,6 +45,7 @@ class SolverWorker(QRunnable):
                 time_limit_seconds=self.time_limit_seconds,
                 worker_count=self.worker_count,
                 random_seed=self.random_seed,
+                objective_kind=self.objective_kind,
                 status_callback=self.signals.status.emit,
             )
         except BaseException as exc:
