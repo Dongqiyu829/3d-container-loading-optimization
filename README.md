@@ -10,7 +10,7 @@ The project studies solution quality and solver/search behavior separately. It i
 
 ## Problem and canonical data
 
-Given a rectangular container and candidate rectangular boxes, select boxes, orientations, and integer `(x, y, z)` coordinates that keep every selected box inside the container and prevent pairwise overlap. The normal optimization objective is maximum packed volume.
+Given a rectangular container and candidate rectangular boxes, select boxes, orientations, and integer `(x, y, z)` coordinates so that every selected box stays inside the container and no two boxes overlap. The default objective is maximum packed volume.
 
 Canonical JSON schemas define:
 
@@ -18,7 +18,7 @@ Canonical JSON schemas define:
 - box type and physical box identities, dimensions, quantities, and allowed axis-aligned orientations;
 - selected box IDs, orientations, coordinates, and realized dimensions in solutions.
 
-`validate_solution.py` independently checks identity, legal orientations, container boundaries, pairwise non-overlap, packed volume, and utilization. Optional selection is intentional: candidate boxes not selected by a solver may be absent from a solution.
+`validate_solution.py` independently checks identity, legal orientations, container boundaries, pairwise non-overlap, packed volume, and utilization. Selection is optional by design: candidate boxes not selected by a solver may be absent from a solution.
 
 ## User-facing solvers
 
@@ -34,9 +34,9 @@ planar-inclusive + geometry-first
 
 This is `portfolio-ig` in `greedy_portfolio.py`. A fixed documented priority resolves equal-volume ties. The larger research portfolio, Portfolio-HIG, also includes the historical policy; it was slightly more robust in the project experiments but has higher latency.
 
-The historical, planar-inclusive, and geometry-first Greedy policies are complementary on the tested benchmark families. Every portfolio constituent is independently validated before it is eligible for selection. The external evaluation covers all 700 Bischoff-Ratcliff OR-Library instances. These empirical results do not imply optimality or generalization to every industrial loading distribution.
+The historical, planar-inclusive, and geometry-first Greedy policies are complementary on the tested benchmark families. Every portfolio constituent is independently validated before it can be selected. The external evaluation covers all 700 Bischoff-Ratcliff OR-Library instances. These empirical results do not imply optimality or generalization to every industrial loading distribution.
 
-For reproducibility, the direct Greedy baseline API and `run_solver.py --solver greedy` retain the historical placement behavior. Portfolio-IG is the preferred user-facing fast solver; the historical direct path is not the GUI default.
+For reproducibility, the direct Greedy baseline API and `run_solver.py --solver greedy` keep the historical placement behavior. Portfolio-IG is the preferred user-facing fast solver; the historical direct path is not the GUI default.
 
 ### OR-Tools CP-SAT
 
@@ -53,7 +53,7 @@ Solver statuses are preserved. A time-limited `FEASIBLE` result is a validated i
 
 ### Hybrid Greedy to CP-SAT
 
-Portfolio-IG can provide a validated feasible packing as an optional CP-SAT solution hint. Controlled experiments show that this is primarily useful for obtaining strong incumbents earlier. It does not consistently improve CP-SAT upper bounds or proof progress, and it does not guarantee a better final result. Warm starting therefore remains an explicit experimental/backend capability rather than unconditional GUI behavior.
+Portfolio-IG can provide a validated feasible packing as an optional CP-SAT solution hint. Controlled experiments show that this mainly helps obtain strong incumbents earlier. It does not consistently improve CP-SAT upper bounds or proof progress, and it does not guarantee a better final result. Warm starting therefore stays an explicit experimental/backend capability rather than unconditional GUI behavior.
 
 ### Optional aggregate-volume tightening
 
@@ -120,7 +120,7 @@ Controlled experiments keep incumbent quality, objective bounds/proof progress, 
 - **Universal box-level incompatibility cuts:** the geometric criterion is valid, but there were zero opportunities among 6,927,817 physical pairs across the current 788-instance audit corpus. It is not production-enabled.
 - **Orientation-pair incompatibility:** only 117 genuine incompatible canonical orientation-pair combinations affecting 14 physical pairs were found among 146,168,337 combinations. None occurred in the 700 BR instances, and no physical pair was universally incompatible. This tightening was not pursued.
 - **Identical-copy symmetry:** quantity-expanded copies are extensively interchangeable. Simple manual selection-prefix constraints can sharply reduce branches, but often damage incumbent-improvement trajectories; forward and reverse representative orders are search-sensitive. The option remains research-only and default-off. Deeper manual coordinate or lexicographic symmetry breaking is not currently justified.
-- **OR-Tools built-in symmetry processing:** a controlled no-prefix deterministic-time ablation compared `symmetry_level` 0, 1, and 2 over 46 representative internal, distributional, and BR instances, for cold and Portfolio-hinted runs. Levels 1 and 2 produced identical deterministic outcomes and exposed counters throughout this campaign. Level 0 had mixed incumbent and proof effects, including both wins and losses, with no consistent advantage. The project therefore retains OR-Tools' level-2 default and exposes no normal user setting.
+- **OR-Tools built-in symmetry processing:** a controlled no-prefix deterministic-time ablation compared `symmetry_level` 0, 1, and 2 over 46 representative internal, distributional, and BR instances, for cold and Portfolio-hinted runs. Levels 1 and 2 produced identical deterministic outcomes and exposed counters throughout this campaign. Level 0 had mixed incumbent and proof effects, including both wins and losses, with no consistent advantage. The project therefore keeps OR-Tools' level-2 default and exposes no normal user setting.
 
 These are empirical findings on the stated corpus and budgets. They do not change the mathematical guarantees of the formulation or establish universal solver behavior.
 
@@ -165,30 +165,25 @@ Core solving
   greedy_portfolio.py           validated Portfolio-IG / Portfolio-HIG orchestration
   cpsat_baseline.py             canonical CP-SAT model, hints, and optional tightenings
   run_solver.py                 unified single-instance baseline CLI
-
 Validation and schemas
   validate_solution.py          independent solution validator
   baseline_common.py            canonical loading and shared helpers
   schemas/                      versioned instance and solution JSON schemas
   historical_artifacts.md       provenance classification for legacy outputs
-
 GUI
   gui/                          PySide6 application, worker, models, and 3D view
   Launch_GUI*.bat               normal and debug Windows launchers
   requirements-gui.txt          GUI-only dependency pins
-
 Benchmarks
   benchmark.py                  internal benchmark runner and result aggregation
   benchmarks/instances/         deterministic committed internal instances
   benchmarks/distributional/    fixed-seed generated benchmark family
   benchmarks/external/orlib_br/ OR-Library BR sources, adapter, manifest, and license
   external_br_benchmark.py      external evaluation runner
-
 Research experiments
   greedy_*benchmark.py          Greedy ablations, distributional studies, portfolios
   cpsat_*experiment.py          warm starts and controlled model/search experiments
   *_audit.py                    solver-independent prevalence and symmetry audits
-
 Tests
   tests/                        fast unit and integration tests
   tests/data/                   hand-verifiable canonical fixtures
