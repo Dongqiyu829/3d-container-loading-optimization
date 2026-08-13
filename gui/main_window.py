@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from PySide6.QtCore import Qt, QThreadPool
+from PySide6.QtGui import QCloseEvent
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QComboBox,
@@ -44,7 +45,8 @@ from gui.models import (
     list_examples,
     load_canonical_instance_file,
     load_example,
-    portfolio_sidecar_metadata,
+    optimize_completion_message,
+    result_sidecar_metadata,
     rows_from_instance,
     visualizable_solution,
 )
@@ -67,29 +69,30 @@ class MainWindow(QMainWindow):
         self._build_interface()
         self._populate_examples()
         self._add_type_row()
+        self._connect_input_change_signals()
         self.statusBar().showMessage("Ready")
 
     def _build_menu(self) -> None:
         file_menu = self.menuBar().addMenu("&File")
-        load_action = file_menu.addAction("Load canonical instance...")
-        load_action.triggered.connect(self._load_instance_dialog)
-        save_instance_action = file_menu.addAction("Save canonical instance...")
-        save_instance_action.triggered.connect(self._save_instance_dialog)
-        save_solution_action = file_menu.addAction("Save selected solution...")
-        save_solution_action.triggered.connect(self._save_solution_dialog)
+        self.load_instance_action = file_menu.addAction("Load canonical instance...")
+        self.load_instance_action.triggered.connect(self._load_instance_dialog)
+        self.save_instance_action = file_menu.addAction("Save canonical instance...")
+        self.save_instance_action.triggered.connect(self._save_instance_dialog)
+        self.save_solution_action = file_menu.addAction("Save selected solution...")
+        self.save_solution_action.triggered.connect(self._save_solution_dialog)
         file_menu.addSeparator()
-        exit_action = file_menu.addAction("Exit")
-        exit_action.triggered.connect(self.close)
+        self.exit_action = file_menu.addAction("Exit")
+        self.exit_action.triggered.connect(self.close)
 
     def _build_interface(self) -> None:
         root_splitter = QSplitter(Qt.Orientation.Horizontal)
         self.setCentralWidget(root_splitter)
 
-        input_scroll = QScrollArea()
-        input_scroll.setWidgetResizable(True)
-        input_scroll.setMinimumWidth(520)
-        input_scroll.setWidget(self._build_input_panel())
-        root_splitter.addWidget(input_scroll)
+        self.input_scroll = QScrollArea()
+        self.input_scroll.setWidgetResizable(True)
+        self.input_scroll.setMinimumWidth(520)
+        self.input_scroll.setWidget(self._build_input_panel())
+        root_splitter.addWidget(self.input_scroll)
 
         output_splitter = QSplitter(Qt.Orientation.Vertical)
         self.canvas = PackingCanvas()
@@ -166,17 +169,29 @@ class MainWindow(QMainWindow):
         solver_group = QGroupBox("Solver")
         solver_form = QFormLayout(solver_group)
         self.solver_combo = QComboBox()
-        self.solver_combo.addItem("Greedy Portfolio", "greedy")
-        self.solver_combo.addItem("CP-SAT", "cpsat")
-        self.solver_combo.addItem("Compare Both", "all")
+        self.solver_combo.addItem("Fast", "fast")
+        self.solver_combo.addItem("Optimize", "optimize")
+        self.solver_combo.addItem("Compare", "compare")
         self.solver_combo.currentIndexChanged.connect(self._update_cpsat_controls)
         solver_form.addRow("Selection", self.solver_combo)
+        self.mode_help = QLabel()
+        self.mode_help.setWordWrap(True)
+        solver_form.addRow("", self.mode_help)
         self.time_limit = QDoubleSpinBox()
         self.time_limit.setRange(0.01, 86400.0)
         self.time_limit.setDecimals(2)
-        self.time_limit.setValue(10.0)
+        self.time_limit.setValue(5.0)
         self.time_limit.setSuffix(" s")
-        solver_form.addRow("CP-SAT time limit", self.time_limit)
+        self.time_limit.setToolTip(
+            "CP-SAT search budget. Fast Portfolio and validation add a small amount "
+            "of end-to-end time."
+        )
+        solver_form.addRow("Optimize time", self.time_limit)
+        budget_note = QLabel(
+            "Optimize time is the CP-SAT search budget; total elapsed time may be longer."
+        )
+        budget_note.setWordWrap(True)
+        solver_form.addRow("", budget_note)
         self.worker_count = QSpinBox()
         self.worker_count.setRange(1, 256)
         self.worker_count.setValue(1)
@@ -206,7 +221,7 @@ class MainWindow(QMainWindow):
         layout.addLayout(selector_layout)
 
         tabs = QTabWidget()
-        self.comparison_table = QTableWidget(0, 8)
+        self.comparison_table = QTableWidget(0, 9)
         self.comparison_table.setHorizontalHeaderLabels(
             [
                 "Solver",
@@ -214,6 +229,7 @@ class MainWindow(QMainWindow):
                 "Packed boxes",
                 "Packed volume",
                 "Utilization",
+                "Empty fraction",
                 "Core runtime (s)",
                 "End-to-end (s)",
                 "Validation",
@@ -270,6 +286,31 @@ class MainWindow(QMainWindow):
         rows = sorted({index.row() for index in self.box_table.selectedIndexes()}, reverse=True)
         for row in rows:
             self.box_table.removeRow(row)
+        if rows:
+            self._input_changed()
+
+    def _connect_input_change_signals(self) -> None:
+        """Clear results that no longer describe the editable form."""
+
+        self.instance_id_edit.textEdited.connect(self._input_changed)
+        for editor in (
+            self.container_length,
+            self.container_width,
+            self.container_height,
+        ):
+            editor.valueChanged.connect(self._input_changed)
+        self.box_table.itemChanged.connect(self._input_changed)
+
+    def _input_changed(self, *_args: object) -> None:
+        if self._active_worker is not None or not self._results:
+            return
+        self._instance_data = None
+        self._results.clear()
+        self.result_selector.clear()
+        self.comparison_table.setRowCount(0)
+        self.details_text.clear()
+        self.canvas.clear_message("Inputs changed; run a solver to display a current packing.")
+        self.statusBar().showMessage("Inputs changed; previous results cleared", 5000)
 
     def _table_text(self, row: int, column: int) -> str:
         item = self.box_table.item(row, column)
@@ -318,6 +359,10 @@ class MainWindow(QMainWindow):
         )
 
     def _apply_instance(self, instance_data: dict[str, Any]) -> None:
+        if self._active_worker is not None:
+            raise RuntimeError(
+                "Cannot replace the canonical instance while a solver run is active."
+            )
         container = instance_data["container"]
         self.instance_id_edit.setText(instance_data["instance_id"])
         self._units = instance_data["units"]
@@ -381,15 +426,15 @@ class MainWindow(QMainWindow):
             "Save canonical solution",
             (
                 f"{result.solution['instance_id']}."
-                f"{result.metadata.get('portfolio_id', result.solver)}.solution.json"
+                f"{_result_file_id(result)}.solution.json"
             ),
             "JSON files (*.json)",
         )
         if filename:
             solution_path = Path(filename)
-            metadata = portfolio_sidecar_metadata(result)
+            metadata = result_sidecar_metadata(result)
             metadata_path = (
-                self._portfolio_metadata_path(solution_path) if metadata is not None else None
+                self._sidecar_metadata_path(solution_path) if metadata is not None else None
             )
             targets = [solution_path] + ([metadata_path] if metadata_path is not None else [])
             existing = [path for path in targets if path.exists()]
@@ -416,7 +461,7 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage(message, 5000)
 
     @staticmethod
-    def _portfolio_metadata_path(solution_path: Path) -> Path:
+    def _sidecar_metadata_path(solution_path: Path) -> Path:
         suffix = ".solution.json"
         if solution_path.name.endswith(suffix):
             return solution_path.with_name(
@@ -449,10 +494,31 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(f"Saved {path}", 5000)
 
     def _update_cpsat_controls(self) -> None:
-        enabled = self.solver_combo.currentData() in ("cpsat", "all")
+        selection = self.solver_combo.currentData()
+        enabled = selection in ("optimize", "compare")
         self.time_limit.setEnabled(enabled)
         self.worker_count.setEnabled(enabled)
         self.random_seed.setEnabled(enabled)
+        descriptions = {
+            "fast": "Quick independently validated packing.",
+            "optimize": (
+                "Builds a validated Fast solution, then uses additional CP-SAT search "
+                "and safely retains Fast unless a better valid packing is found."
+            ),
+            "compare": (
+                "Runs Fast and Optimize on the same instance and compares their "
+                "validated results."
+            ),
+        }
+        self.mode_help.setText(descriptions.get(selection, ""))
+
+    def _set_busy(self, busy: bool) -> None:
+        """Keep every instance-mutating UI path disabled during a solver run."""
+
+        self.input_scroll.setEnabled(not busy)
+        self.run_button.setEnabled(not busy)
+        self.load_instance_action.setEnabled(not busy)
+        self.exit_action.setEnabled(not busy)
 
     def _run_solvers(self) -> None:
         if self._active_worker is not None:
@@ -468,7 +534,6 @@ class MainWindow(QMainWindow):
         self.comparison_table.setRowCount(0)
         self.details_text.clear()
         self.canvas.clear_message("Running solver; no current solution to display.")
-        self.run_button.setEnabled(False)
         self.statusBar().showMessage("Starting solver...")
         self._log(
             f"Starting {self.solver_combo.currentText()} on {instance_data['instance_id']}"
@@ -484,6 +549,7 @@ class MainWindow(QMainWindow):
         worker.signals.finished.connect(self._solver_finished)
         worker.signals.failed.connect(self._solver_failed)
         self._active_worker = worker
+        self._set_busy(True)
         self._thread_pool.start(worker)
 
     def _solver_status(self, message: str) -> None:
@@ -491,8 +557,11 @@ class MainWindow(QMainWindow):
         self._log(message)
 
     def _solver_finished(self, results: object) -> None:
-        self.run_button.setEnabled(True)
+        # The result signal is emitted immediately before QRunnable.run returns.
+        # Wait briefly for that final return before allowing another launch.
+        self._thread_pool.waitForDone(1000)
         self._active_worker = None
+        self._set_busy(False)
         typed_results = list(results)  # type: ignore[arg-type]
         self._results = {result.solver: result for result in typed_results}
         self._populate_results(typed_results)
@@ -513,10 +582,17 @@ class MainWindow(QMainWindow):
                 "No feasible incumbent",
                 "No solution exists to validate for: " + statuses,
             )
+        else:
+            optimize = next(
+                (result for result in typed_results if result.solver == "optimize"), None
+            )
+            if optimize is not None:
+                self.statusBar().showMessage(optimize_completion_message(optimize), 8000)
 
     def _solver_failed(self, message: str, diagnostic: str) -> None:
-        self.run_button.setEnabled(True)
+        self._thread_pool.waitForDone(1000)
         self._active_worker = None
+        self._set_busy(False)
         self.statusBar().showMessage("Solver failed", 5000)
         self._results.clear()
         self.result_selector.clear()
@@ -535,6 +611,7 @@ class MainWindow(QMainWindow):
             "packed_boxes",
             "packed_volume",
             "utilization",
+            "empty_fraction",
             "solver_core_runtime_seconds",
             "end_to_end_runtime_seconds",
             "validation",
@@ -554,7 +631,9 @@ class MainWindow(QMainWindow):
         self.result_selector.blockSignals(True)
         self.result_selector.clear()
         for result in results:
-            label = "Greedy Portfolio" if result.solver == "greedy" else "CP-SAT"
+            label = "Fast" if result.solver == "fast" else "Optimize"
+            if result.solver == "cpsat":
+                label = "CP-SAT"
             self.result_selector.addItem(label, result.solver)
         self.result_selector.blockSignals(False)
         if results:
@@ -578,7 +657,9 @@ class MainWindow(QMainWindow):
         elif solution is None:
             self.canvas.clear_message("INVALID solution: visualization withheld.")
         elif self._instance_data is not None:
-            label = "Greedy Portfolio" if result.solver == "greedy" else "CP-SAT"
+            label = "Fast" if result.solver == "fast" else "Optimize"
+            if result.solver == "cpsat":
+                label = "CP-SAT"
             self.canvas.plot_solution(
                 self._instance_data,
                 solution,
@@ -595,3 +676,22 @@ class MainWindow(QMainWindow):
         diagnostic = traceback.format_exc()
         self._log(f"{context}:\n{diagnostic}")
         self._show_error(f"{context}: {exception}")
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        """Do not destroy GUI state while a background worker may still signal it."""
+
+        if self._active_worker is not None:
+            event.ignore()
+            self.statusBar().showMessage(
+                "A solver run is active. Wait for it to finish before closing.", 5000
+            )
+            return
+        super().closeEvent(event)
+
+
+def _result_file_id(result: SolverRunResult) -> str:
+    if result.solver == "fast":
+        return "portfolio-ig"
+    if result.solver == "optimize":
+        return "hybrid-optimize"
+    return result.solver
