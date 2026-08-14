@@ -10,11 +10,11 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from PySide6.QtWidgets import QApplication  # noqa: E402
+from PySide6.QtWidgets import QApplication, QPushButton  # noqa: E402
 from unittest.mock import patch
 
 from gui.main_window import MainWindow  # noqa: E402
-from gui.models import CANONICAL_ORIENTATIONS, load_example  # noqa: E402
+from gui.models import CANONICAL_ORIENTATIONS, GuiInputError, load_example  # noqa: E402
 from gui.orientation_selector import OrientationSelector  # noqa: E402
 
 
@@ -72,11 +72,67 @@ class MainWindowOrientationRoundTripTests(unittest.TestCase):
         self.window.close()
         self.app.processEvents()
 
+    def _click_button(self, text):
+        button = next(
+            button
+            for button in self.window.findChildren(QPushButton)
+            if button.text() == text
+        )
+        button.click()
+        self.app.processEvents()
+
     def test_new_box_row_defaults_to_all_six(self):
         self.assertEqual(
             self.window._orientation_selector(0).selected_orientations(),
             CANONICAL_ORIENTATIONS,
         )
+
+    def test_add_type_button_creates_selector_with_all_six(self):
+        self._click_button("Add Type")
+        selector = self.window.box_table.cellWidget(1, 5)
+        self.assertIsInstance(selector, OrientationSelector)
+        self.assertEqual(selector.selected_orientations(), CANONICAL_ORIENTATIONS)
+
+    def test_sequential_add_type_selectors_are_independent(self):
+        self._click_button("Add Type")
+        self._click_button("Add Type")
+        first = self.window._orientation_selector(1)
+        second = self.window._orientation_selector(2)
+        self.assertIsNot(first, second)
+        first.button("WLH").click()
+        self.assertEqual(
+            first.selected_orientations(),
+            tuple(token for token in CANONICAL_ORIENTATIONS if token != "WLH"),
+        )
+        self.assertEqual(second.selected_orientations(), CANONICAL_ORIENTATIONS)
+
+    def test_added_type_serializes_actual_orientation_selection(self):
+        self._click_button("Add Type")
+        instance = self.window._current_instance()
+        self.assertEqual(
+            instance["box_types"][1]["allowed_orientations"],
+            list(CANONICAL_ORIENTATIONS),
+        )
+        self.window._orientation_selector(1).button("LHW").click()
+        instance = self.window._current_instance()
+        self.assertEqual(
+            instance["box_types"][1]["allowed_orientations"],
+            [token for token in CANONICAL_ORIENTATIONS if token != "LHW"],
+        )
+
+    def test_remove_then_add_creates_replacement_selector(self):
+        self._click_button("Add Type")
+        self.window.box_table.selectRow(1)
+        self._click_button("Remove Type")
+        self._click_button("Add Type")
+        selector = self.window.box_table.cellWidget(1, 5)
+        self.assertIsInstance(selector, OrientationSelector)
+        self.assertEqual(selector.selected_orientations(), CANONICAL_ORIENTATIONS)
+
+    def test_missing_selector_is_rejected_instead_of_defaulting_silently(self):
+        self.window.box_table.removeCellWidget(0, 5)
+        with self.assertRaisesRegex(GuiInputError, "orientation controls are missing"):
+            self.window._current_instance()
 
     def test_loaded_canonical_subset_saves_and_reloads_exactly(self):
         instance = copy.deepcopy(load_example("benchmark-tiny-two-cubes"))

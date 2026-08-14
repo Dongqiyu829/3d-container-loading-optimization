@@ -174,7 +174,7 @@ class MainWindow(QMainWindow):
         box_layout.addWidget(orientation_note)
         box_buttons = QHBoxLayout()
         add_button = QPushButton("Add Type")
-        add_button.clicked.connect(self._add_type_row)
+        add_button.clicked.connect(lambda _checked=False: self._add_type_row())
         remove_button = QPushButton("Remove Type")
         remove_button.clicked.connect(self._remove_selected_types)
         box_buttons.addWidget(add_button)
