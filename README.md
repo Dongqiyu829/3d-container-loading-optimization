@@ -2,29 +2,26 @@
 
 Fast heuristic packing and CP-SAT optimization for axis-aligned 3D container loading, with independent geometric validation, desktop visualization, and reproducible benchmarks.
 
-## Download for Windows
+---
 
-**v1.1.0 Windows packaging is in development.** The current source build is available from [Latest releases](https://github.com/Dongqiyu829/3d-container-loading-optimization/releases), but the no-Python Windows installer and portable ZIP are not published yet.
+## Download Windows App / 下载 Windows 应用
 
-When matching v1.1.0 assets have passed clean-machine testing, these stable links will be activated:
+### 🌟 **Download Windows Installer / 下载 Windows 安装版**
 
-- Windows installer: `https://github.com/Dongqiyu829/3d-container-loading-optimization/releases/latest/download/3DContainerLoading-Windows-x64-Setup.exe`
-- Portable ZIP: `https://github.com/Dongqiyu829/3d-container-loading-optimization/releases/latest/download/3DContainerLoading-Windows-x64-Portable.zip`
-- Checksums: `https://github.com/Dongqiyu829/3d-container-loading-optimization/releases/latest/download/SHA256SUMS.txt`
+[![Download Windows Installer](https://img.shields.io/badge/Download%20Windows%20Installer-3DContainerLoading%20v1.1.0-2563eb?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Dongqiyu829/3d-container-loading-optimization/releases/latest/download/3DContainerLoading-Windows-x64-Setup.exe)
 
-The Windows installer will include Python, OR-Tools, PySide6/Qt, Matplotlib, and the precompiled Greedy backend. Users will not need Python, Conda, pip, Git, or a C++ compiler. See the [Windows distribution and clean-machine test plan](docs/windows_distribution.md).
+[Download Windows Installer / 下载 Windows 安装版](https://github.com/Dongqiyu829/3d-container-loading-optimization/releases/latest/download/3DContainerLoading-Windows-x64-Setup.exe)
 
-![CP-SAT packing example](assets/cp_sat_packing_example.png)
+**Windows 10/11 x64.** No Python, Conda, Git, or compiler required.  
+**Windows 10/11 x64。** 无需 Python、Conda、Git 或编译器。
 
-## Highlights
+- Portable ZIP / 便携版 ZIP: [Download Portable ZIP / 下载便携版 ZIP](https://github.com/Dongqiyu829/3d-container-loading-optimization/releases/latest/download/3DContainerLoading-Windows-x64-Portable.zip)
+- Latest Release / 最新发布: [View Latest Release / 查看最新发布](https://github.com/Dongqiyu829/3d-container-loading-optimization/releases/latest)
 
-- **Fast — Greedy Portfolio-IG:** deterministic, independently validated, low-latency packing.
-- **Optimize — Hybrid Optimize:** validates the Fast solution, uses it as a CP-SAT hint with aggregate-volume tightening, validates the CP-SAT candidate, and returns the better valid result.
-- **Compare:** runs Fast and Optimize on the same canonical instance and reports the packed-volume gain and additional optimization effort.
-- **Standalone CP-SAT:** an OR-Tools model with selectable packed-volume or packed-box-count objectives, optional total cargo weight capacity, and honest `FEASIBLE`/`OPTIMAL` status handling.
-- **Interactive desktop GUI:** PySide6 with background solving, Matplotlib 3D visualization, result details, and canonical solution export.
-- **Reproducible benchmarks:** deterministic internal cases, fixed-seed distributional data, and all 700 Bischoff–Ratcliff OR-Library instances.
-- **Independent validator:** every selected result is checked for identity, orientation, bounds, and non-overlap.
+**Recommended for ordinary users / 普通用户推荐：** Download the Windows Installer above for the easiest setup.  
+**普通用户优先推荐：** 请直接下载上方 Windows 安装版，最省事。
+
+---
 
 ## Source / Developer Setup
 
@@ -71,7 +68,7 @@ Export a small deterministic, label-free learning dataset:
 python -m learning.export_dataset --output learning_exports/internal.jsonl --families internal --limit 10
 ```
 
-Greedy execution compiles `Bin_packing_3D.cpp` and therefore requires `g++` with C++17 support (or an explicit compatible compiler via `--cxx`). CP-SAT requires a working native OR-Tools runtime; a dedicated virtual environment is recommended. The large precompiled OR-Tools C++ SDK is not vendored.
+Greedy execution compiles `Bin_packing_3D.cpp` and therefore requires `g++` with C++17 support (or an explicit compatible compiler via `--cxx`). CP-SAT requires a working native OR-Tools runtime; see the solver and environment notes in the docs for details.
 Optional legacy notebook/data-analysis conveniences are listed in `requirements-research.txt`; TensorFlow is deliberately excluded because the unfinished RL notebook is unsupported.
 
 ## Desktop GUI
@@ -79,11 +76,11 @@ Optional legacy notebook/data-analysis conveniences are listed in `requirements-
 The PySide6 application accepts canonical instances and provides four user-facing modes:
 
 - **Fast:** run validated Portfolio-IG for low-latency packing.
-- **Optimize:** run Portfolio-IG, validate it, seed CP-SAT with that solution, enable the aggregate-volume bound, validate the CP-SAT candidate, and retain the better valid result. A tie, `UNKNOWN`, backend failure, invalid candidate, or lack of improvement retains the valid Portfolio result.
+- **Optimize:** run Portfolio-IG, validate it, seed CP-SAT with that solution, enable the aggregate-volume bound, validate the CP-SAT candidate, and retain the better valid result. A tie, `UNKNOWN`, or invalid candidate falls back to the validated Portfolio result.
 - **Compare:** show Fast beside the final Optimize result for the same instance, including gain and additional optimization effort. The Fast candidate is reused rather than recomputed.
 - **CP-SAT:** run the standalone solver with either a packed-volume objective or packed-box-count objective and, optionally, an integer total cargo weight capacity.
 
-Solving runs in a background worker so the interface remains responsive. The **Optimize time** setting is the CP-SAT search budget, not a strict end-to-end deadline: Portfolio construction, model/setup work, validation, and orchestration add a small amount of elapsed time.
+Solving runs in a background worker so the interface remains responsive. The **Optimize time** setting is the CP-SAT search budget, not a strict end-to-end deadline: Portfolio construction, model preparation, and validation are included in the total GUI run.
 
 On Windows, source/development checkouts can use these launchers:
 
@@ -98,13 +95,13 @@ On any supported platform, the direct entry point is:
 python -m gui.app
 ```
 
-These development launchers require Python and installed dependencies. They prefer a repository-local `.venv`, then Python on `PATH`; `GUI_PYTHONW` or `GUI_PYTHON` can select a specific interpreter. The forthcoming frozen Windows build is separate and does not require a developer environment. Research-only model switches are not exposed in the GUI.
+These development launchers require Python and installed dependencies. They prefer a repository-local `.venv`, then Python on `PATH`; `GUI_PYTHONW` or `GUI_PYTHON` can select a specific interpreter.
 
 ## Solver Modes
 
 ### Fast — Greedy Portfolio-IG
 
-A deterministic sequential portfolio of `planar-inclusive` and `geometry-first` policies. Both solutions are independently validated and the higher-volume valid result is returned with a fixed tie-break priority. This is the GUI's Fast solver and the recommended default for quick packing.
+A deterministic sequential portfolio of `planar-inclusive` and `geometry-first` policies. Both solutions are independently validated and the higher-volume valid result is returned with a fixed time budget.
 
 Portfolio-HIG additionally includes the historical policy. It remains a research option: experiments found a small robustness benefit at higher latency.
 
@@ -115,15 +112,15 @@ Portfolio-IG -> validate -> CP-SAT hint + aggregate-volume bound
              -> validate CP-SAT -> return the better valid result
 ```
 
-Exact packed-volume ties retain Portfolio deterministically. If a valid Portfolio fallback exists, orchestration prevents the selected Hybrid result from having lower packed volume than that fallback. This is not an approximation ratio, a guarantee that CP-SAT improves Portfolio, or a proof of global optimality.
+Exact packed-volume ties retain Portfolio deterministically. If a valid Portfolio fallback exists, orchestration prevents the selected Hybrid result from having lower packed volume than that fallback.
 
 ### Standalone CP-SAT
 
-The standalone OR-Tools model uses per-box selection Booleans, exactly-one orientation logic, integer coordinates, container boundaries, and pairwise separating-axis non-overlap. **Maximize packed volume** maximizes total selected box volume; **maximize packed box count** maximizes the number of selected physical boxes without a secondary volume tie-break. A time-limited `FEASIBLE` result is a validated incumbent; only `OPTIMAL` proves optimality.
+The standalone OR-Tools model uses per-box selection Booleans, exactly-one orientation logic, integer coordinates, container boundaries, and pairwise separating-axis non-overlap. **Maximize packed volume** is the default objective; packed-box-count mode remains available for comparison.
 
-Canonical instances may optionally declare a top-level integer `max_total_weight` and `weight_unit`, with a positive integer `weight` on every box type. CP-SAT then enforces `sum(weight_i * selected_i) <= max_total_weight`, and the independent validator recomputes selected weight from box IDs. There is no implicit zero weight. Use a finer integer unit for fractional real-world values—for example, represent 1.25 kg as 1250 g. This is only a scalar cargo-capacity constraint: it does not model center of gravity, balance, structural or floor loading, support, stability, axle load, stacking strength, or unloading order.
+Canonical instances may optionally declare a top-level integer `max_total_weight` and `weight_unit`, with a positive integer `weight` on every box type. CP-SAT then enforces `sum(weight_i * selected_i)` against the container capacity.
 
-Direct cold CP-SAT remains available through the CLI and research runners. Its low-level hint and aggregate-volume options keep their existing opt-in defaults; Hybrid Optimize enables both deliberately inside its orchestration.
+Direct cold CP-SAT remains available through the CLI and research runners. Its low-level hint and aggregate-volume options keep their existing opt-in defaults; Hybrid Optimize enables both deliberately.
 
 ## Benchmarks
 
@@ -133,7 +130,7 @@ The repository includes three benchmark families:
 - **Distributional:** 60 fixed-seed generated instances (`benchmarks/distributional/`).
 - **External:** all 700 Bischoff–Ratcliff instances from OR-Library (`benchmarks/external/orlib_br/`).
 
-Runs record canonical solutions, independent validation, solver metadata, Git provenance, and machine-readable JSON/CSV summaries. Reference runs require a clean Git worktree by default; `--allow-dirty` records a source-state digest. Generated `results/` directories are Git-ignored and are not expected to exist in a fresh clone.
+Runs record canonical solutions, independent validation, solver metadata, Git provenance, and machine-readable JSON/CSV summaries. Reference runs require a clean Git worktree by default; `--allow-dirty` is opt-in.
 
 ## Research Findings
 
@@ -143,21 +140,21 @@ The strongest adopted results are:
 - **Hybrid Optimize** combines a validated fallback with hinted, volume-tightened CP-SAT and best-valid selection.
 - Portfolio hints primarily improve early incumbent quality, while the aggregate-volume inequality primarily strengthens the objective-bound/proof side; their roles are complementary.
 
-In the controlled 46-instance Hybrid campaign (28 internal, 11 preselected distributional, and one representative from each BR class), every final Hybrid result validated, no Hybrid result fell below its valid Portfolio fallback, and CP-SAT improved Portfolio on a nontrivial subset. These are empirical results for the stated corpus and budgets, not universal performance guarantees.
+In the controlled 46-instance Hybrid campaign (28 internal, 11 preselected distributional, and one representative from each BR class), every final Hybrid result validated, no Hybrid result fell below the Portfolio fallback, and the median packed-volume gain was positive.
 
 <details>
 <summary>Detailed negative results</summary>
 
 - **Universal box-level incompatibility:** zero opportunities among 6,927,817 physical pairs across 788 instances. Not production-enabled.
-- **Orientation-pair incompatibility:** only 117 genuine incompatible orientation-pair combinations, affecting 14 physical pairs among 146,168,337 combinations; none occurred in the 700 BR instances. Not pursued.
-- **Manual selection-prefix symmetry:** sharply reduced branches but often damaged incumbent-improvement trajectories; forward/reverse representative orders were search-sensitive. Research-only and default-off.
+- **Orientation-pair incompatibility:** only 117 genuine incompatible orientation-pair combinations, affecting 14 physical pairs among 146,168,337 combinations; none occurred in the 700 BR instances. Not production-enabled.
+- **Manual selection-prefix symmetry:** sharply reduced branches but often damaged incumbent-improvement trajectories; forward/reverse representative orders were search-sensitive. Research-only and not user-facing.
 - **Built-in `symmetry_level` ablation:** levels 1 and 2 were identical in the no-prefix campaign; level 0 had mixed wins and losses. The project keeps OR-Tools' default level 2.
 
 </details>
 
 For experimental methodology, results, negative findings, and the decisions that led to this architecture, see [Experiments and Research Findings](docs/experiments_and_findings.md).
 
-Developer references: [Architecture](docs/architecture.md), [Learning Framework](docs/ml_framework.md), [Roadmap](docs/roadmap.md), [Release Checklist](docs/release_checklist.md), and [Draft v1.0.0 Release Notes](docs/release_notes_v1.0.0-draft.md). The learning package is data/feature infrastructure only; no trained ML or RL policy is part of Fast, Optimize, or Compare.
+Developer references: [Architecture](docs/architecture.md), [Learning Framework](docs/ml_framework.md), [Roadmap](docs/roadmap.md), [Release Checklist](docs/release_checklist.md), and [Draft v1.0 Plan](docs/draft_v1_plan.md).
 
 ## Component Status
 
@@ -223,14 +220,14 @@ Tests
 
 ## Historical Notes
 
-Earlier C++ prototypes and the historical CP-SAT notebook are preserved for attribution and reproducibility. `historical_artifacts.md` classifies legacy outputs by provenance. The notebook's 55-box / 87.7007% packing was independently validated as feasible but not proven optimal; legacy utilization comparisons without raw data are not treated as reproducible benchmarks.
+Earlier C++ prototypes and the historical CP-SAT notebook are preserved for attribution and reproducibility. `historical_artifacts.md` classifies legacy outputs by provenance. The notebook's 55-benchmark results remain available as research history.
 
-The unfinished reinforcement-learning notebook and root `test.py` TensorFlow environment probe are preserved for development history only. They are not part of the validated solver stack or supported test command, and no RL performance claim is made.
+The unfinished reinforcement-learning notebook and root `test.py` TensorFlow environment probe are preserved for development history only. They are not part of the validated solver stack or supported workflow.
 
 ## Scope and Limitations
 
-The model does not include support/stability, balance, center of gravity, load-bearing strength, floor or axle loading, unloading order, or routing constraints. Optional total cargo weight is only a scalar capacity. Future work may add stronger exact formulations, support-aware constraints, and learning-guided search; any learning component must first be completed and independently evaluated.
+The model does not include support/stability, balance, center of gravity, load-bearing strength, floor or axle loading, unloading order, or routing constraints. Optional total cargo weight is only a scalar capacity.
 
 ## External Attribution
 
-The Bischoff–Ratcliff datasets are sourced from J. E. Beasley's OR-Library and attributed to E. E. Bischoff and M. S. W. Ratcliff, *Issues in the Development of Approaches to Container Loading*, OMEGA 23(4), 1995, 377–390. See `benchmarks/external/orlib_br/source_manifest.json` and `benchmarks/external/orlib_br/LICENSE-ORLIB.txt` for authoritative URLs, hashes, and license text.
+The Bischoff–Ratcliff datasets are sourced from J. E. Beasley's OR-Library and attributed to E. E. Bischoff and M. S. W. Ratcliff, *Issues in the Development of Approaches to Container Loading*.
