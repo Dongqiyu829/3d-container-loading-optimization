@@ -2,6 +2,9 @@ name: Windows package
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - codex/v1.1-windows-ux-distribution
   pull_request:
     paths:
       - ".github/workflows/windows-package.yml"
