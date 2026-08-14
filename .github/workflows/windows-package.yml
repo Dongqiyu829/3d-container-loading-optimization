@@ -1,0 +1,90 @@
+name: Windows package
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/windows-package.yml"
+      - "packaging/windows/**"
+      - "gui/**"
+      - "*.py"
+      - "*.cpp"
+      - "requirements*.txt"
+      - "benchmarks/suite.json"
+      - "benchmarks/instances/**"
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      QT_QPA_PLATFORM: offscreen
+      MPLBACKEND: Agg
+      PYTHONUNBUFFERED: "1"
+      PYTHONNOUSERSITE: "1"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12 x64
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          architecture: x64
+          cache: pip
+          cache-dependency-path: requirements-packaging.txt
+
+      - name: Set up MinGW-w64 C++ compiler
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: false
+          install: mingw-w64-ucrt-x86_64-gcc
+
+      - name: Add MinGW-w64 to PATH
+        shell: pwsh
+        run: Add-Content -Path $env:GITHUB_PATH -Value "C:\msys64\ucrt64\bin"
+
+      - name: Install Python build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-packaging.txt
+          python -m pip check
+
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Build and test Windows artifacts
+        shell: pwsh
+        run: >-
+          ./packaging/windows/build.ps1
+          -Python python
+          -Cxx "C:\msys64\ucrt64\bin\g++.exe"
+
+      - name: Verify stable artifact names
+        shell: pwsh
+        run: |
+          $required = @(
+            "artifacts/3DContainerLoading-Windows-x64-Setup.exe",
+            "artifacts/3DContainerLoading-Windows-x64-Portable.zip",
+            "artifacts/SHA256SUMS.txt"
+          )
+          foreach ($path in $required) {
+            if (-not (Test-Path $path)) { throw "Missing artifact: $path" }
+          }
+
+      - name: Upload Windows release candidates
+        uses: actions/upload-artifact@v4
+        with:
+          name: 3DContainerLoading-Windows-x64
+          path: |
+            artifacts/3DContainerLoading-Windows-x64-Setup.exe
+            artifacts/3DContainerLoading-Windows-x64-Portable.zip
+            artifacts/SHA256SUMS.txt
+            build/windows/packaged-smoke/summary.json
+          if-no-files-found: error
+          retention-days: 14
