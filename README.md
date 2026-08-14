@@ -226,7 +226,7 @@ The unfinished reinforcement-learning notebook and root `test.py` TensorFlow env
 
 ## Scope and Limitations
 
-The model does not include support/stability, balance, center of gravity, load-bearing strength, floor or axle loading, unloading order, or routing constraints. Optional total cargo weight is only a container-level cap.
+The model does not include support/stability, balance, center of gravity, load-bearing strength, floor or axle loading, unloading order, or routing constraints. Optional total cargo weight is only a scalar capacity.
 
 ## External Attribution
 
