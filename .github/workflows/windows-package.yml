@@ -48,9 +48,25 @@ jobs:
           update: false
           install: mingw-w64-ucrt-x86_64-gcc
 
+      - name: Install UCRT64 GCC (ensure package is present after cache restore)
+        # setup-msys2's install: key may restore a cached environment that was
+        # built before mingw-w64-ucrt-x86_64-gcc was added to the install list.
+        # Running pacman here guarantees g++.exe exists on every run.
+        shell: C:\msys64\usr\bin\bash.exe --login -eo pipefail {0}
+        env:
+          MSYSTEM: UCRT64
+        run: pacman -S --noconfirm --needed mingw-w64-ucrt-x86_64-gcc
+
       - name: Add MinGW-w64 to PATH
         shell: pwsh
         run: Add-Content -Path $env:GITHUB_PATH -Value "C:\msys64\ucrt64\bin"
+
+      - name: Verify C++ compiler
+        shell: pwsh
+        run: |
+          $CxxPath = (Get-Command g++ -ErrorAction Stop).Source
+          Write-Host "Resolved C++ compiler: $CxxPath"
+          & $CxxPath --version
 
       - name: Install Python build dependencies
         run: |
@@ -63,10 +79,9 @@ jobs:
 
       - name: Build and test Windows artifacts
         shell: pwsh
-        run: >-
-          ./packaging/windows/build.ps1
-          -Python python
-          -Cxx "C:\msys64\ucrt64\bin\g++.exe"
+        run: |
+          $CxxPath = (Get-Command g++ -ErrorAction Stop).Source
+          ./packaging/windows/build.ps1 -Python python -Cxx $CxxPath
 
       - name: Verify stable artifact names
         shell: pwsh
