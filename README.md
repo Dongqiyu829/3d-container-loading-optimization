@@ -2,6 +2,18 @@
 
 Fast heuristic packing and CP-SAT optimization for axis-aligned 3D container loading, with independent geometric validation, desktop visualization, and reproducible benchmarks.
 
+## Download for Windows
+
+**v1.1.0 Windows packaging is in development.** The current source build is available from [Latest releases](https://github.com/Dongqiyu829/3d-container-loading-optimization/releases), but the no-Python Windows installer and portable ZIP are not published yet.
+
+When matching v1.1.0 assets have passed clean-machine testing, these stable links will be activated:
+
+- Windows installer: `https://github.com/Dongqiyu829/3d-container-loading-optimization/releases/latest/download/3DContainerLoading-Windows-x64-Setup.exe`
+- Portable ZIP: `https://github.com/Dongqiyu829/3d-container-loading-optimization/releases/latest/download/3DContainerLoading-Windows-x64-Portable.zip`
+- Checksums: `https://github.com/Dongqiyu829/3d-container-loading-optimization/releases/latest/download/SHA256SUMS.txt`
+
+The Windows installer will include Python, OR-Tools, PySide6/Qt, Matplotlib, and the precompiled Greedy backend. Users will not need Python, Conda, pip, Git, or a C++ compiler. See the [Windows distribution and clean-machine test plan](docs/windows_distribution.md).
+
 ![CP-SAT packing example](assets/cp_sat_packing_example.png)
 
 ## Highlights
@@ -14,7 +26,7 @@ Fast heuristic packing and CP-SAT optimization for axis-aligned 3D container loa
 - **Reproducible benchmarks:** deterministic internal cases, fixed-seed distributional data, and all 700 Bischoff–Ratcliff OR-Library instances.
 - **Independent validator:** every selected result is checked for identity, orientation, bounds, and non-overlap.
 
-## Quick Start
+## Source / Developer Setup
 
 For command-line solvers, validation, and benchmarks:
 
@@ -73,7 +85,7 @@ The PySide6 application accepts canonical instances and provides four user-facin
 
 Solving runs in a background worker so the interface remains responsive. The **Optimize time** setting is the CP-SAT search budget, not a strict end-to-end deadline: Portfolio construction, model/setup work, validation, and orchestration add a small amount of elapsed time.
 
-On Windows, use the bundled launchers:
+On Windows, source/development checkouts can use these launchers:
 
 ```cmd
 Launch_GUI.bat          # normal
@@ -86,7 +98,7 @@ On any supported platform, the direct entry point is:
 python -m gui.app
 ```
 
-The launchers prefer a repository-local `.venv`, then Python on `PATH`; `GUI_PYTHONW` or `GUI_PYTHON` can select a specific interpreter. Research-only model switches are not exposed in the GUI.
+These development launchers require Python and installed dependencies. They prefer a repository-local `.venv`, then Python on `PATH`; `GUI_PYTHONW` or `GUI_PYTHON` can select a specific interpreter. The forthcoming frozen Windows build is separate and does not require a developer environment. Research-only model switches are not exposed in the GUI.
 
 ## Solver Modes
 
