@@ -15,7 +15,10 @@ from unittest.mock import patch
 
 from gui.main_window import MainWindow  # noqa: E402
 from gui.models import CANONICAL_ORIENTATIONS, GuiInputError, load_example  # noqa: E402
-from gui.orientation_selector import OrientationSelector  # noqa: E402
+from gui.orientation_selector import (  # noqa: E402
+    ORIENTATION_PRESENTATION,
+    OrientationSelector,
+)
 
 
 class OrientationSelectorTests(unittest.TestCase):
@@ -59,6 +62,37 @@ class OrientationSelectorTests(unittest.TestCase):
         self.assertEqual(set(selector.selected_orientations()), set(CANONICAL_ORIENTATIONS))
         self.assertEqual(len(selector.selected_orientations()), 6)
 
+    def test_human_labels_map_one_to_one_to_all_canonical_tokens(self):
+        expected = {
+            "LWH": ("Box height is vertical", "Length along\ncontainer length"),
+            "WLH": ("Box height is vertical", "Width along\ncontainer length"),
+            "LHW": ("Box width is vertical", "Length along\ncontainer length"),
+            "HLW": ("Box width is vertical", "Height along\ncontainer length"),
+            "WHL": ("Box length is vertical", "Width along\ncontainer length"),
+            "HWL": ("Box length is vertical", "Height along\ncontainer length"),
+        }
+        presented = {
+            token: (heading, label)
+            for heading, options in ORIENTATION_PRESENTATION
+            for token, label, _tooltip in options
+        }
+        self.assertEqual(presented, expected)
+        self.assertEqual(set(presented), set(CANONICAL_ORIENTATIONS))
+
+    def test_tooltips_explain_full_mapping_without_coordinate_shorthand(self):
+        selector = OrientationSelector()
+        for heading, options in ORIENTATION_PRESENTATION:
+            for token, label, plain_tooltip in options:
+                with self.subTest(token=token):
+                    button = selector.button(token)
+                    self.assertEqual(button.text(), label)
+                    self.assertNotIn(token, button.text())
+                    self.assertNotIn(" X", button.text())
+                    self.assertNotIn(" Y", button.text())
+                    self.assertIn(heading + ".", plain_tooltip)
+                    self.assertIn("container length direction", button.toolTip())
+                    self.assertIn("container width direction", button.toolTip())
+
 
 class MainWindowOrientationRoundTripTests(unittest.TestCase):
     @classmethod
@@ -85,6 +119,38 @@ class MainWindowOrientationRoundTripTests(unittest.TestCase):
         self.assertEqual(
             self.window._orientation_selector(0).selected_orientations(),
             CANONICAL_ORIENTATIONS,
+        )
+
+    def test_two_page_navigation_preserves_exact_canonical_input(self):
+        instance = copy.deepcopy(load_example("benchmark-tiny-orientation-gate"))
+        self.window._apply_instance(instance)
+        self.assertIs(self.window.page_stack.currentWidget(), self.window.setup_page)
+        self._click_button("Next: Calculate & View")
+        self.assertIs(self.window.page_stack.currentWidget(), self.window.calculate_page)
+        self.assertEqual(self.window._current_instance(), instance)
+        self._click_button("Back to Box Setup")
+        self.assertIs(self.window.page_stack.currentWidget(), self.window.setup_page)
+        self.assertEqual(self.window._current_instance(), instance)
+
+    def test_back_then_canonical_edit_clears_stale_results(self):
+        self._click_button("Next: Calculate & View")
+        self.window._results = {"fast": object()}
+        self.window._instance_data = self.window._current_instance()
+        self.window.result_selector.blockSignals(True)
+        self.window.result_selector.addItem("Fast", "fast")
+        self.window.result_selector.blockSignals(False)
+        self.window.comparison_table.setRowCount(1)
+        self.window.details_text.setPlainText("stale")
+        self._click_button("Back to Box Setup")
+        with patch.object(self.window.canvas, "clear_message") as clear:
+            self.window.instance_id_edit.insert("-edited")
+        self.assertEqual(self.window._results, {})
+        self.assertIsNone(self.window._instance_data)
+        self.assertEqual(self.window.result_selector.count(), 0)
+        self.assertEqual(self.window.comparison_table.rowCount(), 0)
+        self.assertEqual(self.window.details_text.toPlainText(), "")
+        clear.assert_called_once_with(
+            "Inputs changed; run a solver to display a current packing."
         )
 
     def test_add_type_button_creates_selector_with_all_six(self):
@@ -156,9 +222,14 @@ class MainWindowOrientationRoundTripTests(unittest.TestCase):
         selector = self.window._orientation_selector(0)
         button = selector.button("LWH")
         self.assertNotIn("LWH", button.text())
-        self.assertIn("Length", button.text())
-        self.assertIn("Original Length", button.toolTip())
-        self.assertIn("container Z/up", button.toolTip())
+        self.assertEqual(button.text(), "Length along\ncontainer length")
+        self.assertIn("Box height is vertical.", button.toolTip())
+        self.assertIn(
+            "Box length follows the container length direction.", button.toolTip()
+        )
+        self.assertIn(
+            "Box width follows the container width direction.", button.toolTip()
+        )
 
     def test_about_dialog_exposes_application_release_version(self):
         with patch("gui.main_window.QMessageBox.about") as about:

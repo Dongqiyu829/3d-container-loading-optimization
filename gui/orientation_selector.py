@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QGridLayout,
     QLabel,
@@ -19,47 +19,59 @@ from gui.models import CANONICAL_ORIENTATIONS
 
 ORIENTATION_PRESENTATION = (
     (
-        "Height up",
+        "Box height is vertical",
         (
             (
                 "LWH",
-                "Length → X\nWidth → Y",
-                "Original Length → container X\nOriginal Width → container Y\nOriginal Height → container Z/up",
+                "Length along\ncontainer length",
+                "Box height is vertical.\n"
+                "Box length follows the container length direction.\n"
+                "Box width follows the container width direction.",
             ),
             (
                 "WLH",
-                "Width → X\nLength → Y",
-                "Original Width → container X\nOriginal Length → container Y\nOriginal Height → container Z/up",
+                "Width along\ncontainer length",
+                "Box height is vertical.\n"
+                "Box width follows the container length direction.\n"
+                "Box length follows the container width direction.",
             ),
         ),
     ),
     (
-        "Width up",
+        "Box width is vertical",
         (
             (
                 "LHW",
-                "Length → X\nHeight → Y",
-                "Original Length → container X\nOriginal Height → container Y\nOriginal Width → container Z/up",
+                "Length along\ncontainer length",
+                "Box width is vertical.\n"
+                "Box length follows the container length direction.\n"
+                "Box height follows the container width direction.",
             ),
             (
                 "HLW",
-                "Height → X\nLength → Y",
-                "Original Height → container X\nOriginal Length → container Y\nOriginal Width → container Z/up",
+                "Height along\ncontainer length",
+                "Box width is vertical.\n"
+                "Box height follows the container length direction.\n"
+                "Box length follows the container width direction.",
             ),
         ),
     ),
     (
-        "Length up",
+        "Box length is vertical",
         (
             (
                 "WHL",
-                "Width → X\nHeight → Y",
-                "Original Width → container X\nOriginal Height → container Y\nOriginal Length → container Z/up",
+                "Width along\ncontainer length",
+                "Box length is vertical.\n"
+                "Box width follows the container length direction.\n"
+                "Box height follows the container width direction.",
             ),
             (
                 "HWL",
-                "Height → X\nWidth → Y",
-                "Original Height → container X\nOriginal Width → container Y\nOriginal Length → container Z/up",
+                "Height along\ncontainer length",
+                "Box length is vertical.\n"
+                "Box height follows the container length direction.\n"
+                "Box width follows the container width direction.",
             ),
         ),
     ),
@@ -87,13 +99,15 @@ class OrientationSelector(QWidget):
         layout.setVerticalSpacing(3)
         for column, (heading, orientations) in enumerate(ORIENTATION_PRESENTATION):
             label = QLabel(heading)
+            label.setWordWrap(True)
+            label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             label.setStyleSheet("font-weight: 600;")
             layout.addWidget(label, 0, column)
             for row, (token, button_text, tooltip) in enumerate(orientations, start=1):
                 button = QToolButton()
                 button.setText(button_text)
                 button.setCheckable(True)
-                button.setMinimumSize(104, 42)
+                button.setMinimumSize(150, 42)
                 button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
                 button.setToolTip(tooltip + f"\nCanonical identity: {token}")
                 button.setAccessibleName(f"{heading}: {button_text.replace(chr(10), ', ')}")
@@ -173,4 +187,3 @@ class OrientationSelector(QWidget):
                 self._updating = False
             return
         self.selectionChanged.emit()
-
