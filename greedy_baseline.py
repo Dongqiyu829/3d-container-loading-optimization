@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -52,6 +53,12 @@ def allowed_pose_mask(orientations: tuple[str, ...]) -> int:
     return mask
 
 
+def _hidden_windows_process_flags() -> int:
+    """Prevent the bundled console-subsystem Greedy backend from flashing a window."""
+
+    return subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
+
+
 def compile_greedy(
     source: str | Path,
     executable: str | Path,
@@ -72,7 +79,13 @@ def compile_greedy(
         "-o",
         str(executable_path),
     ]
-    completed = subprocess.run(command, capture_output=True, text=True, check=False)
+    completed = subprocess.run(
+        command,
+        capture_output=True,
+        text=True,
+        check=False,
+        creationflags=_hidden_windows_process_flags(),
+    )
     if completed.returncode:
         raise RuntimeError(
             "greedy compilation failed\n"
@@ -335,6 +348,7 @@ def _run_greedy(
         capture_output=True,
         text=True,
         check=False,
+        creationflags=_hidden_windows_process_flags(),
     )
     if completed.returncode:
         raise RuntimeError(

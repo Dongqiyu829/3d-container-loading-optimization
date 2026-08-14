@@ -1,4 +1,4 @@
-"""Single-window PySide6 front end for the existing solver backends."""
+"""Two-page PySide6 front end for the existing solver backends."""
 
 from __future__ import annotations
 
@@ -27,6 +27,7 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QSpinBox,
     QSplitter,
+    QStackedWidget,
     QTableWidget,
     QTableWidgetItem,
     QTabWidget,
@@ -35,6 +36,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from app_version import __version__
+from gui.orientation_selector import OrientationSelector
 from gui.models import (
     CANONICAL_ORIENTATIONS,
     BoxTypeRow,
@@ -58,8 +61,8 @@ from gui.worker import SolverWorker
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
-        self.setWindowTitle("3D Container Loading")
-        self.resize(1450, 900)
+        self.setWindowTitle("3D Container Loading Optimizer")
+        self.resize(1600, 900)
         self._units = "arbitrary_unit"
         self._instance_data: dict[str, Any] | None = None
         self._results: dict[str, SolverRunResult] = {}
@@ -84,39 +87,110 @@ class MainWindow(QMainWindow):
         file_menu.addSeparator()
         self.exit_action = file_menu.addAction("Exit")
         self.exit_action.triggered.connect(self.close)
+        help_menu = self.menuBar().addMenu("&Help")
+        self.about_action = help_menu.addAction("About")
+        self.about_action.triggered.connect(self._show_about)
 
     def _build_interface(self) -> None:
-        root_splitter = QSplitter(Qt.Orientation.Horizontal)
-        self.setCentralWidget(root_splitter)
+        self.page_stack = QStackedWidget()
+        self.setCentralWidget(self.page_stack)
+
+        self.setup_page = self._build_setup_page()
+        self.calculate_page = self._build_calculate_page()
+        self.page_stack.addWidget(self.setup_page)
+        self.page_stack.addWidget(self.calculate_page)
+        self.page_stack.setCurrentWidget(self.setup_page)
+
+    def _page_title(self, title: str, subtitle: str) -> QWidget:
+        header = QWidget()
+        layout = QVBoxLayout(header)
+        layout.setContentsMargins(0, 0, 0, 4)
+        title_label = QLabel(title)
+        title_label.setStyleSheet("font-size: 22px; font-weight: 650;")
+        subtitle_label = QLabel(subtitle)
+        subtitle_label.setWordWrap(True)
+        layout.addWidget(title_label)
+        layout.addWidget(subtitle_label)
+        return header
+
+    def _build_setup_page(self) -> QWidget:
+        page = QWidget()
+        page_layout = QVBoxLayout(page)
+        page_layout.setContentsMargins(16, 12, 16, 12)
+        page_layout.addWidget(
+            self._page_title(
+                "Container & Boxes",
+                "Define the container and every available box type before choosing how to calculate.",
+            )
+        )
 
         self.input_scroll = QScrollArea()
         self.input_scroll.setWidgetResizable(True)
-        self.input_scroll.setMinimumWidth(520)
+        self.input_scroll.setFrameShape(QScrollArea.Shape.NoFrame)
         self.input_scroll.setWidget(self._build_input_panel())
-        root_splitter.addWidget(self.input_scroll)
+        page_layout.addWidget(self.input_scroll, 1)
+
+        navigation = QHBoxLayout()
+        navigation.addStretch()
+        self.next_button = QPushButton("Next: Calculate & View")
+        self.next_button.setMinimumSize(210, 44)
+        self.next_button.clicked.connect(self._show_calculate_page)
+        navigation.addWidget(self.next_button)
+        page_layout.addLayout(navigation)
+        return page
+
+    def _build_calculate_page(self) -> QWidget:
+        page = QWidget()
+        page_layout = QVBoxLayout(page)
+        page_layout.setContentsMargins(16, 12, 16, 12)
+
+        header = QHBoxLayout()
+        header.addWidget(
+            self._page_title(
+                "Calculate & View",
+                "Choose a solver, run the current box setup, and inspect validated results.",
+            ),
+            1,
+        )
+        self.back_button = QPushButton("Back to Box Setup")
+        self.back_button.setMinimumSize(170, 38)
+        self.back_button.clicked.connect(self._show_setup_page)
+        header.addWidget(self.back_button, 0, Qt.AlignmentFlag.AlignTop)
+        page_layout.addLayout(header)
+
+        content_splitter = QSplitter(Qt.Orientation.Horizontal)
+        self.calculation_controls = self._build_solver_panel()
+        self.calculation_controls.setMinimumWidth(300)
+        self.calculation_controls.setMaximumWidth(390)
+        content_splitter.addWidget(self.calculation_controls)
 
         output_splitter = QSplitter(Qt.Orientation.Vertical)
         self.canvas = PackingCanvas()
         output_splitter.addWidget(self.canvas)
         output_splitter.addWidget(self._build_results_panel())
-        output_splitter.setStretchFactor(0, 3)
+        output_splitter.setStretchFactor(0, 5)
         output_splitter.setStretchFactor(1, 2)
-        root_splitter.addWidget(output_splitter)
-        root_splitter.setStretchFactor(0, 0)
-        root_splitter.setStretchFactor(1, 1)
+        content_splitter.addWidget(output_splitter)
+        content_splitter.setStretchFactor(0, 0)
+        content_splitter.setStretchFactor(1, 1)
+        content_splitter.setSizes([340, 1200])
+        page_layout.addWidget(content_splitter, 1)
+        return page
 
     def _build_input_panel(self) -> QWidget:
         panel = QWidget()
         layout = QVBoxLayout(panel)
 
+        instance_row = QHBoxLayout()
+
         examples = QGroupBox("Committed examples")
-        examples_layout = QHBoxLayout(examples)
+        examples_layout = QVBoxLayout(examples)
         self.example_combo = QComboBox()
-        examples_layout.addWidget(self.example_combo, 1)
+        examples_layout.addWidget(self.example_combo)
         load_button = QPushButton("Load Example")
         load_button.clicked.connect(self._load_selected_example)
         examples_layout.addWidget(load_button)
-        layout.addWidget(examples)
+        instance_row.addWidget(examples, 1)
 
         container_group = QGroupBox("Canonical instance")
         container_form = QFormLayout(container_group)
@@ -136,7 +210,8 @@ class MainWindow(QMainWindow):
             dimensions_layout.addWidget(QLabel(label))
             dimensions_layout.addWidget(editor)
         container_form.addRow("Container", dimensions)
-        layout.addWidget(container_group)
+        instance_row.addWidget(container_group, 2)
+        layout.addLayout(instance_row)
 
         box_group = QGroupBox("Box types")
         box_layout = QVBoxLayout(box_group)
@@ -148,7 +223,7 @@ class MainWindow(QMainWindow):
                 "Width",
                 "Height",
                 "Quantity",
-                "Allowed orientations",
+                "Orientations",
                 "Weight",
             ]
         )
@@ -159,22 +234,31 @@ class MainWindow(QMainWindow):
             5, QHeaderView.ResizeMode.Stretch
         )
         self.box_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.box_table.setMinimumHeight(220)
-        self.box_table.setToolTip(
-            "Canonical orientations: " + ", ".join(CANONICAL_ORIENTATIONS)
-        )
+        self.box_table.setMinimumHeight(480)
         box_layout.addWidget(self.box_table)
+        orientation_note = QLabel(
+            "Choose which original box dimension is vertical, then which remaining "
+            "dimension follows the container length direction. At least one option "
+            "must remain selected."
+        )
+        orientation_note.setWordWrap(True)
+        box_layout.addWidget(orientation_note)
         box_buttons = QHBoxLayout()
         add_button = QPushButton("Add Type")
-        add_button.clicked.connect(self._add_type_row)
+        add_button.clicked.connect(lambda _checked=False: self._add_type_row())
         remove_button = QPushButton("Remove Type")
         remove_button.clicked.connect(self._remove_selected_types)
         box_buttons.addWidget(add_button)
         box_buttons.addWidget(remove_button)
         box_buttons.addStretch()
         box_layout.addLayout(box_buttons)
-        layout.addWidget(box_group)
+        layout.addWidget(box_group, 1)
+        return panel
 
+    def _build_solver_panel(self) -> QWidget:
+        panel = QWidget()
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(0, 0, 8, 0)
         solver_group = QGroupBox("Solver")
         solver_form = QFormLayout(solver_group)
         self.solver_combo = QComboBox()
@@ -241,6 +325,21 @@ class MainWindow(QMainWindow):
         self._update_cpsat_controls()
         return panel
 
+    def _show_calculate_page(self) -> None:
+        try:
+            self._current_instance()
+        except Exception as exc:
+            self._handle_exception("Invalid instance", exc)
+            return
+        self.page_stack.setCurrentWidget(self.calculate_page)
+        self.statusBar().showMessage("Ready to calculate")
+
+    def _show_setup_page(self) -> None:
+        if self._active_worker is not None:
+            return
+        self.page_stack.setCurrentWidget(self.setup_page)
+        self.statusBar().showMessage("Edit container and box setup")
+
     def _build_results_panel(self) -> QWidget:
         panel = QWidget()
         layout = QVBoxLayout(panel)
@@ -305,19 +404,22 @@ class MainWindow(QMainWindow):
             str(row.width if row else 2),
             str(row.height if row else 2),
             str(row.quantity if row else 1),
-            ",".join(row.allowed_orientations if row else CANONICAL_ORIENTATIONS),
+            "",
             str(row.weight) if row and row.weight is not None else "",
         )
         for column, value in enumerate(values):
+            if column == 5:
+                continue
             item = QTableWidgetItem(value)
             if column == 0 and row is not None and row.box_ids is not None:
                 item.setData(Qt.ItemDataRole.UserRole, list(row.box_ids))
-            if column == 6 and not (
-                self.solver_combo.currentData() == "cpsat"
-                and self.weight_limit_checkbox.isChecked()
-            ):
-                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.box_table.setItem(row_index, column, item)
+        orientation_selector = OrientationSelector(
+            row.allowed_orientations if row else CANONICAL_ORIENTATIONS
+        )
+        orientation_selector.selectionChanged.connect(self._input_changed)
+        self.box_table.setCellWidget(row_index, 5, orientation_selector)
+        self.box_table.resizeRowToContents(row_index)
 
     def _remove_selected_types(self) -> None:
         rows = sorted({index.row() for index in self.box_table.selectedIndexes()}, reverse=True)
@@ -357,6 +459,12 @@ class MainWindow(QMainWindow):
         item = self.box_table.item(row, column)
         return item.text().strip() if item is not None else ""
 
+    def _orientation_selector(self, row: int) -> OrientationSelector:
+        selector = self.box_table.cellWidget(row, 5)
+        if not isinstance(selector, OrientationSelector):
+            raise GuiInputError(f"Box row {row + 1}: orientation controls are missing.")
+        return selector
+
     def _read_box_rows(self) -> list[BoxTypeRow]:
         rows: list[BoxTypeRow] = []
         weight_required = (
@@ -394,11 +502,9 @@ class MainWindow(QMainWindow):
                     width=dimensions_and_quantity[1],
                     height=dimensions_and_quantity[2],
                     quantity=dimensions_and_quantity[3],
-                    allowed_orientations=tuple(
-                        token
-                        for token in self._table_text(row_index, 5).replace(";", ",").split(",")
-                        if token.strip()
-                    ),
+                    allowed_orientations=self._orientation_selector(
+                        row_index
+                    ).selected_orientations(),
                     box_ids=tuple(stored_ids) if stored_ids is not None else None,
                     weight=weight,
                 )
@@ -540,6 +646,15 @@ class MainWindow(QMainWindow):
                 message += f" and {metadata_path.name}"
             self.statusBar().showMessage(message, 5000)
 
+    def _show_about(self) -> None:
+        QMessageBox.about(
+            self,
+            "About 3D Container Loading Optimizer",
+            f"3D Container Loading Optimizer v{__version__}\n\n"
+            "Validated Fast, Hybrid Optimize, Compare, and standalone CP-SAT "
+            "container-loading workflows.",
+        )
+
     @staticmethod
     def _sidecar_metadata_path(solution_path: Path) -> Path:
         suffix = ".solution.json"
@@ -590,14 +705,6 @@ class MainWindow(QMainWindow):
         weight_enabled = standalone_cpsat and self.weight_limit_checkbox.isChecked()
         self.max_total_weight.setEnabled(weight_enabled)
         self.weight_unit_edit.setEnabled(weight_enabled)
-        for row_index in range(self.box_table.rowCount()):
-            item = self.box_table.item(row_index, 6)
-            if item is None:
-                continue
-            if weight_enabled:
-                item.setFlags(item.flags() | Qt.ItemFlag.ItemIsEditable)
-            else:
-                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
         descriptions = {
             "fast": "Quick independently validated packing.",
             "optimize": (
@@ -618,6 +725,8 @@ class MainWindow(QMainWindow):
         """Keep every instance-mutating UI path disabled during a solver run."""
 
         self.input_scroll.setEnabled(not busy)
+        self.calculation_controls.setEnabled(not busy)
+        self.back_button.setEnabled(not busy)
         self.run_button.setEnabled(not busy)
         self.load_instance_action.setEnabled(not busy)
         self.exit_action.setEnabled(not busy)

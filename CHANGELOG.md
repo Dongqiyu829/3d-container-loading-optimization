@@ -1,6 +1,20 @@
 # Changelog
 
-## Unreleased
+## [1.1.0] - Unreleased
+
+### Added
+
+- Human-readable six-button orientation selection that preserves exact canonical orientation identities and order.
+- Centralized source/frozen resource and Greedy-backend resolution.
+- Reproducible PyInstaller onedir, Inno Setup, portable ZIP, checksum, and Windows artifact workflow definitions.
+- Packaged-application self-test and clean Windows acceptance plan.
+
+### Changed
+
+- Packaged GUI runs use a bundled precompiled Greedy executable; source/development mode retains compile-on-demand behavior.
+- The application release version is shown independently from unchanged canonical schema version `1.0`.
+
+## [1.0.0] - 2026-08-13
 
 ### Added
 

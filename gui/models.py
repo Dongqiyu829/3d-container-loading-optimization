@@ -16,11 +16,11 @@ from cpsat_baseline import run_cpsat
 from greedy_baseline import compile_greedy
 from greedy_portfolio import run_greedy_portfolio
 from hybrid_optimizer import run_hybrid_optimizer
+from gui.resources import resolve_greedy_executable, resolve_runtime_resource
 from validate_solution import ORIENTATION_AXES, ValidationResult, load_json, validate_solution
 
 
-REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
-BENCHMARK_SUITE = REPOSITORY_ROOT / "benchmarks" / "suite.json"
+BENCHMARK_SUITE = resolve_runtime_resource(Path("benchmarks") / "suite.json")
 CANONICAL_ORIENTATIONS = tuple(ORIENTATION_AXES)
 
 
@@ -276,12 +276,14 @@ def execute_backends(
         if selection in ("fast", "optimize", "compare"):
             callback("Preparing Fast backend...")
             executable_name = "Bin_packing_3D.exe" if os.name == "nt" else "Bin_packing_3D"
-            greedy_executable = temporary_path / executable_name
-            compile_greedy(
-                REPOSITORY_ROOT / "Bin_packing_3D.cpp",
-                greedy_executable,
-                compiler=compiler,
-            )
+            resolution = resolve_greedy_executable(temporary_path / executable_name)
+            greedy_executable = resolution.path
+            if resolution.requires_compilation:
+                compile_greedy(
+                    resolve_runtime_resource("Bin_packing_3D.cpp"),
+                    greedy_executable,
+                    compiler=compiler,
+                )
 
         portfolio_candidate: tuple[dict[str, Any], dict[str, Any]] | None = None
         portfolio_candidate_runtime_seconds: float | None = None
