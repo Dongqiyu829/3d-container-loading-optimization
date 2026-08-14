@@ -35,6 +35,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from app_version import __version__
+from gui.orientation_selector import OrientationSelector
 from gui.models import (
     CANONICAL_ORIENTATIONS,
     BoxTypeRow,
@@ -58,8 +60,8 @@ from gui.worker import SolverWorker
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
-        self.setWindowTitle("3D Container Loading")
-        self.resize(1450, 900)
+        self.setWindowTitle("3D Container Loading Optimizer")
+        self.resize(1600, 900)
         self._units = "arbitrary_unit"
         self._instance_data: dict[str, Any] | None = None
         self._results: dict[str, SolverRunResult] = {}
@@ -84,6 +86,9 @@ class MainWindow(QMainWindow):
         file_menu.addSeparator()
         self.exit_action = file_menu.addAction("Exit")
         self.exit_action.triggered.connect(self.close)
+        help_menu = self.menuBar().addMenu("&Help")
+        self.about_action = help_menu.addAction("About")
+        self.about_action.triggered.connect(self._show_about)
 
     def _build_interface(self) -> None:
         root_splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -91,7 +96,7 @@ class MainWindow(QMainWindow):
 
         self.input_scroll = QScrollArea()
         self.input_scroll.setWidgetResizable(True)
-        self.input_scroll.setMinimumWidth(520)
+        self.input_scroll.setMinimumWidth(800)
         self.input_scroll.setWidget(self._build_input_panel())
         root_splitter.addWidget(self.input_scroll)
 
@@ -148,7 +153,7 @@ class MainWindow(QMainWindow):
                 "Width",
                 "Height",
                 "Quantity",
-                "Allowed orientations",
+                "Orientations",
                 "Weight",
             ]
         )
@@ -160,10 +165,13 @@ class MainWindow(QMainWindow):
         )
         self.box_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.box_table.setMinimumHeight(220)
-        self.box_table.setToolTip(
-            "Canonical orientations: " + ", ".join(CANONICAL_ORIENTATIONS)
-        )
         box_layout.addWidget(self.box_table)
+        orientation_note = QLabel(
+            "Choose how each box may be turned. X = container length direction; "
+            "Y = container width direction; Up = container height direction."
+        )
+        orientation_note.setWordWrap(True)
+        box_layout.addWidget(orientation_note)
         box_buttons = QHBoxLayout()
         add_button = QPushButton("Add Type")
         add_button.clicked.connect(self._add_type_row)
@@ -305,10 +313,12 @@ class MainWindow(QMainWindow):
             str(row.width if row else 2),
             str(row.height if row else 2),
             str(row.quantity if row else 1),
-            ",".join(row.allowed_orientations if row else CANONICAL_ORIENTATIONS),
+            "",
             str(row.weight) if row and row.weight is not None else "",
         )
         for column, value in enumerate(values):
+            if column == 5:
+                continue
             item = QTableWidgetItem(value)
             if column == 0 and row is not None and row.box_ids is not None:
                 item.setData(Qt.ItemDataRole.UserRole, list(row.box_ids))
@@ -318,6 +328,12 @@ class MainWindow(QMainWindow):
             ):
                 item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.box_table.setItem(row_index, column, item)
+        orientation_selector = OrientationSelector(
+            row.allowed_orientations if row else CANONICAL_ORIENTATIONS
+        )
+        orientation_selector.selectionChanged.connect(self._input_changed)
+        self.box_table.setCellWidget(row_index, 5, orientation_selector)
+        self.box_table.resizeRowToContents(row_index)
 
     def _remove_selected_types(self) -> None:
         rows = sorted({index.row() for index in self.box_table.selectedIndexes()}, reverse=True)
@@ -357,6 +373,12 @@ class MainWindow(QMainWindow):
         item = self.box_table.item(row, column)
         return item.text().strip() if item is not None else ""
 
+    def _orientation_selector(self, row: int) -> OrientationSelector:
+        selector = self.box_table.cellWidget(row, 5)
+        if not isinstance(selector, OrientationSelector):
+            raise GuiInputError(f"Box row {row + 1}: orientation controls are missing.")
+        return selector
+
     def _read_box_rows(self) -> list[BoxTypeRow]:
         rows: list[BoxTypeRow] = []
         weight_required = (
@@ -394,11 +416,9 @@ class MainWindow(QMainWindow):
                     width=dimensions_and_quantity[1],
                     height=dimensions_and_quantity[2],
                     quantity=dimensions_and_quantity[3],
-                    allowed_orientations=tuple(
-                        token
-                        for token in self._table_text(row_index, 5).replace(";", ",").split(",")
-                        if token.strip()
-                    ),
+                    allowed_orientations=self._orientation_selector(
+                        row_index
+                    ).selected_orientations(),
                     box_ids=tuple(stored_ids) if stored_ids is not None else None,
                     weight=weight,
                 )
@@ -539,6 +559,15 @@ class MainWindow(QMainWindow):
             if metadata_path is not None:
                 message += f" and {metadata_path.name}"
             self.statusBar().showMessage(message, 5000)
+
+    def _show_about(self) -> None:
+        QMessageBox.about(
+            self,
+            "About 3D Container Loading Optimizer",
+            f"3D Container Loading Optimizer v{__version__}\n\n"
+            "Validated Fast, Hybrid Optimize, Compare, and standalone CP-SAT "
+            "container-loading workflows.",
+        )
 
     @staticmethod
     def _sidecar_metadata_path(solution_path: Path) -> Path:
