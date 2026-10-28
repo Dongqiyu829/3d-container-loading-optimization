@@ -104,14 +104,17 @@ class CapturedJob(WindowsJob):
             finally: self.capture.close()
 
 
-def run_harmless(mode, stage):
-    if mode not in ("normal", "flood", "tree", "dependencies"): raise ValueError("fixed dummy modes only")
+def run_harmless(mode, stage, *, proposal=None, review=None):
+    if mode not in ("normal", "flood", "tree", "dependencies", "preflight_cp", "preflight_oracle"): raise ValueError("fixed dummy modes only")
     worker = Path(__file__).with_name("p1f_dummy.py")
     with tempfile.TemporaryDirectory(prefix="p1f-pipes-") as td:
+        if mode.startswith("preflight_"):
+            write_new(td, "proposal.json", proposal, 1_000_000)
+            write_new(td, "review.json", {"review":review})
         capture = PipeCapture(td)
         factory = lambda **kw: CapturedJob(capture, **kw)
         try:
-            flags = ["-I", "-B"] if mode == "dependencies" else ["-I", "-S", "-B"]
+            flags = ["-I", "-B"] if mode == "dependencies" or mode.startswith("preflight_") else ["-I", "-S", "-B"]
             result = _supervise([sys.executable, *flags, str(worker), td, mode], worker.parent,
                                  Path(td)/"result.json", stage, "pipe-dummy", backend=factory,
                                  cancelled=lambda: capture.exceeded)
@@ -122,6 +125,11 @@ def run_harmless(mode, stage):
                       pipe_handles_closed=capture.closed,
                       stdout_hex=(Path(td)/"stdout.bin").read_bytes().hex(),
                       stderr_hex=(Path(td)/"stderr.bin").read_bytes().hex())
+        for marker in ("phase-imports.json", "phase-preflight.json", "preflight-probe.json"):
+            found = list(Path(td).rglob(marker))
+            if len(found) == 1:
+                from research.p1e_protocol import strict_json
+                result[marker] = strict_json(found[0].read_bytes())
         if mode == "dependencies" and (Path(td)/"dependency.json").exists():
             from research.p1e_protocol import strict_json
             with (Path(td)/"dependency.json").open("rb") as f:

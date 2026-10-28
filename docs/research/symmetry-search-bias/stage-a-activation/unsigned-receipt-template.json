@@ -1,0 +1,34 @@
+{
+  "payload": {
+    "schema": "stage-a-activation-human-v1",
+    "decision": "UNSIGNED_NOT_AUTHORIZED",
+    "source_head": "fd504269bd13b00fc605672626c8d09d00932030",
+    "review_head": null,
+    "manifest_sha256": "13260212c82fc207e32d0e6298633f0bde54af3220e791a7f7c5dc8ab6983a54",
+    "jobs_sha256": "8c895f15f0a103e1ec489871e8dbdc3f25a743b7bf3e0c09e6e312d5ed73134b",
+    "limits": {
+      "max_cpsat_calls": 24,
+      "max_oracle_calls": 8,
+      "child_wall_ms": 2000,
+      "stop_wall_ms": 1800,
+      "stage_wall_ms": 90000,
+      "stage_stop_wall_ms": 88000,
+      "cpu_ms": 75000,
+      "cpu_stop_ms": 70000,
+      "job_commit_bytes": 268435456,
+      "peak_review_bytes": 276824064,
+      "active_processes": 4,
+      "cleanup_ms": 1000,
+      "poll_ms": 10,
+      "max_output_bytes": 65536,
+      "max_stdout_bytes": 16384
+    },
+    "worker_version": "stage-a-activation-worker-v1",
+    "evidence_root": "results/stage-a-activation-once-v1",
+    "nonce": null,
+    "issued_at": null,
+    "expires_at": null
+  },
+  "key_id": null,
+  "signature": null
+}

@@ -1,0 +1,33 @@
+{
+  "schema": "stage-a-activation-history-v1",
+  "launcher01": {
+    "source_head": "e58b61c47b30edd9cfa9deae47cc540a92669753",
+    "status": "PowerShell Tee output-directory failure; no test JSON/log produced; not accepted evidence",
+    "observed_worker_count": null,
+    "automatic_scientific_retry": false
+  },
+  "run02": {
+    "source_head": "e58b61c47b30edd9cfa9deae47cc540a92669753",
+    "tests": 55,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "observed_dummy_roots": 5,
+    "CP_preflight": "CHILD_WALL_LIMIT",
+    "Oracle_preflight": "CHILD_WALL_LIMIT",
+    "solves": 0
+  },
+  "run03": {
+    "source_head": "fd504269bd13b00fc605672626c8d09d00932030",
+    "tests": 53,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "observed_dummy_roots": 0,
+    "worker_tests_executed": false,
+    "change_reason": "preserve OS terminal accounting if pipe closure fails; new Mock regression; preflight dummies NOT retried",
+    "solves": 0
+  },
+  "scope": "mock 32-job loops are not Stage-A experiments; five evidenced harmless roots only in run02. Launcher01 is not used to attest counts. No benchmark or real Stage-A execution.",
+  "artifact_assembly_note": "An artifact-only helper initially used default Windows GBK to read UTF-8 EVIDENCE.md and failed before publication inventory creation. Corrected to explicit UTF-8; no runtime code, tests, budgets or prior results changed."
+}

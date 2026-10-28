@@ -9,8 +9,8 @@ import ast
 from research.symmetry_canonical_input import load_oracle_input
 from research.symmetry_guard import SolveForbidden
 
-VERSION = "p1f-worker-v1"
-MANIFEST_SCHEMA = "p1f-stage-a-unapproved-v1"
+VERSION = "stage-a-activation-worker-v1"
+MANIFEST_SCHEMA = "stage-a-activation-proposal-v1"
 CHILD_ENV = {"OPENBLAS_NUM_THREADS": "1", "OMP_NUM_THREADS": "1", "MKL_NUM_THREADS": "1", "NUMEXPR_NUM_THREADS": "1"}
 ORACLE_SHA = "8dcb6fac0ea7ec29a622b4400ef51d0520ded4f5f3d709962ccb224bbd0d93b8"
 ORACLE_BLOB = "02d9eed12e422666088028a021e21ef1ee2c519a"
@@ -161,7 +161,7 @@ def validate_manifest(m):
     for key in version_fields.split():
         if key.endswith("_sha256"): hash_text(m["versions"][key])
     relative(m["evidence_root"])
-    if m["evidence_root"] != "results/stage-a-p1f-review-v1":
+    if m["evidence_root"] != "results/stage-a-activation-once-v1":
         raise ValueError("unregistered evidence destination")
     if not isinstance(m["sources"], dict) or set(m["sources"]) != set(SOURCES):
         raise ValueError("source allowlist changed")

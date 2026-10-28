@@ -1,4 +1,6 @@
-"""Native adapter bodies and separate result contracts; public execution CLOSED."""
+"""Receipt-gated native bindings. Empty human registry keeps all live calls closed."""
+import time
+WORKER_ENTRY_NS = time.monotonic_ns()
 import base64
 from dataclasses import dataclass
 from pathlib import Path
@@ -8,6 +10,7 @@ from baseline_common import load_instance
 from validate_solution import validate_solution
 from research.p1e_protocol import canonical, digest, exact, strict_json, validate_manifest, validate_snapshot, VERSION
 from research.p1e_plan import verify_sources, critical_versions
+from research import p1e_receipt as receipts
 from research.p1e_receipt import verify_receipt
 from research.symmetry_guard import SolveForbidden
 from research.symmetry_integration import RunSpec, prepare_run, Capture, make_callback, collect_terminal
@@ -55,29 +58,34 @@ class Prepared:
 
 
 def prepare_job(root, manifest, ordinal, *, lease=None):
+    phases = {"prepare_begin_ns":time.monotonic_ns()}
     validate_manifest(manifest)
     if type(ordinal) is not int or not 0 <= ordinal < 32: raise WorkerError("job ordinal")
     # Detach before any later caller mutation; no original instance path exists.
     m = strict_json(canonical(manifest), 1_000_000)
     verify_sources(root, m, lease=lease)
     job = m["jobs"][ordinal]
+    phases["source_verified_ns"] = time.monotonic_ns()
     snap = validate_snapshot(m["inputs"][job["case_id"]]["payload"])
     with tempfile.TemporaryDirectory(prefix="p1f-input-") as td:
         path = Path(td)/"snapshot.json"; path.write_bytes(snap.canonical_json)
         instance = load_instance(path)
     prepared = Prepared(m, job, instance)
+    phases["input_loaded_ns"] = time.monotonic_ns()
     if job["kind"] == "cpsat":
         prepared.cp = prepare_run(instance, RunSpec(**job["config"]))
         if (prepared.cp.metadata["model_sha256"] != job["proto_sha256"]
                 or digest(prepared.cp.metadata["resolved_parameters"]) != job["params_sha256"]):
             raise WorkerError("reconstructed CP proto/params mismatch")
+    phases["model_verified_ns"] = time.monotonic_ns()
+    prepared.phases = phases
     return prepared
 
 
 def _identity(p, kind, evidence):
     if p.job["kind"] != kind or evidence not in ("mock", "native_unvalidated"):
         raise WorkerError("wrong adapter/evidence kind")
-    return {"schema": f"p1f-{kind}-result-v1", "evidence_kind": evidence,
+    return {"schema": f"activation-{kind}-result-v1", "evidence_kind": evidence,
             "source_head": p.manifest["source_head"], "manifest_sha256": digest(p.manifest),
             "job_sha256": p.job["job_sha256"], "objective_kind": p.job["objective"]}
 
@@ -96,9 +104,11 @@ def _cp_body(p, invoke, reader, *, evidence="mock"):
     _assert_prepared(p)
     capture = Capture(p.cp)
     callback = make_callback(capture)
+    p.phases["engine_enter_ns"] = time.monotonic_ns()
     try:
-        invoke(p.cp.artifacts.model, callback)  # tests supply Mock; native entry is closed
+        invoke(p.cp.artifacts.model, callback)
     except Exception as exc: raise WorkerError("CP engine failure: "+type(exc).__name__) from exc
+    finally: p.phases["engine_return_ns"] = time.monotonic_ns()
     response = reader.ResponseProto()
     if len(getattr(response, "solve_log", "").encode()) > 16384: raise WorkerError("CP log quota")
     try: row = collect_terminal(p.cp, reader, capture, evidence_kind=evidence, log_complete=False)
@@ -113,12 +123,14 @@ def _cp_body(p, invoke, reader, *, evidence="mock"):
 def _oracle_body(p, invoke, *, evidence="mock"):
     _assert_prepared(p)
     base = _identity(p, "oracle", evidence)
+    p.phases["engine_enter_ns"] = time.monotonic_ns()
     try:
         raw = invoke(strict_json(canonical(p.instance.raw)), p.job["objective"], max_nodes=200000)
     except OracleIncomplete as exc:
         return {**base, "status": "INCOMPLETE", "objective_value": None, "solution": None,
                 "nodes": None, "candidate_placements": None, "reason": str(exc)}
     except Exception as exc: raise WorkerError("Oracle engine failure: "+type(exc).__name__) from exc
+    finally: p.phases["engine_return_ns"] = time.monotonic_ns()
     exact(raw, "status objective objective_value nodes candidate_placements solution")
     if raw["status"] != "OPTIMAL" or raw["objective"] != p.job["objective"]:
         raise WorkerError("unsupported Oracle response")
@@ -177,58 +189,95 @@ def validate_result(p, result):
             "evidence_kind": result["evidence_kind"], "native_verified": False}
 
 
-def _child_preflight(root, request, kind):
+IMPORTS_DONE_NS = time.monotonic_ns()
+
+
+def _child_preflight(root, request, kind, directory):
+    phases = {"worker_entry_ns":WORKER_ENTRY_NS, "imports_done_ns":IMPORTS_DONE_NS,
+              "preflight_begin_ns":time.monotonic_ns()}
     exact(request, "schema manifest ordinal review_head receipt_b64 attempt runtime_lease")
-    if request["schema"] != f"p1f-{kind}-request-v1": raise WorkerError("wrong worker request schema")
+    if request["schema"] != f"activation-{kind}-request-v1": raise WorkerError("wrong worker request schema")
     bootstrap_crypto()
     receipt = base64.b64decode(request["receipt_b64"], validate=True)
     verify_receipt(receipt, request["manifest"], request["review_head"])
-    # The audited parent owns all runtime read-lock handles through tree cleanup.
-    # This transport claim is not authorization: signature, source, job and hard
-    # execution refusal still apply. Child independently rehashes core binaries.
-    expected = {"fingerprint": digest(request["manifest"]["versions"]), "state": "parent-held-through-cleanup"}
+    from research.p1e_plan import verify_review
+    verify_review(root, request["manifest"], request["review_head"])
+    receipts._slot(root, receipt, request["manifest"], request["review_head"], request["ordinal"], directory)
+    phases["authorization_journal_verified_ns"] = time.monotonic_ns()
+    expected = {"fingerprint":digest(request["manifest"]["versions"]), "state":"parent-held-through-cleanup"}
     if request["runtime_lease"] != expected: raise WorkerError("missing parent runtime lease binding")
     class ParentLeaseView:
         def check(self, versions):
             if any(versions.get(k) != v for k,v in critical_versions().items()):
                 raise WorkerError("child runtime binary/version mismatch")
+    from research.p1f_io import write_new
+    write_new(directory, "phase-imports.json", phases)
     p = prepare_job(root, request["manifest"], request["ordinal"], lease=ParentLeaseView())
     if p.job["kind"] != kind: raise WorkerError("cross-kind request")
-    if request["attempt"] != {"job_sha256": p.job["job_sha256"], "kind": kind, "state": "reserved_before_launch"}:
+    if request["attempt"] != {"job_sha256":p.job["job_sha256"], "kind":kind, "state":"reserved_before_launch"}:
         raise WorkerError("missing exact parent attempt record")
-    return p
+    receipts.claim_launch(root, receipt, p.manifest, request["review_head"], p.job["ordinal"], directory)
+    phases.update(p.phases)
+    phases["preflight_done_ns"] = time.monotonic_ns()
+    p.phases = phases
+    write_new(directory, "phase-preflight.json", phases)
+    return p, receipt
 
 
-def worker_cp(root, request):
-    p = _child_preflight(root, request, "cpsat")
-    execution_closed()  # no flag, test signature or public method bypass in this build
-    return _cp_body(p, p.cp.solver.solve, p.cp.solver, evidence="native_unvalidated")
+def _run_claimed(p, receipt, review, root, directory):
+    """Only the fixed CP/Oracle binding; no externally selectable invoke function."""
+    from research.p1f_io import write_new
+    _assert_prepared(p)
+    receipts.native_marker(root, receipt, p.manifest, review, p.job["ordinal"], directory, "enter")
+    p.phases["native_enter_ns"] = time.monotonic_ns()
+    write_new(directory, "phase-native-enter.json", p.phases)
+    if p.job["kind"] == "cpsat":
+        result = _cp_body(p, p.cp.solver.solve, p.cp.solver, evidence="native_unvalidated")
+    else:
+        # This original algorithm is never imported/executed in zero-Solve tests.
+        from research import tiny_oracle
+        def invoke(raw, objective, *, max_nodes):
+            try: return tiny_oracle.solve(raw, objective, max_nodes=max_nodes)
+            except tiny_oracle.ResourceLimit as exc: raise OracleIncomplete(str(exc)) from exc
+        result = _oracle_body(p, invoke, evidence="native_unvalidated")
+    p.phases["adapter_return_ns"] = time.monotonic_ns()
+    receipts.native_marker(root, receipt, p.manifest, review, p.job["ordinal"], directory, "return")
+    write_new(directory, "phase-native-return.json", p.phases)
+    return result
 
 
-def worker_oracle(root, request):
-    p = _child_preflight(root, request, "oracle")
-    execution_closed()
-    # Import exact authorized Oracle only beyond the closed execution gate.
-    from research import tiny_oracle
-    def invoke(raw, objective, *, max_nodes):
-        try: return tiny_oracle.solve(raw, objective, max_nodes=max_nodes)
-        except tiny_oracle.ResourceLimit as exc: raise OracleIncomplete(str(exc)) from exc
-    return _oracle_body(p, invoke, evidence="native_unvalidated")
+def worker_cp(root, request, directory):
+    p, receipt = _child_preflight(root, request, "cpsat", directory)
+    return _run_claimed(p, receipt, request["review_head"], root, directory)
+
+
+def worker_oracle(root, request, directory):
+    p, receipt = _child_preflight(root, request, "oracle", directory)
+    return _run_claimed(p, receipt, request["review_head"], root, directory)
 
 
 def main():
     import sys
     from research.p1f_io import write_new
+    if len(sys.argv) != 2: raise WorkerError("one fixed request directory required")
     directory = Path(sys.argv[1]).resolve()
     root = Path(__file__).resolve().parents[1]
-    with (directory/"request.json").open("rb") as handle:
-        request = strict_json(handle.read(1_000_001), 1_000_000)
-    # CLI is also closed, before parsing a signed request into any native call.
-    execution_closed()
-    job = request["manifest"]["jobs"][request["ordinal"]]
-    result = worker_cp(root, request) if job["kind"] == "cpsat" else worker_oracle(root, request)
-    write_new(directory, "worker-result.json", result)
-    write_new(directory, "worker-control.json", {"kind": "dummy_ok"})
+    with (directory/"request.json").open("rb") as f:
+        request = strict_json(f.read(1_000_001), 1_000_000)
+    try:
+        # The signature is checked before any job lookup/native dispatch.
+        bootstrap_crypto()
+        verify_receipt(base64.b64decode(request["receipt_b64"], validate=True), request["manifest"], request["review_head"])
+        ordinal = request["ordinal"]
+        if type(ordinal) is not int or not 0 <= ordinal < 32: raise WorkerError("ordinal")
+        job = request["manifest"]["jobs"][ordinal]
+        result = worker_cp(root, request, directory) if job["kind"] == "cpsat" else worker_oracle(root, request, directory)
+        write_new(directory, "worker-result.json", result)
+        write_new(directory, "phase-result-written.json", {"result_written_ns":time.monotonic_ns()})
+        write_new(directory, "worker-control.json", {"kind":"worker_terminal"})
+    except BaseException:
+        # Parent always keeps stderr/OS accounting; no unverified directory writes.
+        raise
 
 
 if __name__ == "__main__":
