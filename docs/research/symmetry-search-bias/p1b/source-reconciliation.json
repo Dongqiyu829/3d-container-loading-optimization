@@ -1,0 +1,116 @@
+{
+  "schema_version": "p1b-source-reconciliation-v1",
+  "p1a_base": "bda901daf5a802a50dcc1f69e1b2a2c782d2fd1b",
+  "october_source": "7e867cd3446fc815442dc5265a6652128ae2cd37",
+  "common_ancestor": "288222b5336e74d8bc10bcf795a190cc9e9292f1",
+  "oracle_source_publication_consent": "pending",
+  "copy_allowlist": [
+    "research/tiny_oracle.py"
+  ],
+  "entries": [
+    {
+      "path": "research/tiny_oracle.py",
+      "october_git_blob": "02d9eed12e422666088028a021e21ef1ee2c519a",
+      "october_git_bytes_sha256": "8dcb6fac0ea7ec29a622b4400ef51d0520ded4f5f3d709962ccb224bbd0d93b8",
+      "p1a_git_bytes_sha256": null,
+      "identical": false,
+      "october_bytes": 7432,
+      "decision": "proposed_single_file_source_copy_requires_explicit_consent"
+    },
+    {
+      "path": "research/oracle_acceptance.py",
+      "october_git_blob": "072ab82ec398f2fd8b3140300754044205ad55f8",
+      "october_git_bytes_sha256": "cffb45350a0c0a85a877928b930680c45f7b7c21c3a2907911337195c4b85348",
+      "p1a_git_bytes_sha256": null,
+      "identical": false,
+      "october_bytes": 4844,
+      "decision": "exclude_no_production_or_legacy_acceptance_merge"
+    },
+    {
+      "path": "cpsat_baseline.py",
+      "october_git_blob": "69127b60eb2bc389b694b8a6c10e7bf4da0fc63d",
+      "october_git_bytes_sha256": "f12e492401a0daab13b533cc6042e33c4391bcf1bb8bb9e03974caae1fd58505",
+      "p1a_git_bytes_sha256": "f1f7c03ed1d94b4861c889f1b501d5661d61957ff9c00d9fb8892572ae124df6",
+      "identical": false,
+      "october_bytes": 25616,
+      "decision": "exclude_no_production_or_legacy_acceptance_merge"
+    },
+    {
+      "path": "cpsat_prefix_search_diagnostics.py",
+      "october_git_blob": "9ee526e5d2ca0d8c77eb09b04cc8f9fe2bc183b6",
+      "october_git_bytes_sha256": "92dfd4efe858044c0b97609d07792c4dd22d7033ea2bdc571e2d2df46ba9d076",
+      "p1a_git_bytes_sha256": "92dfd4efe858044c0b97609d07792c4dd22d7033ea2bdc571e2d2df46ba9d076",
+      "identical": true,
+      "october_bytes": 35908,
+      "decision": "reuse_existing_identical_source"
+    },
+    {
+      "path": "baseline_common.py",
+      "october_git_blob": "8f8c18c59ae078ee4758f831e9779e711724bda6",
+      "october_git_bytes_sha256": "44cc7af8840aeb1442a01f09487ea66a18638e3e181b245baf5c05e0f6139cf0",
+      "p1a_git_bytes_sha256": "44cc7af8840aeb1442a01f09487ea66a18638e3e181b245baf5c05e0f6139cf0",
+      "identical": true,
+      "october_bytes": 4691,
+      "decision": "reuse_existing_identical_source"
+    },
+    {
+      "path": "validate_solution.py",
+      "october_git_blob": "de56ed4ed32bb263359930b9a6efc83f04c686f1",
+      "october_git_bytes_sha256": "af546ff9206195cf5f782e6b531cbc64cc23730507543032f5dbec5a60be8809",
+      "p1a_git_bytes_sha256": "af546ff9206195cf5f782e6b531cbc64cc23730507543032f5dbec5a60be8809",
+      "identical": true,
+      "october_bytes": 20403,
+      "decision": "reuse_existing_identical_source"
+    },
+    {
+      "path": "identical_box_symmetry_audit.py",
+      "october_git_blob": "2c5d2518e4ffe6f9817c972ba8ae8a5fd5cff7c6",
+      "october_git_bytes_sha256": "bf106cf6702314d6bfa36653262691ad0989f6d15522b59ffc55bb2894fb721c",
+      "p1a_git_bytes_sha256": "bf106cf6702314d6bfa36653262691ad0989f6d15522b59ffc55bb2894fb721c",
+      "identical": true,
+      "october_bytes": 23805,
+      "decision": "reuse_existing_identical_source"
+    },
+    {
+      "path": "requirements.txt",
+      "october_git_blob": "dc4c23bec697175b98bc29b7baee78b1b8b08afc",
+      "october_git_bytes_sha256": "5ac12bd0818bcb8d874044500b3bce68fb590644727166fbe84f0dbe4ed882b4",
+      "p1a_git_bytes_sha256": "5ac12bd0818bcb8d874044500b3bce68fb590644727166fbe84f0dbe4ed882b4",
+      "identical": true,
+      "october_bytes": 19,
+      "decision": "reuse_existing_identical_source"
+    }
+  ],
+  "oracle_dependencies": "Python standard library only; no third-party dependency added",
+  "license_review": "No project-level LICENSE found; ownership/publication consent requested; no license invented",
+  "privacy_review": "Selected Oracle source inspected: no private paths, credentials, machine IDs or result payloads",
+  "excluded_categories": [
+    "October commit history",
+    "old results",
+    "old test logs",
+    "old acceptance runner",
+    "production fixes",
+    "GUI",
+    "README reconciliation",
+    "BR data"
+  ],
+  "oracle_static_api_audit": {
+    "sha256": "8dcb6fac0ea7ec29a622b4400ef51d0520ded4f5f3d709962ccb224bbd0d93b8",
+    "api": "solve(raw, objective='volume', *, max_nodes=200000)",
+    "imports": [
+      "from __future__ import annotations",
+      "import argparse",
+      "import itertools",
+      "import json",
+      "import math",
+      "from pathlib import Path"
+    ],
+    "verification": "AST/hash_only_no_module_execution",
+    "max_nodes_default": 200000
+  },
+  "production_model_constructor_ast_equal": {
+    "_build_cpsat_model": true,
+    "build_cpsat_model": true
+  },
+  "publication_mode": "new_integration_code_only_pending_explicit_oracle_source_consent"
+}

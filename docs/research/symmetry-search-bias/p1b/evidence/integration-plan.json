@@ -1,0 +1,2172 @@
+{
+  "actual_cpsat_calls": 0,
+  "actual_oracle_calls": 0,
+  "callback_AA_calibrated": false,
+  "controls": {
+    "absolute_gap_limit": 0,
+    "cp_model_presolve": true,
+    "cp_model_probing_level": 2,
+    "instrumentation": "bounded_scalars_offline_witness_validation_pending",
+    "linearization_level": 2,
+    "random_seed": 0,
+    "relative_gap_limit": 0,
+    "symmetry_level": 2,
+    "volume_bound": false,
+    "workers": 1
+  },
+  "execution_authorized": false,
+  "future_call_limits": {
+    "oracle_max_nodes": 200000,
+    "oracle_wall_seconds": 2,
+    "solve_wall_seconds": 2
+  },
+  "future_stage_limits": {
+    "core-a": {
+      "cpsat_calls": 24,
+      "cpu_seconds": 75,
+      "oracle_calls": 8,
+      "wall_seconds": 90
+    },
+    "core-b": {
+      "cpsat_calls": 24,
+      "cpu_seconds": 75,
+      "oracle_calls": 8,
+      "wall_seconds": 90
+    }
+  },
+  "future_stages_require_separate_approval": true,
+  "intended_future_cpsat_calls": 48,
+  "intended_future_oracle_calls": 16,
+  "oracle_source_contract": {
+    "reason": "publication_consent_or_source_integration_pending",
+    "source_available": false
+  },
+  "oracle_source_reference": {
+    "availability": "not_published_by_P1a_requires_separate_approval",
+    "local_unpublished_commit": "7e867cd3446fc815442dc5265a6652128ae2cd37",
+    "path": "research/tiny_oracle.py",
+    "sha256": "8dcb6fac0ea7ec29a622b4400ef51d0520ded4f5f3d709962ccb224bbd0d93b8"
+  },
+  "os_watchdog_implemented": false,
+  "positive_budget_worker_implemented": false,
+  "results": [],
+  "rows": [
+    {
+      "actual_added_prefix_count": 0,
+      "case_id": "T00",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 0,
+      "future_stage": "core-a",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1"
+          ],
+          "dimensions": [
+            2,
+            2,
+            2
+          ],
+          "type_id": "A",
+          "volume_coefficient": 8,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "volume",
+      "objective_unit": "volume",
+      "oracle_reference_key": "T00:volume",
+      "paired_baseline_key": "T00:volume:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 1,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M0"
+    },
+    {
+      "actual_added_prefix_count": 1,
+      "case_id": "T00",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 0,
+      "future_stage": "core-a",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1"
+          ],
+          "dimensions": [
+            2,
+            2,
+            2
+          ],
+          "type_id": "A",
+          "volume_coefficient": 8,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "volume",
+      "objective_unit": "volume",
+      "oracle_reference_key": "T00:volume",
+      "paired_baseline_key": "T00:volume:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 1,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M1"
+    },
+    {
+      "actual_added_prefix_count": 1,
+      "case_id": "T00",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 0,
+      "future_stage": "core-a",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1"
+          ],
+          "dimensions": [
+            2,
+            2,
+            2
+          ],
+          "type_id": "A",
+          "volume_coefficient": 8,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "volume",
+      "objective_unit": "volume",
+      "oracle_reference_key": "T00:volume",
+      "paired_baseline_key": "T00:volume:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 1,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M2"
+    },
+    {
+      "actual_added_prefix_count": 0,
+      "case_id": "T00",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 0,
+      "future_stage": "core-a",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1"
+          ],
+          "dimensions": [
+            2,
+            2,
+            2
+          ],
+          "type_id": "A",
+          "volume_coefficient": 8,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "count",
+      "objective_unit": "boxes",
+      "oracle_reference_key": "T00:count",
+      "paired_baseline_key": "T00:count:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 1,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M0"
+    },
+    {
+      "actual_added_prefix_count": 1,
+      "case_id": "T00",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 0,
+      "future_stage": "core-a",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1"
+          ],
+          "dimensions": [
+            2,
+            2,
+            2
+          ],
+          "type_id": "A",
+          "volume_coefficient": 8,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "count",
+      "objective_unit": "boxes",
+      "oracle_reference_key": "T00:count",
+      "paired_baseline_key": "T00:count:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 1,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M1"
+    },
+    {
+      "actual_added_prefix_count": 1,
+      "case_id": "T00",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 0,
+      "future_stage": "core-a",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1"
+          ],
+          "dimensions": [
+            2,
+            2,
+            2
+          ],
+          "type_id": "A",
+          "volume_coefficient": 8,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "count",
+      "objective_unit": "boxes",
+      "oracle_reference_key": "T00:count",
+      "paired_baseline_key": "T00:count:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 1,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M2"
+    },
+    {
+      "actual_added_prefix_count": 0,
+      "case_id": "T01",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 2,
+      "future_stage": "core-a",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 1,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "volume",
+      "objective_unit": "volume",
+      "oracle_reference_key": "T01:volume",
+      "paired_baseline_key": "T01:volume:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M0"
+    },
+    {
+      "actual_added_prefix_count": 2,
+      "case_id": "T01",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 2,
+      "future_stage": "core-a",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 1,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "volume",
+      "objective_unit": "volume",
+      "oracle_reference_key": "T01:volume",
+      "paired_baseline_key": "T01:volume:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M1"
+    },
+    {
+      "actual_added_prefix_count": 2,
+      "case_id": "T01",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 2,
+      "future_stage": "core-a",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 1,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "volume",
+      "objective_unit": "volume",
+      "oracle_reference_key": "T01:volume",
+      "paired_baseline_key": "T01:volume:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M2"
+    },
+    {
+      "actual_added_prefix_count": 0,
+      "case_id": "T01",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 2,
+      "future_stage": "core-a",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 1,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "count",
+      "objective_unit": "boxes",
+      "oracle_reference_key": "T01:count",
+      "paired_baseline_key": "T01:count:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M0"
+    },
+    {
+      "actual_added_prefix_count": 2,
+      "case_id": "T01",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 2,
+      "future_stage": "core-a",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 1,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "count",
+      "objective_unit": "boxes",
+      "oracle_reference_key": "T01:count",
+      "paired_baseline_key": "T01:count:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M1"
+    },
+    {
+      "actual_added_prefix_count": 2,
+      "case_id": "T01",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 2,
+      "future_stage": "core-a",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 1,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "count",
+      "objective_unit": "boxes",
+      "oracle_reference_key": "T01:count",
+      "paired_baseline_key": "T01:count:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M2"
+    },
+    {
+      "actual_added_prefix_count": 0,
+      "case_id": "T02",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 3,
+      "future_stage": "core-a",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 1,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "volume",
+      "objective_unit": "volume",
+      "oracle_reference_key": "T02:volume",
+      "paired_baseline_key": "T02:volume:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M0"
+    },
+    {
+      "actual_added_prefix_count": 2,
+      "case_id": "T02",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 3,
+      "future_stage": "core-a",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 1,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "volume",
+      "objective_unit": "volume",
+      "oracle_reference_key": "T02:volume",
+      "paired_baseline_key": "T02:volume:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M1"
+    },
+    {
+      "actual_added_prefix_count": 2,
+      "case_id": "T02",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 3,
+      "future_stage": "core-a",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 1,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "volume",
+      "objective_unit": "volume",
+      "oracle_reference_key": "T02:volume",
+      "paired_baseline_key": "T02:volume:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M2"
+    },
+    {
+      "actual_added_prefix_count": 0,
+      "case_id": "T02",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 3,
+      "future_stage": "core-a",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 1,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "count",
+      "objective_unit": "boxes",
+      "oracle_reference_key": "T02:count",
+      "paired_baseline_key": "T02:count:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M0"
+    },
+    {
+      "actual_added_prefix_count": 2,
+      "case_id": "T02",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 3,
+      "future_stage": "core-a",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 1,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "count",
+      "objective_unit": "boxes",
+      "oracle_reference_key": "T02:count",
+      "paired_baseline_key": "T02:count:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M1"
+    },
+    {
+      "actual_added_prefix_count": 2,
+      "case_id": "T02",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 3,
+      "future_stage": "core-a",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 1,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "count",
+      "objective_unit": "boxes",
+      "oracle_reference_key": "T02:count",
+      "paired_baseline_key": "T02:count:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M2"
+    },
+    {
+      "actual_added_prefix_count": 0,
+      "case_id": "T03",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 3,
+      "future_stage": "core-a",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1"
+          ],
+          "dimensions": [
+            3,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 3,
+          "weight": 2
+        },
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "b0",
+            "b1"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "B",
+          "volume_coefficient": 1,
+          "weight": 1
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "volume",
+      "objective_unit": "volume",
+      "oracle_reference_key": "T03:volume",
+      "paired_baseline_key": "T03:volume:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M0"
+    },
+    {
+      "actual_added_prefix_count": 2,
+      "case_id": "T03",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 3,
+      "future_stage": "core-a",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1"
+          ],
+          "dimensions": [
+            3,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 3,
+          "weight": 2
+        },
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "b0",
+            "b1"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "B",
+          "volume_coefficient": 1,
+          "weight": 1
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "volume",
+      "objective_unit": "volume",
+      "oracle_reference_key": "T03:volume",
+      "paired_baseline_key": "T03:volume:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M1"
+    },
+    {
+      "actual_added_prefix_count": 2,
+      "case_id": "T03",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 3,
+      "future_stage": "core-a",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1"
+          ],
+          "dimensions": [
+            3,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 3,
+          "weight": 2
+        },
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "b0",
+            "b1"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "B",
+          "volume_coefficient": 1,
+          "weight": 1
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "volume",
+      "objective_unit": "volume",
+      "oracle_reference_key": "T03:volume",
+      "paired_baseline_key": "T03:volume:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M2"
+    },
+    {
+      "actual_added_prefix_count": 0,
+      "case_id": "T03",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 2,
+      "future_stage": "core-a",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1"
+          ],
+          "dimensions": [
+            3,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 3,
+          "weight": 2
+        },
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "b0",
+            "b1"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "B",
+          "volume_coefficient": 1,
+          "weight": 1
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "count",
+      "objective_unit": "boxes",
+      "oracle_reference_key": "T03:count",
+      "paired_baseline_key": "T03:count:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M0"
+    },
+    {
+      "actual_added_prefix_count": 2,
+      "case_id": "T03",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 2,
+      "future_stage": "core-a",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1"
+          ],
+          "dimensions": [
+            3,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 3,
+          "weight": 2
+        },
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "b0",
+            "b1"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "B",
+          "volume_coefficient": 1,
+          "weight": 1
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "count",
+      "objective_unit": "boxes",
+      "oracle_reference_key": "T03:count",
+      "paired_baseline_key": "T03:count:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M1"
+    },
+    {
+      "actual_added_prefix_count": 2,
+      "case_id": "T03",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 2,
+      "future_stage": "core-a",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1"
+          ],
+          "dimensions": [
+            3,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 3,
+          "weight": 2
+        },
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "b0",
+            "b1"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "B",
+          "volume_coefficient": 1,
+          "weight": 1
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "count",
+      "objective_unit": "boxes",
+      "oracle_reference_key": "T03:count",
+      "paired_baseline_key": "T03:count:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M2"
+    },
+    {
+      "actual_added_prefix_count": 0,
+      "case_id": "T04",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 2,
+      "future_stage": "core-b",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH",
+            "WLH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "dimensions": [
+            2,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 2,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "volume",
+      "objective_unit": "volume",
+      "oracle_reference_key": "T04:volume",
+      "paired_baseline_key": "T04:volume:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M0"
+    },
+    {
+      "actual_added_prefix_count": 2,
+      "case_id": "T04",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 2,
+      "future_stage": "core-b",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH",
+            "WLH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "dimensions": [
+            2,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 2,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "volume",
+      "objective_unit": "volume",
+      "oracle_reference_key": "T04:volume",
+      "paired_baseline_key": "T04:volume:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M1"
+    },
+    {
+      "actual_added_prefix_count": 2,
+      "case_id": "T04",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 2,
+      "future_stage": "core-b",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH",
+            "WLH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "dimensions": [
+            2,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 2,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "volume",
+      "objective_unit": "volume",
+      "oracle_reference_key": "T04:volume",
+      "paired_baseline_key": "T04:volume:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M2"
+    },
+    {
+      "actual_added_prefix_count": 0,
+      "case_id": "T04",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 1,
+      "future_stage": "core-b",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH",
+            "WLH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "dimensions": [
+            2,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 2,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "count",
+      "objective_unit": "boxes",
+      "oracle_reference_key": "T04:count",
+      "paired_baseline_key": "T04:count:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M0"
+    },
+    {
+      "actual_added_prefix_count": 2,
+      "case_id": "T04",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 1,
+      "future_stage": "core-b",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH",
+            "WLH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "dimensions": [
+            2,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 2,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "count",
+      "objective_unit": "boxes",
+      "oracle_reference_key": "T04:count",
+      "paired_baseline_key": "T04:count:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M1"
+    },
+    {
+      "actual_added_prefix_count": 2,
+      "case_id": "T04",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 1,
+      "future_stage": "core-b",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH",
+            "WLH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "dimensions": [
+            2,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 2,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "count",
+      "objective_unit": "boxes",
+      "oracle_reference_key": "T04:count",
+      "paired_baseline_key": "T04:count:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M2"
+    },
+    {
+      "actual_added_prefix_count": 0,
+      "case_id": "T05",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 8,
+      "future_stage": "core-b",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH",
+            "WLH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "dimensions": [
+            2,
+            2,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 4,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "volume",
+      "objective_unit": "volume",
+      "oracle_reference_key": "T05:volume",
+      "paired_baseline_key": "T05:volume:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M0"
+    },
+    {
+      "actual_added_prefix_count": 2,
+      "case_id": "T05",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 8,
+      "future_stage": "core-b",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH",
+            "WLH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "dimensions": [
+            2,
+            2,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 4,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "volume",
+      "objective_unit": "volume",
+      "oracle_reference_key": "T05:volume",
+      "paired_baseline_key": "T05:volume:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M1"
+    },
+    {
+      "actual_added_prefix_count": 2,
+      "case_id": "T05",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 8,
+      "future_stage": "core-b",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH",
+            "WLH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "dimensions": [
+            2,
+            2,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 4,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "volume",
+      "objective_unit": "volume",
+      "oracle_reference_key": "T05:volume",
+      "paired_baseline_key": "T05:volume:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M2"
+    },
+    {
+      "actual_added_prefix_count": 0,
+      "case_id": "T05",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 2,
+      "future_stage": "core-b",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH",
+            "WLH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "dimensions": [
+            2,
+            2,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 4,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "count",
+      "objective_unit": "boxes",
+      "oracle_reference_key": "T05:count",
+      "paired_baseline_key": "T05:count:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M0"
+    },
+    {
+      "actual_added_prefix_count": 2,
+      "case_id": "T05",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 2,
+      "future_stage": "core-b",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH",
+            "WLH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "dimensions": [
+            2,
+            2,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 4,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "count",
+      "objective_unit": "boxes",
+      "oracle_reference_key": "T05:count",
+      "paired_baseline_key": "T05:count:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M1"
+    },
+    {
+      "actual_added_prefix_count": 2,
+      "case_id": "T05",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 2,
+      "future_stage": "core-b",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH",
+            "WLH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1",
+            "a2"
+          ],
+          "dimensions": [
+            2,
+            2,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 4,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "count",
+      "objective_unit": "boxes",
+      "oracle_reference_key": "T05:count",
+      "paired_baseline_key": "T05:count:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M2"
+    },
+    {
+      "actual_added_prefix_count": 0,
+      "case_id": "T06",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 4,
+      "future_stage": "core-b",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1"
+          ],
+          "dimensions": [
+            2,
+            2,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 4,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "volume",
+      "objective_unit": "volume",
+      "oracle_reference_key": "T06:volume",
+      "paired_baseline_key": "T06:volume:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 1,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M0"
+    },
+    {
+      "actual_added_prefix_count": 1,
+      "case_id": "T06",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 4,
+      "future_stage": "core-b",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1"
+          ],
+          "dimensions": [
+            2,
+            2,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 4,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "volume",
+      "objective_unit": "volume",
+      "oracle_reference_key": "T06:volume",
+      "paired_baseline_key": "T06:volume:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 1,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M1"
+    },
+    {
+      "actual_added_prefix_count": 1,
+      "case_id": "T06",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 4,
+      "future_stage": "core-b",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1"
+          ],
+          "dimensions": [
+            2,
+            2,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 4,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "volume",
+      "objective_unit": "volume",
+      "oracle_reference_key": "T06:volume",
+      "paired_baseline_key": "T06:volume:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 1,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M2"
+    },
+    {
+      "actual_added_prefix_count": 0,
+      "case_id": "T06",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 1,
+      "future_stage": "core-b",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1"
+          ],
+          "dimensions": [
+            2,
+            2,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 4,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "count",
+      "objective_unit": "boxes",
+      "oracle_reference_key": "T06:count",
+      "paired_baseline_key": "T06:count:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 1,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M0"
+    },
+    {
+      "actual_added_prefix_count": 1,
+      "case_id": "T06",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 1,
+      "future_stage": "core-b",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1"
+          ],
+          "dimensions": [
+            2,
+            2,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 4,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "count",
+      "objective_unit": "boxes",
+      "oracle_reference_key": "T06:count",
+      "paired_baseline_key": "T06:count:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 1,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M1"
+    },
+    {
+      "actual_added_prefix_count": 1,
+      "case_id": "T06",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 1,
+      "future_stage": "core-b",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1"
+          ],
+          "dimensions": [
+            2,
+            2,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 4,
+          "weight": null
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "count",
+      "objective_unit": "boxes",
+      "oracle_reference_key": "T06:count",
+      "paired_baseline_key": "T06:count:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 1,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M2"
+    },
+    {
+      "actual_added_prefix_count": 0,
+      "case_id": "T07",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 1,
+      "future_stage": "core-b",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 1,
+          "weight": 2
+        },
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "b0",
+            "b1"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "B",
+          "volume_coefficient": 1,
+          "weight": 1
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "volume",
+      "objective_unit": "volume",
+      "oracle_reference_key": "T07:volume",
+      "paired_baseline_key": "T07:volume:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M0"
+    },
+    {
+      "actual_added_prefix_count": 2,
+      "case_id": "T07",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 1,
+      "future_stage": "core-b",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 1,
+          "weight": 2
+        },
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "b0",
+            "b1"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "B",
+          "volume_coefficient": 1,
+          "weight": 1
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "volume",
+      "objective_unit": "volume",
+      "oracle_reference_key": "T07:volume",
+      "paired_baseline_key": "T07:volume:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M1"
+    },
+    {
+      "actual_added_prefix_count": 2,
+      "case_id": "T07",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 1,
+      "future_stage": "core-b",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 1,
+          "weight": 2
+        },
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "b0",
+            "b1"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "B",
+          "volume_coefficient": 1,
+          "weight": 1
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "volume",
+      "objective_unit": "volume",
+      "oracle_reference_key": "T07:volume",
+      "paired_baseline_key": "T07:volume:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M2"
+    },
+    {
+      "actual_added_prefix_count": 0,
+      "case_id": "T07",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 1,
+      "future_stage": "core-b",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 1,
+          "weight": 2
+        },
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "b0",
+            "b1"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "B",
+          "volume_coefficient": 1,
+          "weight": 1
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "count",
+      "objective_unit": "boxes",
+      "oracle_reference_key": "T07:count",
+      "paired_baseline_key": "T07:count:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M0"
+    },
+    {
+      "actual_added_prefix_count": 2,
+      "case_id": "T07",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 1,
+      "future_stage": "core-b",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 1,
+          "weight": 2
+        },
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "b0",
+            "b1"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "B",
+          "volume_coefficient": 1,
+          "weight": 1
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "count",
+      "objective_unit": "boxes",
+      "oracle_reference_key": "T07:count",
+      "paired_baseline_key": "T07:count:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M1"
+    },
+    {
+      "actual_added_prefix_count": 2,
+      "case_id": "T07",
+      "child_wall_scope": "from_owned_process_start_including_import_and_build",
+      "construction_order": "source",
+      "expectation_status": "manual_prediction_not_solver_result",
+      "expected_objective_manual": 1,
+      "future_stage": "core-b",
+      "groups": [
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "a0",
+            "a1"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "A",
+          "volume_coefficient": 1,
+          "weight": 2
+        },
+        {
+          "allowed_orientations": [
+            "LWH"
+          ],
+          "box_ids": [
+            "b0",
+            "b1"
+          ],
+          "dimensions": [
+            1,
+            1,
+            1
+          ],
+          "type_id": "B",
+          "volume_coefficient": 1,
+          "weight": 1
+        }
+      ],
+      "internal_solver_limit_seconds": 2,
+      "no_retries": true,
+      "objective_kind": "count",
+      "objective_unit": "boxes",
+      "oracle_reference_key": "T07:count",
+      "paired_baseline_key": "T07:count:source:cold:B0:LP2:SYM2:M0",
+      "potential_prefix_count": 2,
+      "proposed_child_hard_wall_seconds": 2,
+      "variant": "M2"
+    }
+  ],
+  "schema_version": "symmetry-integration-plan-v1",
+  "source_reconciliation": "docs/research/symmetry-search-bias/p1b/source-reconciliation.json",
+  "stage": "plan",
+  "static_compatibility": [
+    {
+      "box_count": 2,
+      "candidate_cardinality_closed_form": 0,
+      "case_id": "T00",
+      "compatible_objectives": [
+        "volume",
+        "count"
+      ],
+      "container_cells": 1,
+      "oracle_calls": 0,
+      "verification": "static_input_cardinality_not_optimality"
+    },
+    {
+      "box_count": 3,
+      "candidate_cardinality_closed_form": 6,
+      "case_id": "T01",
+      "compatible_objectives": [
+        "volume",
+        "count"
+      ],
+      "container_cells": 2,
+      "oracle_calls": 0,
+      "verification": "static_input_cardinality_not_optimality"
+    },
+    {
+      "box_count": 3,
+      "candidate_cardinality_closed_form": 9,
+      "case_id": "T02",
+      "compatible_objectives": [
+        "volume",
+        "count"
+      ],
+      "container_cells": 3,
+      "oracle_calls": 0,
+      "verification": "static_input_cardinality_not_optimality"
+    },
+    {
+      "box_count": 4,
+      "candidate_cardinality_closed_form": 8,
+      "case_id": "T03",
+      "compatible_objectives": [
+        "volume",
+        "count"
+      ],
+      "container_cells": 3,
+      "oracle_calls": 0,
+      "verification": "static_input_cardinality_not_optimality"
+    },
+    {
+      "box_count": 3,
+      "candidate_cardinality_closed_form": 3,
+      "case_id": "T04",
+      "compatible_objectives": [
+        "volume",
+        "count"
+      ],
+      "container_cells": 2,
+      "oracle_calls": 0,
+      "verification": "static_input_cardinality_not_optimality"
+    },
+    {
+      "box_count": 3,
+      "candidate_cardinality_closed_form": 6,
+      "case_id": "T05",
+      "compatible_objectives": [
+        "volume",
+        "count"
+      ],
+      "container_cells": 8,
+      "oracle_calls": 0,
+      "verification": "static_input_cardinality_not_optimality"
+    },
+    {
+      "box_count": 2,
+      "candidate_cardinality_closed_form": 8,
+      "case_id": "T06",
+      "compatible_objectives": [
+        "volume",
+        "count"
+      ],
+      "container_cells": 9,
+      "oracle_calls": 0,
+      "verification": "static_input_cardinality_not_optimality"
+    },
+    {
+      "box_count": 4,
+      "candidate_cardinality_closed_form": 8,
+      "case_id": "T07",
+      "compatible_objectives": [
+        "volume",
+        "count"
+      ],
+      "container_cells": 2,
+      "oracle_calls": 0,
+      "verification": "static_input_cardinality_not_optimality"
+    }
+  ]
+}
