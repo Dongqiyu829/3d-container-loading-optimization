@@ -1,0 +1,75 @@
+{
+  "scope": "new P1d development tests only; not October logs or benchmark results",
+  "runs": [
+    {
+      "local_record": "p1d-mock-01.json",
+      "tests_run": 30,
+      "failures": 1,
+      "errors": 0,
+      "skips": 0,
+      "executed_cpsat_calls": 0,
+      "executed_oracle_calls": 0
+    },
+    {
+      "local_record": "p1d-native-01.json",
+      "tests_run": 40,
+      "failures": 1,
+      "errors": 1,
+      "skips": 0,
+      "executed_cpsat_calls": 0,
+      "executed_oracle_calls": 0
+    },
+    {
+      "local_record": "p1d-native-02.json",
+      "tests_run": 43,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "executed_cpsat_calls": 0,
+      "executed_oracle_calls": 0
+    },
+    {
+      "local_record": "p1d-native-03.json",
+      "tests_run": 44,
+      "failures": 3,
+      "errors": 0,
+      "skips": 0,
+      "executed_cpsat_calls": 0,
+      "executed_oracle_calls": 0
+    },
+    {
+      "local_record": "p1d-native-04.json",
+      "tests_run": 45,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "executed_cpsat_calls": 0,
+      "executed_oracle_calls": 0
+    }
+  ],
+  "failure_explanations": [
+    {
+      "run": "p1d-mock-01.json",
+      "finding": "new checkout CRLF expansion changed Oracle working bytes to 7600; restored exactly from approved 7432-byte Git blob; committed Oracle unchanged"
+    },
+    {
+      "run": "p1d-native-01.json",
+      "finding": "peak memory 102903808 exceeded configured commit limit 100663296; allocation was denied; final test separates readback/denial/peak; no zero-overshoot claim"
+    },
+    {
+      "run": "p1d-native-01.json",
+      "finding": "temporary CWD retained during Windows exit cleanup; final controller requires root signaled plus job empty and uses permanent worker CWD"
+    },
+    {
+      "run": "p1d-native-03.json",
+      "finding": "three false orphan classifications due to asynchronous job-member counters after signaled root; final bounded drain preserves all resource deadlines; two regression tests added"
+    }
+  ],
+  "dummy_root_launch_attempts_by_os_round": [
+    11,
+    11,
+    11,
+    11
+  ],
+  "no_automatic_job_retry": true
+}

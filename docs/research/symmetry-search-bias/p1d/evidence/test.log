@@ -1,0 +1,51 @@
+test_existing_execution_entries_still_refuse (research.tests.test_p1d_input.GateTests.test_existing_execution_entries_still_refuse) ... ok
+test_guard_active_before_test_imports (research.tests.test_p1d_input.GateTests.test_guard_active_before_test_imports) ... ok
+test_overflow_is_instrumentation_censored (research.tests.test_p1d_input.GateTests.test_overflow_is_instrumentation_censored) ... ok
+test_proposal_digest_binds_every_component (research.tests.test_p1d_input.GateTests.test_proposal_digest_binds_every_component) ... ok
+test_proposal_rejects_missing_hash_repeated_job_and_over_cap (research.tests.test_p1d_input.GateTests.test_proposal_rejects_missing_hash_repeated_job_and_over_cap) ... ok
+test_unapproved_manifest_and_boolean_cannot_enable_native_dispatch (research.tests.test_p1d_input.GateTests.test_unapproved_manifest_and_boolean_cannot_enable_native_dispatch) ... ok
+test_all_eight_existing_fixtures_prevalidated_without_search (research.tests.test_p1d_input.InputTests.test_all_eight_existing_fixtures_prevalidated_without_search) ... ok
+test_dimensions_and_boolean_rejected (research.tests.test_p1d_input.InputTests.test_dimensions_and_boolean_rejected) ... ok
+test_explicit_null_weight_rejected_without_capacity (research.tests.test_p1d_input.InputTests.test_explicit_null_weight_rejected_without_capacity) ... ok
+test_invalid_and_duplicate_orientations (research.tests.test_p1d_input.InputTests.test_invalid_and_duplicate_orientations) ... ok
+test_malformed_units (research.tests.test_p1d_input.InputTests.test_malformed_units) ... ok
+test_missing_required_weights (research.tests.test_p1d_input.InputTests.test_missing_required_weights) ... ok
+test_no_second_path_read_after_validation (research.tests.test_p1d_input.InputTests.test_no_second_path_read_after_validation) ... ok
+test_oracle_authorized_bytes_unchanged (research.tests.test_p1d_input.InputTests.test_oracle_authorized_bytes_unchanged) ... ok
+test_original_validator_is_called_with_empty_witness (research.tests.test_p1d_input.InputTests.test_original_validator_is_called_with_empty_witness) ... ok
+test_snapshot_is_detached_from_file_and_consumer_mutation (research.tests.test_p1d_input.InputTests.test_snapshot_is_detached_from_file_and_consumer_mutation) ... ok
+test_unknown_keys_rejected_at_both_levels (research.tests.test_p1d_input.InputTests.test_unknown_keys_rejected_at_both_levels) ... ok
+test_accounting_unavailable_closes_and_prevents_next_job (research.tests.test_p1d_watchdog.ControllerTests.test_accounting_unavailable_closes_and_prevents_next_job) ... ok
+test_cpu_limit_stops_and_charges_final_cpu (research.tests.test_p1d_watchdog.ControllerTests.test_cpu_limit_stops_and_charges_final_cpu) ... ok
+test_decreasing_cpu_rejected (research.tests.test_p1d_watchdog.ControllerTests.test_decreasing_cpu_rejected) ... ok
+test_duplicate_and_attempt_cap_no_retry (research.tests.test_p1d_watchdog.ControllerTests.test_duplicate_and_attempt_cap_no_retry) ... ok
+test_exit_between_poll_and_root_check_refreshes_job_sample (research.tests.test_p1d_watchdog.ControllerTests.test_exit_between_poll_and_root_check_refreshes_job_sample) ... ok
+test_final_cpu_over_budget_cannot_be_complete (research.tests.test_p1d_watchdog.ControllerTests.test_final_cpu_over_budget_cannot_be_complete) ... ok
+test_handle_close_failure_stops_stage (research.tests.test_p1d_watchdog.ControllerTests.test_handle_close_failure_stops_stage) ... ok
+test_invalid_resource_settings (research.tests.test_p1d_watchdog.ControllerTests.test_invalid_resource_settings) ... ok
+test_kill_failure_still_closes_job (research.tests.test_p1d_watchdog.ControllerTests.test_kill_failure_still_closes_job) ... ok
+test_launch_failure_consumes_attempt_and_kills (research.tests.test_p1d_watchdog.ControllerTests.test_launch_failure_consumes_attempt_and_kills) ... ok
+test_no_arbitrary_command_or_solver_mode (research.tests.test_p1d_watchdog.ControllerTests.test_no_arbitrary_command_or_solver_mode) ... ok
+test_normal_accounting_before_launch_and_cleanup_before_close (research.tests.test_p1d_watchdog.ControllerTests.test_normal_accounting_before_launch_and_cleanup_before_close) ... ok
+test_prelaunch_accounting_failure_never_launches (research.tests.test_p1d_watchdog.ControllerTests.test_prelaunch_accounting_failure_never_launches) ... ok
+test_root_exit_with_live_descendants_is_not_complete (research.tests.test_p1d_watchdog.ControllerTests.test_root_exit_with_live_descendants_is_not_complete) ... ok
+test_signaled_root_with_delayed_job_counter_can_drain (research.tests.test_p1d_watchdog.ControllerTests.test_signaled_root_with_delayed_job_counter_can_drain) ... ok
+test_slow_setup_is_included_before_resume (research.tests.test_p1d_watchdog.ControllerTests.test_slow_setup_is_included_before_resume) ... ok
+test_stage_limit_reservation_denies_launch (research.tests.test_p1d_watchdog.ControllerTests.test_stage_limit_reservation_denies_launch) ... ok
+test_wall_limit_kills_owned_tree (research.tests.test_p1d_watchdog.ControllerTests.test_wall_limit_kills_owned_tree) ... ok
+test_commit_memory_limit (research.tests.test_p1d_watchdog.WindowsDummyTests.test_commit_memory_limit) ... ok
+test_cpu_resource_limit (research.tests.test_p1d_watchdog.WindowsDummyTests.test_cpu_resource_limit) ... ok
+test_cumulative_cpu_includes_two_completed_jobs (research.tests.test_p1d_watchdog.WindowsDummyTests.test_cumulative_cpu_includes_two_completed_jobs) ... ok
+test_descendant_cpu_in_final_accounting (research.tests.test_p1d_watchdog.WindowsDummyTests.test_descendant_cpu_in_final_accounting) ... ok
+test_nonzero_exit_and_partial_output (research.tests.test_p1d_watchdog.WindowsDummyTests.test_nonzero_exit_and_partial_output) ... ok
+test_normal_exit (research.tests.test_p1d_watchdog.WindowsDummyTests.test_normal_exit) ... ok
+test_partial_output_is_not_completion (research.tests.test_p1d_watchdog.WindowsDummyTests.test_partial_output_is_not_completion) ... ok
+test_real_orphan_cleanup (research.tests.test_p1d_watchdog.WindowsDummyTests.test_real_orphan_cleanup) ... ok
+test_real_stage_deadline_and_no_retry (research.tests.test_p1d_watchdog.WindowsDummyTests.test_real_stage_deadline_and_no_retry) ... ok
+test_real_wall_timeout_and_tree_cleanup (research.tests.test_p1d_watchdog.WindowsDummyTests.test_real_wall_timeout_and_tree_cleanup) ... ok
+
+----------------------------------------------------------------------
+Ran 45 tests in 2.184s
+
+OK
+{"tests_run": 45, "failures": 0, "errors": 0, "skips": 0, "executed_cpsat_calls": 0, "executed_oracle_calls": 0}

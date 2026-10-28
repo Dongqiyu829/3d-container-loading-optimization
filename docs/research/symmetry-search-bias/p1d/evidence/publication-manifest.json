@@ -1,0 +1,100 @@
+{
+  "schema": "p1d-publication-v1",
+  "base_sha": "003d54c65e826935cefef3ee61187f5c44ba38fe",
+  "new_code_provenance": "authored in isolated P1d worktree; no additional October source copied",
+  "files": [
+    {
+      "path": "research/symmetry_canonical_input.py",
+      "bytes": 1024,
+      "sha256": "664d35d78a8a8f0b6adcd9d2d84bc348f6bed12f0c1a99174be869e757a20a3a"
+    },
+    {
+      "path": "research/symmetry_execution_gate.py",
+      "bytes": 2632,
+      "sha256": "58fa3def2466348af36cdaf0a54320797400c84c95a2a28bc76b4e0d93d0d172"
+    },
+    {
+      "path": "research/_windows_job.py",
+      "bytes": 8730,
+      "sha256": "0db6fce65cac5a5c5b415ee2c07fab5fc3672d57f0cfba34d3098a9ed11da431"
+    },
+    {
+      "path": "research/symmetry_watchdog.py",
+      "bytes": 10252,
+      "sha256": "065e94241509f99fa28b35eb643637a5e1b5889b2aae5215b979222ae45758d8"
+    },
+    {
+      "path": "research/watchdog_dummy.py",
+      "bytes": 2235,
+      "sha256": "54d261b724195ff5a47c0f95c18b98437d6292a9bc7ba2b7f030cb20f43f8fdf"
+    },
+    {
+      "path": "research/run_p1d_zero_tests.py",
+      "bytes": 3906,
+      "sha256": "ecfc8cb09b06dd6a12b65153ec7e89f88cd13b3bc4d4c79eb85c2ecd87835c79"
+    },
+    {
+      "path": "research/tests/test_p1d_input.py",
+      "bytes": 7448,
+      "sha256": "a578d26c09dd65529eedc637295cb83048c8fc168f55b9e0ba15ea5e4cbcaa65"
+    },
+    {
+      "path": "research/tests/test_p1d_watchdog.py",
+      "bytes": 12044,
+      "sha256": "4bc713f20ae69992ef3db43c5db77c537d9f4b2449bd4549dd83d54796c72320"
+    },
+    {
+      "path": "docs/research/symmetry-search-bias/p1d/README.md",
+      "bytes": 12666,
+      "sha256": "9a19a165b03a336a77469dcb0093cec402889b26793895af30e76eb609808304"
+    },
+    {
+      "path": "docs/research/symmetry-search-bias/p1d/evidence/tests.json",
+      "bytes": 20107,
+      "sha256": "faecfdf4b8779cb80d4f20ac246d8574415667a98aa45f9c86a092d3f2d2d045"
+    },
+    {
+      "path": "docs/research/symmetry-search-bias/p1d/evidence/test.log",
+      "bytes": 6561,
+      "sha256": "1149af8d3d56b70e61f1e724b4d844f3e4426b90ce42734bdf8fa87d82416578"
+    },
+    {
+      "path": "docs/research/symmetry-search-bias/p1d/evidence/development-runs.json",
+      "bytes": 2149,
+      "sha256": "3ff1c0ba15261e709f68b29542e659bade6e5879b4deffaae5aa745c03cfb3af"
+    }
+  ],
+  "unchanged_dependencies": [
+    {
+      "path": "baseline_common.py",
+      "base_git_sha256": "44cc7af8840aeb1442a01f09487ea66a18638e3e181b245baf5c05e0f6139cf0",
+      "working_sha256": "561d2ea505f410edd50c3b3d16d63e77561fa4c318f1015c780a94bba66ece63",
+      "note": "working checkout newline conversion can differ; no committed diff"
+    },
+    {
+      "path": "validate_solution.py",
+      "base_git_sha256": "af546ff9206195cf5f782e6b531cbc64cc23730507543032f5dbec5a60be8809",
+      "working_sha256": "13abc763d918486bde9d644d24fe2d4ca7414b5735b52a6e09989afdcf7df8d8",
+      "note": "working checkout newline conversion can differ; no committed diff"
+    },
+    {
+      "path": "research/tiny_oracle.py",
+      "base_git_sha256": "8dcb6fac0ea7ec29a622b4400ef51d0520ded4f5f3d709962ccb224bbd0d93b8",
+      "working_sha256": "8dcb6fac0ea7ec29a622b4400ef51d0520ded4f5f3d709962ccb224bbd0d93b8",
+      "note": "working checkout newline conversion can differ; no committed diff"
+    },
+    {
+      "path": "research/symmetry_guard.py",
+      "base_git_sha256": "a755ed8898f353b8fac091c4d4704cfb726435a0d5d490599bc543ce4ea78384",
+      "working_sha256": "fb422bc4d73b03cef028f2ef6baf815c73c8dc325def213be35c1ae1ba732137",
+      "note": "working checkout newline conversion can differ; no committed diff"
+    }
+  ],
+  "self_hash_excluded": true,
+  "oracle": {
+    "bytes": 7432,
+    "sha256": "8dcb6fac0ea7ec29a622b4400ef51d0520ded4f5f3d709962ccb224bbd0d93b8",
+    "git_blob": "02d9eed12e422666088028a021e21ef1ee2c519a"
+  },
+  "test_evidence_scope": "source_sha256 in tests.json hashes working bytes; base Git hashes here disambiguate inherited CRLF checkout"
+}
