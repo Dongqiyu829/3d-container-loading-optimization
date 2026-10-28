@@ -1,6 +1,6 @@
 # P1f handoff evidence (ZERO native solves)
 
-Task: #41. Base: accepted P1e evidence HEAD `732caeaf25fc4ba192b14d00d20a47f403535ce9` (PR #40). This is an isolated stacked branch; no existing PR is merged. Implementation source freeze S: `29b0ffeb305be2ad8ee2bc8042e320f9a1c14e88`. The subsequent evidence commit R is the immutable PR head: it adds this directory's artifacts and a README sentence repair only; runtime source blobs must equal S. The Issue #41 handoff supplies the exact R SHA (avoids a self-referencing commit hash).
+Task: #41. Base: accepted P1e evidence HEAD `732caeaf25fc4ba192b14d00d20a47f403535ce9` (PR #40). This is an isolated stacked branch; no existing PR is merged. Implementation source freeze S: `29b0ffeb305be2ad8ee2bc8042e320f9a1c14e88`. The initial evidence review R0 was `bc0b329908e6688349c99328eb309593233fdb9d`. The current review R is the subsequent docs-only privacy correction at the immutable PR head; its exact SHA is supplied by the updated PR description and Issue #41 change record (avoids a self-referencing commit hash). R supersedes R0 for any future human review/authorization binding. Runtime source blobs remain identical to S, and the unapproved experiment manifest is unchanged. This correction issues no authorization.
 
 ## Delivered change allowlist and provenance
 
@@ -37,7 +37,7 @@ Final explicit suite at S: **52 tests, 0 failures, 0 errors, 0 skips**, 6.691s; 
 Command (existing local interpreter; no installation or environment mutation):
 
 ```powershell
-& 'C:\Users\dongqiyu\Documents\GitHub\3d-container-loading-optimization\.venv\Scripts\python.exe' -B -m research.run_p1f_zero_tests --crypto-site 'C:\Users\dongqiyu\anaconda3\Lib\site-packages' --evidence results/p1f-04-tests.json --proposal-out results/p1f-04-proposal.json
+& '<PINNED_PYTHON_EXE>' -B -m research.run_p1f_zero_tests --crypto-site '<READ_ONLY_CRYPTO_SITE_PACKAGES>' --evidence results/p1f-04-tests.json --proposal-out results/p1f-04-proposal.json
 ```
 
 The explicit allowlist is 18 old ControllerTests + new P1f tests + one old WindowsDummy normal-exit test. Of52,46 are pure/proto/mock/signature cases and6 touch actual Windows enforcement (one lease-write-denial test, four captured-process cases and one default-stdio process case). No legacy suite/discovery is run. Chain tests use real ephemeral test signatures, durable journal and physics validation; **review checking and supervisor are mocked**, with a borrowed separately tested real OS runtime lease. Post-publication static review/source equality is checked separately at R, without running any job.
