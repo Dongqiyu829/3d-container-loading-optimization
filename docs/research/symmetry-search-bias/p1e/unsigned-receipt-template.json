@@ -1,0 +1,34 @@
+{
+  "payload": {
+    "schema": "p1e-human-receipt-v1",
+    "decision": "UNSIGNED_NOT_AUTHORIZED",
+    "source_head": "723d0783dac7c3b6396f4d71203e5cfd484a3c83",
+    "review_head": null,
+    "manifest_sha256": "93ea25b97de5440953d22586c4a733250c587beb0bd6906036d821eea3713fdd",
+    "jobs_sha256": "82c8b7da7091a320a9b0c2b752f314980cf1fb53e1cf90cfd579d685c2c8f51a",
+    "limits": {
+      "max_cpsat_calls": 24,
+      "max_oracle_calls": 8,
+      "child_wall_ms": 2000,
+      "stop_wall_ms": 1800,
+      "stage_wall_ms": 90000,
+      "stage_stop_wall_ms": 88000,
+      "cpu_ms": 75000,
+      "cpu_stop_ms": 70000,
+      "job_commit_bytes": 268435456,
+      "peak_review_bytes": 276824064,
+      "active_processes": 4,
+      "cleanup_ms": 1000,
+      "poll_ms": 10,
+      "max_output_bytes": 65536,
+      "max_stdout_bytes": 16384
+    },
+    "worker_version": "p1e-worker-v1",
+    "evidence_root": "results/stage-a-p1e-review-v1",
+    "nonce": null,
+    "issued_at": null,
+    "expires_at": null
+  },
+  "key_id": null,
+  "signature": null
+}
