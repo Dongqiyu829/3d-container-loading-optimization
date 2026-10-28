@@ -67,13 +67,21 @@ class ProtocolWindowsTests(unittest.TestCase):
 
     def test_cancellation_terminates_owned_worker(self):
         event = threading.Event()
-        timer = threading.Timer(.8, event.set)
-        timer.start()
+        from research._windows_job import WindowsJob
+        original_start = WindowsJob.start
+        timers = []
+        def start_then_arm(job, argv, cwd):
+            original_start(job, argv, cwd)  # real CreateProcess/Job membership first
+            timer = threading.Timer(.1, event.set)
+            timers.append(timer)
+            timer.start()
         try:
-            r = self.run_case("timeout", cancelled=event.is_set)
+            with patch.object(WindowsJob, "start", start_then_arm):
+                r = self.run_case("timeout", cancelled=event.is_set)
             self.assertEqual(r["classification"], "cancelled")
+            self.assertTrue(r["watchdog"]["root_created"])
         finally:
-            timer.cancel(); timer.join()
+            for timer in timers: timer.cancel(); timer.join()
 
     def test_cpu_exhaustion(self):
         r = self.run_case("cpu", cpu=.1)
