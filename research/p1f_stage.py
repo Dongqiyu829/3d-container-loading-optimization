@@ -173,12 +173,22 @@ def _native_supervisor(p, request, directory, ledger):
     jobs = []
     def factory(**kw):
         j = CapturedJob(capture, **kw); jobs.append(j); return j
+    stats = {"complete":False,"root_created":False,"reason":"SUPERVISOR_EXCEPTION",
+             "cleanup_confirmed":False,"handles_closed":False,"final_cpu_known":False,
+             "job_accounting":None}
     try:
         stats = _supervise([sys.executable, "-B", "-m", "research.p1f_workers", str(directory)], root,
                            directory/"worker-control.json", ledger, p.job["key"], backend=factory,
                            cancelled=lambda:capture.exceeded, control_kind="worker_terminal")
+    except Exception as exc:
+        stats["error_class"] = type(exc).__name__
+        ledger.stopped = True
     finally:
-        if not capture.closed: capture.close()
+        if not capture.closed:
+            try: capture.close()
+            except Exception as exc:
+                stats.update(complete=False, reason="PIPE_CLOSE_UNCONFIRMED", error_class=type(exc).__name__)
+                ledger.stopped = True
     for name in ("actual_cpsat_calls", "actual_oracle_calls", "dummy_payload"): stats.pop(name, None)
     stats.update(evidence_kind="owned_os_native_process" if jobs and stats.get("root_created") else "native_launch_not_created", root_pid=jobs[0].pid if jobs else None,
                  pipe_handles_closed=capture.closed, stdout_stderr_bytes=capture.saved,

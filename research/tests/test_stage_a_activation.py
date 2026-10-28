@@ -206,6 +206,18 @@ class ActivationTests(unittest.TestCase):
         self.assertEqual(launch.call_args.kwargs["control_kind"],"worker_terminal")
         self.assertTrue((self.directory()/"os-terminal.json").exists())
 
+    def test_pipe_close_exception_preserves_terminal_os_evidence(self):
+        j=self.journal();j.reserve(self.m["jobs"][0]["key"]);self.directory().mkdir(parents=True)
+        p=workers.prepare_job(ROOT,self.m,0,lease=lease());p.parent_lease=lease()
+        capture=Mock();capture.closed=False;capture.saved=0;capture.exceeded=False;capture.close.side_effect=OSError("synthetic close failure")
+        raw={"complete":False,"root_created":False,"job_accounting":None,"final_cpu_known":False}
+        ledger=Mock()
+        with patch.object(stage,"PipeCapture",return_value=capture),patch.object(stage,"_supervise",return_value=raw):
+            response,stats=stage._native_supervisor(p,self.request(),self.directory(),ledger)
+        self.assertIsNone(response);self.assertFalse(stats["complete"])
+        self.assertEqual(stats["reason"],"PIPE_CLOSE_UNCONFIRMED")
+        self.assertTrue(ledger.stopped);self.assertTrue((self.directory()/"os-terminal.json").exists())
+
     def test_resource_final_checks(self):
         ledger=stage.DummyStage(stage.ManifestLimits())
         good={"complete":True,"cleanup_confirmed":True,"handles_closed":True,"pipe_handles_closed":True,"final_cpu_known":True,
@@ -271,7 +283,7 @@ class SourceAndWindowsTests(unittest.TestCase):
             self.assertEqual(probe["native_entry_calls"],0)
         else:
             # A safely stopped 1.8s preflight is measured evidence, NOT a retry or a passing native trial.
-            self.assertIn(result["reason"],("CHILD_WALL_LIMIT","FINAL_CHILD_WALL_LIMIT","OS_RESOURCE_TERMINATION","CHILD_ERROR"))
+            self.assertIn(result["reason"],("CHILD_WALL_LIMIT","FINAL_CHILD_WALL_LIMIT","OS_RESOURCE_TERMINATION"))
 
     def test_fixed_output_and_tree_os(self):
         for mode in ("normal","flood","tree"):

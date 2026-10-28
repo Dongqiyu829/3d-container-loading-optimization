@@ -16,6 +16,7 @@ def main(argv=None):
     parser.add_argument("--evidence",type=Path,required=True)
     parser.add_argument("--proposal-out",type=Path,required=True)
     parser.add_argument("--crypto-site",type=Path)
+    parser.add_argument("--no-worker-tests",action="store_true",help="skip fixed dummy processes; never enables any engine")
     a=parser.parse_args(argv)
     if a.evidence.exists() or a.proposal_out.exists():parser.error("refuse overwrite")
     with ZeroSolveGuard() as guard:
@@ -28,7 +29,11 @@ def main(argv=None):
             "test_count_and_volume_have_distinct_physical_targets","test_native_engine_failures_are_typed",
             "test_mutated_proto_or_input_refuses_before_engine","test_physical_tampering_and_header_mismatch",
             "test_prefix_and_trace_overflow","test_oracle_crlf_and_source_tampering")
-        modules=["research.tests.test_p1d_watchdog.ControllerTests","research.tests.test_stage_a_activation",
+        activation=["research.tests.test_stage_a_activation"] if not a.no_worker_tests else [
+            "research.tests.test_stage_a_activation.ActivationTests",
+            "research.tests.test_stage_a_activation.SourceAndWindowsTests.test_actual_source_read_handles_deny_write_open",
+            "research.tests.test_stage_a_activation.SourceAndWindowsTests.test_fixed_root_shared_across_worktrees"]
+        modules=["research.tests.test_p1d_watchdog.ControllerTests",*activation,
                  "research.tests.test_p1f.ReceiptRegression"]+["research.tests.test_p1f.AdapterTests."+n for n in regression]
         try:
             began=time.perf_counter();m=proposal();proposal_seconds=time.perf_counter()-began
@@ -40,6 +45,7 @@ def main(argv=None):
                   "proposal_build_seconds":proposal_seconds,"runtime_source_lock_seconds":lease_seconds,
                   "real_locked_files":len(runtime.handles),"observations":tests.OBSERVATIONS,
                   "versions":m["versions"],"authority_enrolled":False,"live_stage_launched":False,
+                  "worker_tests_executed":not a.no_worker_tests,
                   "mock_scope":"real S/review Git object, source/runtime read locks, test signatures, journal and physics; native supervisor replaced by Mock; source-handle lifetime wrapper is borrowed in chain tests",
                   "source_sha256":{p:hashlib.sha256((ROOT/p).read_bytes()).hexdigest() for p in
                      (*m["sources"],"research/tests/test_stage_a_activation.py","research/run_stage_a_activation_zero_tests.py")},
