@@ -1,0 +1,33 @@
+{
+  "schema": "budget-revision-runtime-identity-v1",
+  "source_head": "ea0d44a52e8a7e53b427e52f525208d75fdc1f6a",
+  "versions": {
+    "python": "3.12.11",
+    "platform": "win32",
+    "pointer_bits": 64,
+    "ortools": "9.14.6206",
+    "protobuf": "6.31.1",
+    "cryptography": "42.0.5",
+    "python_executable_sha256": "91e76c95f342693156745302b33d8ca332ee4647c414d72486c421a4a19428af",
+    "python_base_sha256": "323377d9bcf1ab107759721ce6b13a3a2a26da539113eb6eade12955fe77e2b4",
+    "python_dll_sha256": "ca1fe33d560c149ea6a9a47f2b8942ae419958f127dbfabab16afbbee679abc1",
+    "ortools_binaries_sha256": "2728f54cc8b3ddefd2eda8c7308c1ac51b7db7307bea5fb3b657868cf966fe17",
+    "crypto_backend_sha256": "5826ffee1ce716598fc6a5ed6b218e911e2cb285dd2faa4c0ecfb737119c1e36",
+    "cffi_backend_sha256": "df50fe6ced850ffb3118def6e071f39e05add8d24435f59fcb4510e8583d1466",
+    "windows_build": 26200,
+    "runtime_packages_sha256": "040026f6f82482dc2b0aa7c612144c8e162612f89fd5529a62f1a01430df7c5f",
+    "python_stdlib_sha256": "a11fb307a20e6f2657df0cf6d3cfc788d29cf95cedcfcca047fabb9d93f0dc3c"
+  },
+  "unchanged_from_base": "53f44b8fd5e5ac67cf204fd17566b2fd533f7609",
+  "inventory_reference": {
+    "commit": "53f44b8fd5e5ac67cf204fd17566b2fd533f7609",
+    "path": "docs/research/symmetry-search-bias/stage-a-activation/evidence/runtime-inventory.json",
+    "bytes": 204402,
+    "sha256": "bfbab3115e51bca3470dc9bb23a560d6ae4da533e2b4bca6cb27d7f557ecd693"
+  },
+  "package_count": 14,
+  "package_files": 1262,
+  "stdlib_files": 625,
+  "test_source_runtime_handles": 1931,
+  "all_test_leases_closed": true
+}

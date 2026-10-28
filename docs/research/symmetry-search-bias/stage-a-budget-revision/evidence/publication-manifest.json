@@ -1,0 +1,81 @@
+{
+  "schema": "stage-a-budget-revision-publication-v1",
+  "base_review": "53f44b8fd5e5ac67cf204fd17566b2fd533f7609",
+  "source_head": "ea0d44a52e8a7e53b427e52f525208d75fdc1f6a",
+  "manifest_canonical_sha256": "1b4db2143bf1cbbd55414b3694603c961b6b4261f81be346cc80c60a1dc3187b",
+  "scope": "All budget-PR changes except this self-referencing inventory. R provided by new PR/Issue. Historical activation inventory remains scoped to base review. No real execution authority.",
+  "files": [
+    {
+      "path": "docs/research/symmetry-search-bias/stage-a-activation/stage-a-manifest.json",
+      "working_bytes": 59736,
+      "working_sha256": "d0feaa5698da747e3d21d200c570539fc85f994f3e52de209bd8ab917701607d",
+      "published_bytes": 59736,
+      "published_sha256": "d0feaa5698da747e3d21d200c570539fc85f994f3e52de209bd8ab917701607d",
+      "git_blob": "6bf50425126f1f2b281d10df391edfc874817db8"
+    },
+    {
+      "path": "docs/research/symmetry-search-bias/stage-a-budget-revision/EVIDENCE.md",
+      "working_bytes": 8084,
+      "working_sha256": "61b26ff2f53054a515a530327bdd6bbc7837509a83997b9ae9d42dc4bf684bdb",
+      "published_bytes": 8084,
+      "published_sha256": "61b26ff2f53054a515a530327bdd6bbc7837509a83997b9ae9d42dc4bf684bdb",
+      "git_blob": "9dd75ba8a73fcd02da1e50992a22155af06ad55d"
+    },
+    {
+      "path": "docs/research/symmetry-search-bias/stage-a-budget-revision/evidence/runtime-identity.json",
+      "working_bytes": 1600,
+      "working_sha256": "dc441f5a679834eb7dfbbdde93e810282da8dde2e7b5891f4edaa68b36dd43da",
+      "published_bytes": 1600,
+      "published_sha256": "dc441f5a679834eb7dfbbdde93e810282da8dde2e7b5891f4edaa68b36dd43da",
+      "git_blob": "00c96133f2cf666fdc475575cb1eafccd9024b09"
+    },
+    {
+      "path": "docs/research/symmetry-search-bias/stage-a-budget-revision/evidence/source-checkout-bytes.json",
+      "working_bytes": 13963,
+      "working_sha256": "3335a9fd8d08aeb764b4d7e86b205768bc1fab2aba5040562827b9279fb82286",
+      "published_bytes": 13963,
+      "published_sha256": "3335a9fd8d08aeb764b4d7e86b205768bc1fab2aba5040562827b9279fb82286",
+      "git_blob": "7c25d1b9e7c84ed16ea80d68c11b4d08c18d3d35"
+    },
+    {
+      "path": "docs/research/symmetry-search-bias/stage-a-budget-revision/evidence/test.log",
+      "working_bytes": 8573,
+      "working_sha256": "8dfcb5452d39310ef08d473b3f27ac59bebc4a161d53c710b6b00060900e9394",
+      "published_bytes": 8573,
+      "published_sha256": "8dfcb5452d39310ef08d473b3f27ac59bebc4a161d53c710b6b00060900e9394",
+      "git_blob": "2e5cae897b53e3a94d064a3243a34aa6bb2535e6"
+    },
+    {
+      "path": "docs/research/symmetry-search-bias/stage-a-budget-revision/evidence/tests.json",
+      "working_bytes": 15976,
+      "working_sha256": "be2a9526069ec26d531a823ecb9afa3904d908f1bc7389ee6508fa45875d194a",
+      "published_bytes": 15976,
+      "published_sha256": "be2a9526069ec26d531a823ecb9afa3904d908f1bc7389ee6508fa45875d194a",
+      "git_blob": "4dde72c87d5c15e940e6c7b26d7d6094a474454d"
+    },
+    {
+      "path": "docs/research/symmetry-search-bias/stage-a-budget-revision/unsigned-receipt-template.json",
+      "working_bytes": 1068,
+      "working_sha256": "dc3ead42b91200838f40b110af1cb84b3b05cce7ee511a6824e7436c6dd7c8f8",
+      "published_bytes": 1068,
+      "published_sha256": "dc3ead42b91200838f40b110af1cb84b3b05cce7ee511a6824e7436c6dd7c8f8",
+      "git_blob": "47c93db53684c883302785db1f374696caeb95e5"
+    },
+    {
+      "path": "research/p1e_protocol.py",
+      "working_bytes": 13563,
+      "working_sha256": "b4ebaeadbde25fbe8c2781a35abfbf8fae69cbefbed52f26163a000a10b8acfe",
+      "published_bytes": 13563,
+      "published_sha256": "b4ebaeadbde25fbe8c2781a35abfbf8fae69cbefbed52f26163a000a10b8acfe",
+      "git_blob": "573da1e5b3299155625f8232dff3a1583398c3ca"
+    },
+    {
+      "path": "research/tests/test_stage_a_activation.py",
+      "working_bytes": 21046,
+      "working_sha256": "1832ec277d7984d78644b6d0c712aba25747646ca63afde9e1cf25846fd2a774",
+      "published_bytes": 21046,
+      "published_sha256": "1832ec277d7984d78644b6d0c712aba25747646ca63afde9e1cf25846fd2a774",
+      "git_blob": "ba96792f125b39d0a64b1a855a198e7a1a963f61"
+    }
+  ]
+}
