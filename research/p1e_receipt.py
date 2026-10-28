@@ -12,7 +12,8 @@ from research.p1e_protocol import (VERSION, canonical, digest, exact, hash_text,
                                   strict_json, validate_manifest)
 
 TRUSTED_LEAD_KEYS = ()  # tuple of enrolled raw Ed25519 public keys; no real enrollment in P1e
-DOMAIN = b"3d-container-loading/P1e/StageA/v1\0"
+DOMAIN = b"3d-container-loading/P1f/StageA/v1\0"
+RECEIPT_SCHEMA = "p1f-human-receipt-v1"
 
 
 def verify_receipt(data, manifest, review_head, *, now=None):
@@ -22,7 +23,7 @@ def verify_receipt(data, manifest, review_head, *, now=None):
     exact(envelope, "payload key_id signature")
     payload = envelope["payload"]
     exact(payload, "schema decision source_head review_head manifest_sha256 jobs_sha256 limits worker_version evidence_root nonce issued_at expires_at")
-    expected = {"schema": "p1e-human-receipt-v1", "decision": "AUTHORIZE_STAGE_A_ONCE",
+    expected = {"schema": RECEIPT_SCHEMA, "decision": "AUTHORIZE_STAGE_A_ONCE",
                 "source_head": manifest["source_head"], "review_head": review_head,
                 "manifest_sha256": digest(manifest), "jobs_sha256": digest(manifest["jobs"]),
                 "limits": manifest["limits"], "worker_version": VERSION,

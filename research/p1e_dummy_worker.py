@@ -5,7 +5,7 @@ from pathlib import Path
 import sys
 import time
 
-VERSION = "p1e-worker-v1"
+VERSION = "p1f-worker-v1"
 MODES = {"ok", "partial", "mismatch", "unknown", "instrumentation", "crash",
          "timeout", "memory", "flood", "oversized_response", "cpu"}
 
@@ -56,7 +56,7 @@ def main():
             or canonical(request) != raw or sha(Path(__file__).read_bytes()) != request["worker_sha256"]):
         return 9
     job = request["job"]
-    expected = {"oracle": "research.p1e_protocol:forbidden_oracle", "cpsat": "research.p1e_protocol:forbidden_cpsat"}
+    expected = {"oracle": "research.p1f_workers:worker_oracle", "cpsat": "research.p1f_workers:worker_cp"}
     if (job["entrypoint"] != expected.get(job["kind"])
             or sha(canonical({k: v for k, v in job.items() if k != "job_sha256"})) != job["job_sha256"]
             or sha(canonical(request["input"]["payload"])) != job["input_sha256"]):
