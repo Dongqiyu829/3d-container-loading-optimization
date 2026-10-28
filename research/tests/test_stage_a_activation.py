@@ -15,7 +15,7 @@ from unittest.mock import Mock, patch
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives import serialization
 from research import p1e_receipt as receipts
-from research.p1e_protocol import canonical, digest, LIMITS
+from research.p1e_protocol import canonical, digest, LIMITS, validate_manifest
 from research.p1e_plan import RuntimeLease, verify_review
 from research.tests.p1e_support import ROOT, proposal
 from research import p1f_stage as stage
@@ -218,6 +218,42 @@ class ActivationTests(unittest.TestCase):
         self.assertEqual(stats["reason"],"PIPE_CLOSE_UNCONFIRMED")
         self.assertTrue(ledger.stopped);self.assertTrue((self.directory()/"os-terminal.json").exists())
 
+    def test_budget_revision_manifest_controller_and_models(self):
+        old=json.loads(subprocess.check_output(["git","show","53f44b8fd5e5ac67cf204fd17566b2fd533f7609:docs/research/symmetry-search-bias/stage-a-activation/stage-a-manifest.json"],cwd=ROOT))
+        revised={"child_wall_ms":5000,"stop_wall_ms":4500,"stage_wall_ms":180000,
+                 "stage_stop_wall_ms":170000,"cpu_ms":120000,"cpu_stop_ms":110000}
+        self.assertEqual(self.m["limits"],{**old["limits"],**revised})
+        self.assertEqual({k for k in LIMITS if LIMITS[k]!=old["limits"][k]},set(revised))
+        self.assertEqual(self.m["limits"],LIMITS)
+        self.assertEqual(self.m["controls"],old["controls"])
+        self.assertEqual(self.m["parameters"],old["parameters"])
+        self.assertEqual(self.m["jobs"],old["jobs"])  # all32 configs/order/input/Proto hashes unchanged
+        self.assertEqual(self.m["inputs"],old["inputs"])
+        self.assertFalse(self.m["execution_authorized"])
+        self.assertNotEqual(self.m["source_head"],old["source_head"])
+        self.assertNotEqual(digest(self.m),digest(old))
+        self.assertEqual(validate_manifest(self.m),digest(self.m))
+        with self.assertRaisesRegex(ValueError,"unreviewed controls/resources"):validate_manifest(old)
+        control=stage.ManifestLimits();control.validate()
+        self.assertEqual((control.child_wall,control.stage_wall,control.cpu),(4.5,170,110))
+        self.assertEqual((control.memory_bytes,control.max_attempts,control.poll,control.cleanup_wall),(268435456,32,.01,1))
+        for old_control in (stage.ManifestLimits(child_wall=1.8),stage.ManifestLimits(stage_wall=88),stage.ManifestLimits(cpu=70)):
+            with self.assertRaises(workers.WorkerError):old_control.validate()
+
+    def test_valid_test_signature_with_old_caps_refuses_before_claim(self):
+        old=json.loads(subprocess.check_output(["git","show","53f44b8fd5e5ac67cf204fd17566b2fd533f7609:docs/research/symmetry-search-bias/stage-a-activation/stage-a-manifest.json"],cwd=ROOT))
+        private=Ed25519PrivateKey.generate()  # ephemeral TEST authority, not human enrollment
+        public=private.public_key().public_bytes(serialization.Encoding.Raw,serialization.PublicFormat.Raw)
+        payload=json.loads(self.receipt)["payload"];payload["limits"]=old["limits"]
+        signature=private.sign(receipts.DOMAIN+canonical(payload))
+        private.public_key().verify(signature,receipts.DOMAIN+canonical(payload))
+        receipt=canonical({"payload":payload,"key_id":receipts.digest_key(public),"signature":base64.b64encode(signature).decode()})
+        with patch.object(receipts,"TRUSTED_LEAD_KEYS",(public,)),patch.object(stage,"_native_supervisor") as launch:
+            with self.assertRaisesRegex(ValueError,"receipt binding mismatch: limits"):
+                stage.execute_stage(self.m,self.r,receipt)
+            launch.assert_not_called()
+        self.assertFalse(self.roots[0].exists())
+
     def test_resource_final_checks(self):
         ledger=stage.DummyStage(stage.ManifestLimits())
         good={"complete":True,"cleanup_confirmed":True,"handles_closed":True,"pipe_handles_closed":True,"final_cpu_known":True,
@@ -230,17 +266,17 @@ class ActivationTests(unittest.TestCase):
         for field,value in (("active_processes",1),("cpu_seconds",float("nan")),("peak_job_memory_bytes",LIMITS["job_commit_bytes"]+1)):
             bad=copy.deepcopy(good);bad["job_accounting"][field]=value
             with self.assertRaises(workers.WorkerError):stage.check_terminal(bad,ledger)
-        for value in (1.8,float("nan"),-1):
+        for value in (LIMITS["stop_wall_ms"]/1000,float("nan"),-1):
             bad=copy.deepcopy(good);bad["child_wall_including_cleanup"]=value
             with self.assertRaises(workers.WorkerError):stage.check_terminal(bad,ledger)
-        ledger.cpu=70
+        ledger.cpu=LIMITS["cpu_stop_ms"]/1000
         with self.assertRaises(workers.WorkerError):stage.check_terminal(good,ledger)
 
     def test_wall_exhausted_after_validation_stops(self):
         original=stage.write_new
         def write(directory,name,value,*args):
             original(directory,name,value,*args)
-            if name=="validation.json":self.last_ledger.started-=90
+            if name=="validation.json":self.last_ledger.started-=self.last_ledger.limits.stage_wall+1
         with patch.object(stage,"_native_supervisor",side_effect=self.fake_supervisor),patch.object(stage,"write_new",side_effect=write):
             with self.assertRaises(workers.WorkerError):stage.execute_stage(self.m,self.r,self.receipt)
         self.assertFalse(list(self.roots[0].rglob("validated-*.json")))
@@ -249,7 +285,7 @@ class ActivationTests(unittest.TestCase):
         original=stage.write_new
         def write(directory,name,value,*args):
             original(directory,name,value,*args)
-            if name=="stage-terminal.json":self.last_ledger.started-=90
+            if name=="stage-terminal.json":self.last_ledger.started-=self.last_ledger.limits.stage_wall+1
         with patch.object(stage,"_native_supervisor",side_effect=self.fake_supervisor),patch.object(stage,"write_new",side_effect=write):
             with self.assertRaises(workers.WorkerError):stage.execute_stage(self.m,self.r,self.receipt)
         self.assertFalse(list(self.roots[0].rglob("COMPLETED.json")))
