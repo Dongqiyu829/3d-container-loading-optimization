@@ -1,0 +1,580 @@
+{
+  "schema": "p1d-zero-solve-tests-v1",
+  "python": "3.12.11",
+  "platform": "win32",
+  "pointer_bits": 64,
+  "windows_version": [
+    10,
+    0,
+    26200
+  ],
+  "test_allowlist": [
+    "research.tests.test_p1d_input",
+    "research.tests.test_p1d_watchdog.ControllerTests",
+    "research.tests.test_p1d_watchdog.WindowsDummyTests"
+  ],
+  "tests_run": 45,
+  "failures": 0,
+  "errors": 0,
+  "skips": 0,
+  "test_results": [
+    {
+      "test": "research.tests.test_p1d_input.GateTests.test_existing_execution_entries_still_refuse",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.GateTests.test_guard_active_before_test_imports",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.GateTests.test_overflow_is_instrumentation_censored",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.GateTests.test_proposal_digest_binds_every_component",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.GateTests.test_proposal_rejects_missing_hash_repeated_job_and_over_cap",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.GateTests.test_unapproved_manifest_and_boolean_cannot_enable_native_dispatch",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.InputTests.test_all_eight_existing_fixtures_prevalidated_without_search",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.InputTests.test_dimensions_and_boolean_rejected",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.InputTests.test_explicit_null_weight_rejected_without_capacity",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.InputTests.test_invalid_and_duplicate_orientations",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.InputTests.test_malformed_units",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.InputTests.test_missing_required_weights",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.InputTests.test_no_second_path_read_after_validation",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.InputTests.test_oracle_authorized_bytes_unchanged",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.InputTests.test_original_validator_is_called_with_empty_witness",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.InputTests.test_snapshot_is_detached_from_file_and_consumer_mutation",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.InputTests.test_unknown_keys_rejected_at_both_levels",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_accounting_unavailable_closes_and_prevents_next_job",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_cpu_limit_stops_and_charges_final_cpu",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_decreasing_cpu_rejected",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_duplicate_and_attempt_cap_no_retry",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_exit_between_poll_and_root_check_refreshes_job_sample",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_final_cpu_over_budget_cannot_be_complete",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_handle_close_failure_stops_stage",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_invalid_resource_settings",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_kill_failure_still_closes_job",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_launch_failure_consumes_attempt_and_kills",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_no_arbitrary_command_or_solver_mode",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_normal_accounting_before_launch_and_cleanup_before_close",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_prelaunch_accounting_failure_never_launches",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_root_exit_with_live_descendants_is_not_complete",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_signaled_root_with_delayed_job_counter_can_drain",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_slow_setup_is_included_before_resume",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_stage_limit_reservation_denies_launch",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_wall_limit_kills_owned_tree",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.WindowsDummyTests.test_commit_memory_limit",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.WindowsDummyTests.test_cpu_resource_limit",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.WindowsDummyTests.test_cumulative_cpu_includes_two_completed_jobs",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.WindowsDummyTests.test_descendant_cpu_in_final_accounting",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.WindowsDummyTests.test_nonzero_exit_and_partial_output",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.WindowsDummyTests.test_normal_exit",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.WindowsDummyTests.test_partial_output_is_not_completion",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.WindowsDummyTests.test_real_orphan_cleanup",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.WindowsDummyTests.test_real_stage_deadline_and_no_retry",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.WindowsDummyTests.test_real_wall_timeout_and_tree_cleanup",
+      "result": "pass"
+    }
+  ],
+  "os_tests_requested": true,
+  "os_dummy_observations": [
+    {
+      "test": "research.tests.test_p1d_watchdog.WindowsDummyTests.test_commit_memory_limit",
+      "dummy_mode": "memory",
+      "evidence_kind": "real_os_dummy",
+      "complete": false,
+      "reason": "MEMORY_EXHAUSTED_REPORTED_BY_DUMMY",
+      "error_class": null,
+      "exit_code": 3,
+      "job_accounting": {
+        "cpu_seconds": 0.0625,
+        "active_processes": 0,
+        "total_processes": 3,
+        "terminated_processes": 0,
+        "peak_job_memory_bytes": 103108608,
+        "configured_job_memory_limit_bytes": 100663296
+      },
+      "dummy_payload": {
+        "kind": "memory_exhausted",
+        "allocated_chunk_bytes": 83886080
+      },
+      "final_cpu_known": true,
+      "cumulative_cpu_seconds": 0.0625,
+      "last_observed_cpu_seconds": 0.0625,
+      "cleanup_confirmed": true,
+      "handles_closed": true,
+      "child_wall_including_cleanup": 0.07800000000133878,
+      "stage_wall": 0.07800000000133878,
+      "stage_stopped": true,
+      "attempts_reserved": 1,
+      "launch_attempted": true,
+      "root_created": true,
+      "actual_cpsat_calls": 0,
+      "actual_oracle_calls": 0
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.WindowsDummyTests.test_cpu_resource_limit",
+      "dummy_mode": "cpu",
+      "evidence_kind": "real_os_dummy",
+      "complete": false,
+      "reason": "CUMULATIVE_CPU_LIMIT",
+      "error_class": null,
+      "exit_code": 3758096385,
+      "job_accounting": {
+        "cpu_seconds": 0.109375,
+        "active_processes": 0,
+        "total_processes": 3,
+        "terminated_processes": 0,
+        "peak_job_memory_bytes": 10592256,
+        "configured_job_memory_limit_bytes": 134217728
+      },
+      "dummy_payload": null,
+      "final_cpu_known": true,
+      "cumulative_cpu_seconds": 0.109375,
+      "last_observed_cpu_seconds": 0.109375,
+      "cleanup_confirmed": true,
+      "handles_closed": true,
+      "child_wall_including_cleanup": 0.10900000000037835,
+      "stage_wall": 0.10900000000037835,
+      "stage_stopped": true,
+      "attempts_reserved": 1,
+      "launch_attempted": true,
+      "root_created": true,
+      "actual_cpsat_calls": 0,
+      "actual_oracle_calls": 0
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.WindowsDummyTests.test_cumulative_cpu_includes_two_completed_jobs:one",
+      "dummy_mode": "ok",
+      "evidence_kind": "real_os_dummy",
+      "complete": true,
+      "reason": null,
+      "error_class": null,
+      "exit_code": 0,
+      "job_accounting": {
+        "cpu_seconds": 0.046875,
+        "active_processes": 0,
+        "total_processes": 3,
+        "terminated_processes": 0,
+        "peak_job_memory_bytes": 10555392,
+        "configured_job_memory_limit_bytes": 134217728
+      },
+      "dummy_payload": {
+        "kind": "dummy_ok"
+      },
+      "final_cpu_known": true,
+      "cumulative_cpu_seconds": 0.046875,
+      "last_observed_cpu_seconds": 0.046875,
+      "cleanup_confirmed": true,
+      "handles_closed": true,
+      "child_wall_including_cleanup": 0.07799999999951979,
+      "stage_wall": 0.07799999999951979,
+      "stage_stopped": false,
+      "attempts_reserved": 1,
+      "launch_attempted": true,
+      "root_created": true,
+      "actual_cpsat_calls": 0,
+      "actual_oracle_calls": 0
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.WindowsDummyTests.test_cumulative_cpu_includes_two_completed_jobs:two",
+      "dummy_mode": "ok",
+      "evidence_kind": "real_os_dummy",
+      "complete": true,
+      "reason": null,
+      "error_class": null,
+      "exit_code": 0,
+      "job_accounting": {
+        "cpu_seconds": 0.046875,
+        "active_processes": 0,
+        "total_processes": 3,
+        "terminated_processes": 0,
+        "peak_job_memory_bytes": 10317824,
+        "configured_job_memory_limit_bytes": 134217728
+      },
+      "dummy_payload": {
+        "kind": "dummy_ok"
+      },
+      "final_cpu_known": true,
+      "cumulative_cpu_seconds": 0.09375,
+      "last_observed_cpu_seconds": 0.046875,
+      "cleanup_confirmed": true,
+      "handles_closed": true,
+      "child_wall_including_cleanup": 0.09399999999914144,
+      "stage_wall": 0.17199999999866122,
+      "stage_stopped": false,
+      "attempts_reserved": 2,
+      "launch_attempted": true,
+      "root_created": true,
+      "actual_cpsat_calls": 0,
+      "actual_oracle_calls": 0
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.WindowsDummyTests.test_descendant_cpu_in_final_accounting",
+      "dummy_mode": "child_cpu",
+      "evidence_kind": "real_os_dummy",
+      "complete": true,
+      "reason": null,
+      "error_class": null,
+      "exit_code": 0,
+      "job_accounting": {
+        "cpu_seconds": 0.21875,
+        "active_processes": 0,
+        "total_processes": 6,
+        "terminated_processes": 0,
+        "peak_job_memory_bytes": 20975616,
+        "configured_job_memory_limit_bytes": 134217728
+      },
+      "dummy_payload": {
+        "kind": "dummy_ok"
+      },
+      "final_cpu_known": true,
+      "cumulative_cpu_seconds": 0.21875,
+      "last_observed_cpu_seconds": 0.21875,
+      "cleanup_confirmed": true,
+      "handles_closed": true,
+      "child_wall_including_cleanup": 0.23500000000058208,
+      "stage_wall": 0.23500000000058208,
+      "stage_stopped": false,
+      "attempts_reserved": 1,
+      "launch_attempted": true,
+      "root_created": true,
+      "actual_cpsat_calls": 0,
+      "actual_oracle_calls": 0
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.WindowsDummyTests.test_nonzero_exit_and_partial_output",
+      "dummy_mode": "crash",
+      "evidence_kind": "real_os_dummy",
+      "complete": false,
+      "reason": "CHILD_ERROR",
+      "error_class": null,
+      "exit_code": 7,
+      "job_accounting": {
+        "cpu_seconds": 0.046875,
+        "active_processes": 0,
+        "total_processes": 3,
+        "terminated_processes": 0,
+        "peak_job_memory_bytes": 10305536,
+        "configured_job_memory_limit_bytes": 134217728
+      },
+      "dummy_payload": null,
+      "final_cpu_known": true,
+      "cumulative_cpu_seconds": 0.046875,
+      "last_observed_cpu_seconds": 0.046875,
+      "cleanup_confirmed": true,
+      "handles_closed": true,
+      "child_wall_including_cleanup": 0.07799999999951979,
+      "stage_wall": 0.07799999999951979,
+      "stage_stopped": true,
+      "attempts_reserved": 1,
+      "launch_attempted": true,
+      "root_created": true,
+      "actual_cpsat_calls": 0,
+      "actual_oracle_calls": 0
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.WindowsDummyTests.test_normal_exit",
+      "dummy_mode": "ok",
+      "evidence_kind": "real_os_dummy",
+      "complete": true,
+      "reason": null,
+      "error_class": null,
+      "exit_code": 0,
+      "job_accounting": {
+        "cpu_seconds": 0.046875,
+        "active_processes": 0,
+        "total_processes": 3,
+        "terminated_processes": 0,
+        "peak_job_memory_bytes": 10637312,
+        "configured_job_memory_limit_bytes": 134217728
+      },
+      "dummy_payload": {
+        "kind": "dummy_ok"
+      },
+      "final_cpu_known": true,
+      "cumulative_cpu_seconds": 0.046875,
+      "last_observed_cpu_seconds": 0.046875,
+      "cleanup_confirmed": true,
+      "handles_closed": true,
+      "child_wall_including_cleanup": 0.06199999999989814,
+      "stage_wall": 0.06199999999989814,
+      "stage_stopped": false,
+      "attempts_reserved": 1,
+      "launch_attempted": true,
+      "root_created": true,
+      "actual_cpsat_calls": 0,
+      "actual_oracle_calls": 0
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.WindowsDummyTests.test_partial_output_is_not_completion",
+      "dummy_mode": "partial",
+      "evidence_kind": "real_os_dummy",
+      "complete": false,
+      "reason": "PARTIAL_OR_MISSING_OUTPUT",
+      "error_class": null,
+      "exit_code": 0,
+      "job_accounting": {
+        "cpu_seconds": 0.03125,
+        "active_processes": 0,
+        "total_processes": 3,
+        "terminated_processes": 0,
+        "peak_job_memory_bytes": 10551296,
+        "configured_job_memory_limit_bytes": 134217728
+      },
+      "dummy_payload": null,
+      "final_cpu_known": true,
+      "cumulative_cpu_seconds": 0.03125,
+      "last_observed_cpu_seconds": 0.03125,
+      "cleanup_confirmed": true,
+      "handles_closed": true,
+      "child_wall_including_cleanup": 0.06199999999989814,
+      "stage_wall": 0.06199999999989814,
+      "stage_stopped": true,
+      "attempts_reserved": 1,
+      "launch_attempted": true,
+      "root_created": true,
+      "actual_cpsat_calls": 0,
+      "actual_oracle_calls": 0
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.WindowsDummyTests.test_real_orphan_cleanup",
+      "dummy_mode": "orphan",
+      "evidence_kind": "real_os_dummy",
+      "complete": false,
+      "reason": "ORPHANED_DESCENDANT",
+      "error_class": null,
+      "exit_code": 0,
+      "job_accounting": {
+        "cpu_seconds": 0.109375,
+        "active_processes": 0,
+        "total_processes": 6,
+        "terminated_processes": 0,
+        "peak_job_memory_bytes": 20869120,
+        "configured_job_memory_limit_bytes": 134217728
+      },
+      "dummy_payload": null,
+      "final_cpu_known": true,
+      "cumulative_cpu_seconds": 0.109375,
+      "last_observed_cpu_seconds": 0.109375,
+      "cleanup_confirmed": true,
+      "handles_closed": true,
+      "child_wall_including_cleanup": 0.2349999999987631,
+      "stage_wall": 0.2349999999987631,
+      "stage_stopped": true,
+      "attempts_reserved": 1,
+      "launch_attempted": true,
+      "root_created": true,
+      "actual_cpsat_calls": 0,
+      "actual_oracle_calls": 0
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.WindowsDummyTests.test_real_stage_deadline_and_no_retry",
+      "dummy_mode": "sleep",
+      "evidence_kind": "real_os_dummy",
+      "complete": false,
+      "reason": "STAGE_WALL_LIMIT",
+      "error_class": null,
+      "exit_code": 3758096385,
+      "job_accounting": {
+        "cpu_seconds": 0.046875,
+        "active_processes": 0,
+        "total_processes": 3,
+        "terminated_processes": 0,
+        "peak_job_memory_bytes": 10387456,
+        "configured_job_memory_limit_bytes": 134217728
+      },
+      "dummy_payload": null,
+      "final_cpu_known": true,
+      "cumulative_cpu_seconds": 0.046875,
+      "last_observed_cpu_seconds": 0.046875,
+      "cleanup_confirmed": true,
+      "handles_closed": true,
+      "child_wall_including_cleanup": 0.4220000000004802,
+      "stage_wall": 0.4220000000004802,
+      "stage_stopped": true,
+      "attempts_reserved": 1,
+      "launch_attempted": true,
+      "root_created": true,
+      "actual_cpsat_calls": 0,
+      "actual_oracle_calls": 0
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.WindowsDummyTests.test_real_wall_timeout_and_tree_cleanup",
+      "dummy_mode": "tree",
+      "evidence_kind": "real_os_dummy",
+      "complete": false,
+      "reason": "CHILD_WALL_LIMIT",
+      "error_class": null,
+      "exit_code": 3758096385,
+      "job_accounting": {
+        "cpu_seconds": 0.109375,
+        "active_processes": 0,
+        "total_processes": 6,
+        "terminated_processes": 0,
+        "peak_job_memory_bytes": 21004288,
+        "configured_job_memory_limit_bytes": 134217728
+      },
+      "dummy_payload": null,
+      "final_cpu_known": true,
+      "cumulative_cpu_seconds": 0.109375,
+      "last_observed_cpu_seconds": 0.109375,
+      "cleanup_confirmed": true,
+      "handles_closed": true,
+      "child_wall_including_cleanup": 0.6090000000003783,
+      "stage_wall": 0.6090000000003783,
+      "stage_stopped": true,
+      "attempts_reserved": 1,
+      "launch_attempted": true,
+      "root_created": true,
+      "actual_cpsat_calls": 0,
+      "actual_oracle_calls": 0
+    }
+  ],
+  "source_sha256": {
+    "baseline_common.py": "561d2ea505f410edd50c3b3d16d63e77561fa4c318f1015c780a94bba66ece63",
+    "validate_solution.py": "13abc763d918486bde9d644d24fe2d4ca7414b5735b52a6e09989afdcf7df8d8",
+    "research/tiny_oracle.py": "8dcb6fac0ea7ec29a622b4400ef51d0520ded4f5f3d709962ccb224bbd0d93b8",
+    "research/symmetry_guard.py": "fb422bc4d73b03cef028f2ef6baf815c73c8dc325def213be35c1ae1ba732137",
+    "research/symmetry_canonical_input.py": "664d35d78a8a8f0b6adcd9d2d84bc348f6bed12f0c1a99174be869e757a20a3a",
+    "research/symmetry_execution_gate.py": "58fa3def2466348af36cdaf0a54320797400c84c95a2a28bc76b4e0d93d0d172",
+    "research/_windows_job.py": "0db6fce65cac5a5c5b415ee2c07fab5fc3672d57f0cfba34d3098a9ed11da431",
+    "research/symmetry_watchdog.py": "065e94241509f99fa28b35eb643637a5e1b5889b2aae5215b979222ae45758d8",
+    "research/watchdog_dummy.py": "54d261b724195ff5a47c0f95c18b98437d6292a9bc7ba2b7f030cb20f43f8fdf",
+    "research/run_p1d_zero_tests.py": "ecfc8cb09b06dd6a12b65153ec7e89f88cd13b3bc4d4c79eb85c2ecd87835c79",
+    "research/tests/test_p1d_input.py": "a578d26c09dd65529eedc637295cb83048c8fc168f55b9e0ba15ea5e4cbcaa65",
+    "research/tests/test_p1d_watchdog.py": "4bc713f20ae69992ef3db43c5db77c537d9f4b2449bd4549dd83d54796c72320"
+  },
+  "scope": "guarded Python APIs; no native constructor or Oracle delegation",
+  "guard_active": true,
+  "blocked_attempts": {
+    "cpsat_api": 0,
+    "native_factory": 0,
+    "oracle": 0
+  },
+  "executed_cpsat_calls": 0,
+  "executed_oracle_calls": 0
+}
