@@ -1,0 +1,38 @@
+{
+  "scope": "new P1e engineering verification only; no October results/logs",
+  "recovery_inventory_comment": 6464393485,
+  "all_rounds_cpsat_calls": 0,
+  "all_rounds_oracle_calls": 0,
+  "benchmark_calls": 0,
+  "rounds": [
+    {
+      "id": "resume-01",
+      "source_head": "8102af4b6b4b1e7c7b5122c7e015da118418eb2d",
+      "tests_run": 0,
+      "dummy_roots": 0,
+      "outcome": "test import aborted: isolated crypto namespace initially omitted CFFI backend; fixed namespace-only dependency loading"
+    },
+    {
+      "id": "resume-02",
+      "source_head": "3598764ad06dd9545787e52bfa7be377d07b341f",
+      "tests_run": 71,
+      "failures": 0,
+      "errors": 1,
+      "dummy_roots": 12,
+      "outcome": "cancellation timer expired during source preflight; safe cancelled-before-launch result was incorrectly treated as an after-launch observation by test helper"
+    },
+    {
+      "id": "resume-03",
+      "source_head": "723d0783dac7c3b6396f4d71203e5cfd484a3c83",
+      "tests_run": 71,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "dummy_roots": 13,
+      "outcome": "timer armed after real owned process creation; all tests pass"
+    }
+  ],
+  "static_checks": "foreign site-path pollution and inherited watchdog CRLF diff were detected and corrected before source freeze; no production environment change",
+  "retry_scope": "fresh engineering test stages after code fixes, never automatic experiment retries",
+  "old_results_preserved": true
+}

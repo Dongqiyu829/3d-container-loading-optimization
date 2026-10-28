@@ -1,0 +1,156 @@
+{
+  "schema": "p1e-publication-v1",
+  "base_sha": "e118a58663fde0c312a8df7341a93d80768a720a",
+  "source_head": "723d0783dac7c3b6396f4d71203e5cfd484a3c83",
+  "review_head": "the enclosing artifact commit; external future receipt must bind that exact SHA",
+  "source_changes": [
+    {
+      "path": "docs/research/symmetry-search-bias/p1e/README.md",
+      "status": "A"
+    },
+    {
+      "path": "research/p1e_bridge.py",
+      "status": "A"
+    },
+    {
+      "path": "research/p1e_dummy_worker.py",
+      "status": "A"
+    },
+    {
+      "path": "research/p1e_plan.py",
+      "status": "A"
+    },
+    {
+      "path": "research/p1e_protocol.py",
+      "status": "A"
+    },
+    {
+      "path": "research/p1e_receipt.py",
+      "status": "A"
+    },
+    {
+      "path": "research/run_p1e_zero_tests.py",
+      "status": "A"
+    },
+    {
+      "path": "research/symmetry_watchdog.py",
+      "status": "M"
+    },
+    {
+      "path": "research/tests/p1e_support.py",
+      "status": "A"
+    },
+    {
+      "path": "research/tests/test_p1e_bridge.py",
+      "status": "A"
+    },
+    {
+      "path": "research/tests/test_p1e_contract.py",
+      "status": "A"
+    },
+    {
+      "path": "research/tests/test_p1e_receipt.py",
+      "status": "A"
+    }
+  ],
+  "files": [
+    {
+      "path": "docs/research/symmetry-search-bias/p1e/README.md",
+      "bytes": 8354,
+      "sha256": "99b2318a402fccf6876c1adf3e11189b65769304ce98cc3b050d1ffbec10fc4d"
+    },
+    {
+      "path": "research/p1e_bridge.py",
+      "bytes": 6374,
+      "sha256": "fd7211037d5a0846e8521530648bcd54ec0fcb47d4ed1c23b190057df17e9d32"
+    },
+    {
+      "path": "research/p1e_dummy_worker.py",
+      "bytes": 4654,
+      "sha256": "437bd7589963e03ab9a2beaac54df38c0e10feec0d1c6b8cc6fc623fd3a32ea5"
+    },
+    {
+      "path": "research/p1e_plan.py",
+      "bytes": 6272,
+      "sha256": "372a3ac94d54e9d41f1539ed514d797d89b928b8b48d5bbfd6fbeb35c072759e"
+    },
+    {
+      "path": "research/p1e_protocol.py",
+      "bytes": 11938,
+      "sha256": "a540a3371b3db82f26dde8c94914ec5a665a25cd3fe89cafc341fe67e8f6d012"
+    },
+    {
+      "path": "research/p1e_receipt.py",
+      "bytes": 5776,
+      "sha256": "912c14a367b42a8125646b2dbba9ddf6d14776975b813c202806613b50cac369"
+    },
+    {
+      "path": "research/run_p1e_zero_tests.py",
+      "bytes": 5141,
+      "sha256": "484c4fe95e397efa207126fef2d9f8a6bb5d52185688b60ec46627dbe3021aa3"
+    },
+    {
+      "path": "research/symmetry_watchdog.py",
+      "bytes": 10369,
+      "sha256": "108c5f9ae158248361ed5b80ccb6a556f18843ad06485925aa0e94a2a1a1b987"
+    },
+    {
+      "path": "research/tests/p1e_support.py",
+      "bytes": 222,
+      "sha256": "26585f70e0b5d53ae43a1d02114e22259ea186c1adb39f99b1046e91218eb0c0"
+    },
+    {
+      "path": "research/tests/test_p1e_bridge.py",
+      "bytes": 6060,
+      "sha256": "bfcb85902261e31eb0080719e07248eb2776968e2d3570722cb01eeb18263259"
+    },
+    {
+      "path": "research/tests/test_p1e_contract.py",
+      "bytes": 6305,
+      "sha256": "60f218fe2d20801b27812df2c29aef6a6ef89b3269067084904d2c3d1c95cb81"
+    },
+    {
+      "path": "research/tests/test_p1e_receipt.py",
+      "bytes": 5943,
+      "sha256": "6806c14cdf342d9113ad76de98388c0be54c6515e5b191081c7009db11213291"
+    },
+    {
+      "path": "docs/research/symmetry-search-bias/p1e/stage-a-manifest.json",
+      "bytes": 54945,
+      "sha256": "41b17a1483042ef9eaca7983283c8de471ccaaa8c757b4de3b785c10f51cfa30"
+    },
+    {
+      "path": "docs/research/symmetry-search-bias/p1e/unsigned-receipt-template.json",
+      "bytes": 1037,
+      "sha256": "012679043ec2e1ab92b2181a9a322062afb5e1743917b51d5c818dcc3fcfed95"
+    },
+    {
+      "path": "docs/research/symmetry-search-bias/p1e/EVIDENCE.md",
+      "bytes": 4839,
+      "sha256": "437179e8bdcb07e26163bcdd1a859fec2ae276436f1e70e6f4835b7233ba3227"
+    },
+    {
+      "path": "docs/research/symmetry-search-bias/p1e/evidence/tests.json",
+      "bytes": 36789,
+      "sha256": "176cc38b0b8ac847e16ec73dabeabb2e468f690a56b372661cb700eb07b8f9d6"
+    },
+    {
+      "path": "docs/research/symmetry-search-bias/p1e/evidence/test.log",
+      "bytes": 10588,
+      "sha256": "840eba1dd86d0009fe8eee333a72ad921239ea30dce2edecab15d68ece6682cd"
+    },
+    {
+      "path": "docs/research/symmetry-search-bias/p1e/evidence/development-runs.json",
+      "bytes": 1476,
+      "sha256": "a4060f8ec96f79de10a9d3fa1ab3cdaa65ee4ae30d42ab74742cdfb485a59dc4"
+    }
+  ],
+  "self_hash_excluded": true,
+  "stage_a_canonical_sha256": "93ea25b97de5440953d22586c4a733250c587beb0bd6906036d821eea3713fdd",
+  "stage_a_file_sha256": "41b17a1483042ef9eaca7983283c8de471ccaaa8c757b4de3b785c10f51cfa30",
+  "runtime_byte_note": "inherited working EOL may differ from Git raw bytes; proposal separately pins runtime SHA and committed Git blob",
+  "real_human_receipt_present": false,
+  "trusted_human_keys_enrolled": 0,
+  "executed_cpsat_calls": 0,
+  "executed_oracle_calls": 0
+}

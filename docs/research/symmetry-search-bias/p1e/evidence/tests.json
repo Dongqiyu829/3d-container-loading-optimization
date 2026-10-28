@@ -1,0 +1,968 @@
+{
+  "schema": "p1e-zero-solve-tests-v1",
+  "source_head": "723d0783dac7c3b6396f4d71203e5cfd484a3c83",
+  "manifest_sha256": "93ea25b97de5440953d22586c4a733250c587beb0bd6906036d821eea3713fdd",
+  "tests_run": 71,
+  "failures": 0,
+  "errors": 0,
+  "skips": 0,
+  "test_allowlist": [
+    "research.tests.test_p1d_input",
+    "research.tests.test_p1d_watchdog.ControllerTests",
+    "research.tests.test_p1e_contract",
+    "research.tests.test_p1e_receipt",
+    "research.tests.test_p1e_bridge.BridgePureTests",
+    "research.tests.test_p1e_bridge.ProtocolWindowsTests"
+  ],
+  "test_results": [
+    {
+      "test": "research.tests.test_p1d_input.GateTests.test_existing_execution_entries_still_refuse",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.GateTests.test_guard_active_before_test_imports",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.GateTests.test_overflow_is_instrumentation_censored",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.GateTests.test_proposal_digest_binds_every_component",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.GateTests.test_proposal_rejects_missing_hash_repeated_job_and_over_cap",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.GateTests.test_unapproved_manifest_and_boolean_cannot_enable_native_dispatch",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.InputTests.test_all_eight_existing_fixtures_prevalidated_without_search",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.InputTests.test_dimensions_and_boolean_rejected",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.InputTests.test_explicit_null_weight_rejected_without_capacity",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.InputTests.test_invalid_and_duplicate_orientations",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.InputTests.test_malformed_units",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.InputTests.test_missing_required_weights",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.InputTests.test_no_second_path_read_after_validation",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.InputTests.test_oracle_authorized_bytes_unchanged",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.InputTests.test_original_validator_is_called_with_empty_witness",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.InputTests.test_snapshot_is_detached_from_file_and_consumer_mutation",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_input.InputTests.test_unknown_keys_rejected_at_both_levels",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_accounting_unavailable_closes_and_prevents_next_job",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_cpu_limit_stops_and_charges_final_cpu",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_decreasing_cpu_rejected",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_duplicate_and_attempt_cap_no_retry",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_exit_between_poll_and_root_check_refreshes_job_sample",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_final_cpu_over_budget_cannot_be_complete",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_handle_close_failure_stops_stage",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_invalid_resource_settings",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_kill_failure_still_closes_job",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_launch_failure_consumes_attempt_and_kills",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_no_arbitrary_command_or_solver_mode",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_normal_accounting_before_launch_and_cleanup_before_close",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_prelaunch_accounting_failure_never_launches",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_root_exit_with_live_descendants_is_not_complete",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_signaled_root_with_delayed_job_counter_can_drain",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_slow_setup_is_included_before_resume",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_stage_limit_reservation_denies_launch",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1d_watchdog.ControllerTests.test_wall_limit_kills_owned_tree",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_contract.ContractTests.test_all_native_requests_still_unconditionally_denied",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_contract.ContractTests.test_controls_and_input_snapshot_provenance",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_contract.ContractTests.test_deterministic_roundtrip_and_model_proto_hashes",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_contract.ContractTests.test_dummy_request_has_no_original_raw_path_or_executable",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_contract.ContractTests.test_duplicate_nonfinite_oversize_json_rejected",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_contract.ContractTests.test_exact_32_job_matrix_and_fixed_order",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_contract.ContractTests.test_oracle_actual_bytes_and_crlf_conversion",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_contract.ContractTests.test_path_traversal_windows_aliases_and_absolute_paths",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_contract.ContractTests.test_reject_edited_order_or_unknown_schema_fields",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_contract.ContractTests.test_source_runtime_drift_fails_before_launch",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_contract.ContractTests.test_unknown_bound_and_censoring_not_optimal_acceptance",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_contract.ContractTests.test_valid_mock_witness_does_not_become_native_evidence",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_receipt.ReceiptTests.test_absent_unsigned_boolean_and_proposal_digest_not_receipts",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_receipt.ReceiptTests.test_default_empty_trust_rejects_even_cryptographically_valid_test_signature",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_receipt.ReceiptTests.test_exact_order_caps_and_no_retry",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_receipt.ReceiptTests.test_expired_future_or_overlong_signature",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_receipt.ReceiptTests.test_failure_order_mismatch_and_expiry_close_stage",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_receipt.ReceiptTests.test_modified_signature_and_payload_rejected",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_receipt.ReceiptTests.test_persistent_receipt_claim_prevents_replay_after_restart",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_receipt.ReceiptTests.test_real_crypto_verification_with_test_only_pinned_public_key",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_receipt.ReceiptTests.test_source_job_review_budget_and_destination_bindings",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.BridgePureTests.test_cancelled_before_launch_and_no_retry",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.BridgePureTests.test_forward_reverse_witness_rules_and_original_oracle",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.BridgePureTests.test_no_arbitrary_mode_and_unsupported_platform",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_bounded_stdout",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_cancellation_terminates_owned_worker",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_child_crash_nonzero_exit",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_cpu_exhaustion",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_identity_mismatch",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_instrumentation_censoring",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_memory_allocation_denial",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_oversized_response",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_partial_response",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_roundtrip_both_native_job_descriptors_without_native_execution",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_timeout",
+      "result": "pass"
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_unknown_is_incomplete_and_no_bound",
+      "result": "pass"
+    }
+  ],
+  "versions": {
+    "python": "3.12.11",
+    "platform": "win32",
+    "pointer_bits": 64,
+    "ortools": "9.14.6206",
+    "protobuf": "6.31.1",
+    "cryptography": "42.0.5",
+    "python_executable_sha256": "91e76c95f342693156745302b33d8ca332ee4647c414d72486c421a4a19428af",
+    "python_base_sha256": "323377d9bcf1ab107759721ce6b13a3a2a26da539113eb6eade12955fe77e2b4",
+    "python_dll_sha256": "ca1fe33d560c149ea6a9a47f2b8942ae419958f127dbfabab16afbbee679abc1",
+    "ortools_binaries_sha256": "2728f54cc8b3ddefd2eda8c7308c1ac51b7db7307bea5fb3b657868cf966fe17",
+    "crypto_backend_sha256": "5826ffee1ce716598fc6a5ed6b218e911e2cb285dd2faa4c0ecfb737119c1e36",
+    "cffi_backend_sha256": "df50fe6ced850ffb3118def6e071f39e05add8d24435f59fcb4510e8583d1466"
+  },
+  "os_protocol_observations": [
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_bounded_stdout",
+      "mode": "flood",
+      "classification": "output_limit",
+      "request_sha256": "f28b115f942017c791b54fba800573b09ba9abea0bbc341c54c946ccbed2b2ec",
+      "response": {
+        "actual_cpsat_calls": 0,
+        "actual_oracle_calls": 0,
+        "detail": "cooperative stdout quota reached",
+        "evidence_kind": "dummy",
+        "job_sha256": "a2617405237e33de7cc5e932e5a4723c0b544d89f6bdd40924881845047cc09d",
+        "reported_bound": null,
+        "request_sha256": "f28b115f942017c791b54fba800573b09ba9abea0bbc341c54c946ccbed2b2ec",
+        "schema": "p1e-worker-v1",
+        "status": "OUTPUT_LIMIT",
+        "stdout_bytes": 16280,
+        "worker_sha256": "437bd7589963e03ab9a2beaac54df38c0e10feec0d1c6b8cc6fc623fd3a32ea5"
+      },
+      "watchdog": {
+        "evidence_kind": "real_os_dummy",
+        "complete": true,
+        "reason": null,
+        "error_class": null,
+        "exit_code": 0,
+        "job_accounting": {
+          "cpu_seconds": 0.09375,
+          "active_processes": 0,
+          "total_processes": 3,
+          "terminated_processes": 0,
+          "peak_job_memory_bytes": 10895360,
+          "configured_job_memory_limit_bytes": 134217728
+        },
+        "dummy_payload": {
+          "kind": "dummy_ok"
+        },
+        "final_cpu_known": true,
+        "cumulative_cpu_seconds": 0.09375,
+        "last_observed_cpu_seconds": 0.09375,
+        "cleanup_confirmed": true,
+        "handles_closed": true,
+        "child_wall_including_cleanup": 0.15599999999903957,
+        "stage_wall": 2.1559999999990396,
+        "stage_stopped": false,
+        "attempts_reserved": 1,
+        "launch_attempted": true,
+        "root_created": true,
+        "actual_cpsat_calls": 0,
+        "actual_oracle_calls": 0
+      },
+      "stage_stopped": true,
+      "evidence_kind": "real_os_protocol_dummy",
+      "actual_cpsat_calls": 0,
+      "actual_oracle_calls": 0
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_cancellation_terminates_owned_worker",
+      "mode": "timeout",
+      "classification": "cancelled",
+      "request_sha256": "f28b115f942017c791b54fba800573b09ba9abea0bbc341c54c946ccbed2b2ec",
+      "response": null,
+      "watchdog": {
+        "evidence_kind": "real_os_dummy",
+        "complete": false,
+        "reason": "CANCELLED",
+        "error_class": null,
+        "exit_code": 3758096385,
+        "job_accounting": {
+          "cpu_seconds": 0.078125,
+          "active_processes": 0,
+          "total_processes": 3,
+          "terminated_processes": 0,
+          "peak_job_memory_bytes": 10997760,
+          "configured_job_memory_limit_bytes": 134217728
+        },
+        "dummy_payload": null,
+        "final_cpu_known": true,
+        "cumulative_cpu_seconds": 0.078125,
+        "last_observed_cpu_seconds": 0.078125,
+        "cleanup_confirmed": true,
+        "handles_closed": true,
+        "child_wall_including_cleanup": 0.13999999999941792,
+        "stage_wall": 2.327999999997701,
+        "stage_stopped": true,
+        "attempts_reserved": 1,
+        "launch_attempted": true,
+        "root_created": true,
+        "actual_cpsat_calls": 0,
+        "actual_oracle_calls": 0
+      },
+      "stage_stopped": true,
+      "evidence_kind": "real_os_protocol_dummy",
+      "actual_cpsat_calls": 0,
+      "actual_oracle_calls": 0
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_child_crash_nonzero_exit",
+      "mode": "crash",
+      "classification": "supervisor_incomplete",
+      "request_sha256": "f28b115f942017c791b54fba800573b09ba9abea0bbc341c54c946ccbed2b2ec",
+      "response": null,
+      "watchdog": {
+        "evidence_kind": "real_os_dummy",
+        "complete": false,
+        "reason": "CHILD_ERROR",
+        "error_class": null,
+        "exit_code": 7,
+        "job_accounting": {
+          "cpu_seconds": 0.109375,
+          "active_processes": 0,
+          "total_processes": 3,
+          "terminated_processes": 0,
+          "peak_job_memory_bytes": 11059200,
+          "configured_job_memory_limit_bytes": 134217728
+        },
+        "dummy_payload": null,
+        "final_cpu_known": true,
+        "cumulative_cpu_seconds": 0.109375,
+        "last_observed_cpu_seconds": 0.109375,
+        "cleanup_confirmed": true,
+        "handles_closed": true,
+        "child_wall_including_cleanup": 0.125,
+        "stage_wall": 2.2659999999996217,
+        "stage_stopped": true,
+        "attempts_reserved": 1,
+        "launch_attempted": true,
+        "root_created": true,
+        "actual_cpsat_calls": 0,
+        "actual_oracle_calls": 0
+      },
+      "stage_stopped": true,
+      "evidence_kind": "real_os_protocol_dummy",
+      "actual_cpsat_calls": 0,
+      "actual_oracle_calls": 0
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_cpu_exhaustion",
+      "mode": "cpu",
+      "classification": "supervisor_incomplete",
+      "request_sha256": "f28b115f942017c791b54fba800573b09ba9abea0bbc341c54c946ccbed2b2ec",
+      "response": null,
+      "watchdog": {
+        "evidence_kind": "real_os_dummy",
+        "complete": false,
+        "reason": "CUMULATIVE_CPU_LIMIT",
+        "error_class": null,
+        "exit_code": 3758096385,
+        "job_accounting": {
+          "cpu_seconds": 0.109375,
+          "active_processes": 0,
+          "total_processes": 3,
+          "terminated_processes": 0,
+          "peak_job_memory_bytes": 10805248,
+          "configured_job_memory_limit_bytes": 134217728
+        },
+        "dummy_payload": null,
+        "final_cpu_known": true,
+        "cumulative_cpu_seconds": 0.109375,
+        "last_observed_cpu_seconds": 0.109375,
+        "cleanup_confirmed": true,
+        "handles_closed": true,
+        "child_wall_including_cleanup": 0.13999999999941792,
+        "stage_wall": 2.014999999999418,
+        "stage_stopped": true,
+        "attempts_reserved": 1,
+        "launch_attempted": true,
+        "root_created": true,
+        "actual_cpsat_calls": 0,
+        "actual_oracle_calls": 0
+      },
+      "stage_stopped": true,
+      "evidence_kind": "real_os_protocol_dummy",
+      "actual_cpsat_calls": 0,
+      "actual_oracle_calls": 0
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_identity_mismatch",
+      "mode": "mismatch",
+      "classification": "invalid_or_partial_response",
+      "request_sha256": "f28b115f942017c791b54fba800573b09ba9abea0bbc341c54c946ccbed2b2ec",
+      "response": null,
+      "watchdog": {
+        "evidence_kind": "real_os_dummy",
+        "complete": true,
+        "reason": null,
+        "error_class": null,
+        "exit_code": 0,
+        "job_accounting": {
+          "cpu_seconds": 0.109375,
+          "active_processes": 0,
+          "total_processes": 3,
+          "terminated_processes": 0,
+          "peak_job_memory_bytes": 11005952,
+          "configured_job_memory_limit_bytes": 134217728
+        },
+        "dummy_payload": {
+          "kind": "dummy_ok"
+        },
+        "final_cpu_known": true,
+        "cumulative_cpu_seconds": 0.109375,
+        "last_observed_cpu_seconds": 0.109375,
+        "cleanup_confirmed": true,
+        "handles_closed": true,
+        "child_wall_including_cleanup": 0.125,
+        "stage_wall": 2.172000000002299,
+        "stage_stopped": false,
+        "attempts_reserved": 1,
+        "launch_attempted": true,
+        "root_created": true,
+        "actual_cpsat_calls": 0,
+        "actual_oracle_calls": 0
+      },
+      "stage_stopped": true,
+      "evidence_kind": "real_os_protocol_dummy",
+      "actual_cpsat_calls": 0,
+      "actual_oracle_calls": 0
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_instrumentation_censoring",
+      "mode": "instrumentation",
+      "classification": "instrumentation_censored",
+      "request_sha256": "f28b115f942017c791b54fba800573b09ba9abea0bbc341c54c946ccbed2b2ec",
+      "response": {
+        "actual_cpsat_calls": 0,
+        "actual_oracle_calls": 0,
+        "detail": "fixed harmless worker; no solver result",
+        "evidence_kind": "dummy",
+        "job_sha256": "a2617405237e33de7cc5e932e5a4723c0b544d89f6bdd40924881845047cc09d",
+        "reported_bound": null,
+        "request_sha256": "f28b115f942017c791b54fba800573b09ba9abea0bbc341c54c946ccbed2b2ec",
+        "schema": "p1e-worker-v1",
+        "status": "INSTRUMENTATION_CENSORED",
+        "stdout_bytes": 24,
+        "worker_sha256": "437bd7589963e03ab9a2beaac54df38c0e10feec0d1c6b8cc6fc623fd3a32ea5"
+      },
+      "watchdog": {
+        "evidence_kind": "real_os_dummy",
+        "complete": true,
+        "reason": null,
+        "error_class": null,
+        "exit_code": 0,
+        "job_accounting": {
+          "cpu_seconds": 0.09375,
+          "active_processes": 0,
+          "total_processes": 3,
+          "terminated_processes": 0,
+          "peak_job_memory_bytes": 11132928,
+          "configured_job_memory_limit_bytes": 134217728
+        },
+        "dummy_payload": {
+          "kind": "dummy_ok"
+        },
+        "final_cpu_known": true,
+        "cumulative_cpu_seconds": 0.09375,
+        "last_observed_cpu_seconds": 0.09375,
+        "cleanup_confirmed": true,
+        "handles_closed": true,
+        "child_wall_including_cleanup": 0.15600000000267755,
+        "stage_wall": 2.2030000000013388,
+        "stage_stopped": false,
+        "attempts_reserved": 1,
+        "launch_attempted": true,
+        "root_created": true,
+        "actual_cpsat_calls": 0,
+        "actual_oracle_calls": 0
+      },
+      "stage_stopped": true,
+      "evidence_kind": "real_os_protocol_dummy",
+      "actual_cpsat_calls": 0,
+      "actual_oracle_calls": 0
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_memory_allocation_denial",
+      "mode": "memory",
+      "classification": "resource_exhausted",
+      "request_sha256": "f28b115f942017c791b54fba800573b09ba9abea0bbc341c54c946ccbed2b2ec",
+      "response": {
+        "actual_cpsat_calls": 0,
+        "actual_oracle_calls": 0,
+        "detail": "dummy allocation denied; not calibrated native diagnosis",
+        "evidence_kind": "dummy",
+        "job_sha256": "a2617405237e33de7cc5e932e5a4723c0b544d89f6bdd40924881845047cc09d",
+        "reported_bound": null,
+        "request_sha256": "f28b115f942017c791b54fba800573b09ba9abea0bbc341c54c946ccbed2b2ec",
+        "schema": "p1e-worker-v1",
+        "status": "RESOURCE_EXHAUSTED",
+        "stdout_bytes": 24,
+        "worker_sha256": "437bd7589963e03ab9a2beaac54df38c0e10feec0d1c6b8cc6fc623fd3a32ea5"
+      },
+      "watchdog": {
+        "evidence_kind": "real_os_dummy",
+        "complete": true,
+        "reason": null,
+        "error_class": null,
+        "exit_code": 0,
+        "job_accounting": {
+          "cpu_seconds": 0.140625,
+          "active_processes": 0,
+          "total_processes": 3,
+          "terminated_processes": 0,
+          "peak_job_memory_bytes": 103460864,
+          "configured_job_memory_limit_bytes": 100663296
+        },
+        "dummy_payload": {
+          "kind": "dummy_ok"
+        },
+        "final_cpu_known": true,
+        "cumulative_cpu_seconds": 0.140625,
+        "last_observed_cpu_seconds": 0.140625,
+        "cleanup_confirmed": true,
+        "handles_closed": true,
+        "child_wall_including_cleanup": 0.17199999999866122,
+        "stage_wall": 2.2969999999986612,
+        "stage_stopped": false,
+        "attempts_reserved": 1,
+        "launch_attempted": true,
+        "root_created": true,
+        "actual_cpsat_calls": 0,
+        "actual_oracle_calls": 0
+      },
+      "stage_stopped": true,
+      "evidence_kind": "real_os_protocol_dummy",
+      "actual_cpsat_calls": 0,
+      "actual_oracle_calls": 0
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_oversized_response",
+      "mode": "oversized_response",
+      "classification": "invalid_or_partial_response",
+      "request_sha256": "f28b115f942017c791b54fba800573b09ba9abea0bbc341c54c946ccbed2b2ec",
+      "response": null,
+      "watchdog": {
+        "evidence_kind": "real_os_dummy",
+        "complete": true,
+        "reason": null,
+        "error_class": null,
+        "exit_code": 0,
+        "job_accounting": {
+          "cpu_seconds": 0.09375,
+          "active_processes": 0,
+          "total_processes": 3,
+          "terminated_processes": 0,
+          "peak_job_memory_bytes": 10895360,
+          "configured_job_memory_limit_bytes": 134217728
+        },
+        "dummy_payload": {
+          "kind": "dummy_ok"
+        },
+        "final_cpu_known": true,
+        "cumulative_cpu_seconds": 0.09375,
+        "last_observed_cpu_seconds": 0.09375,
+        "cleanup_confirmed": true,
+        "handles_closed": true,
+        "child_wall_including_cleanup": 0.125,
+        "stage_wall": 2.235000000000582,
+        "stage_stopped": false,
+        "attempts_reserved": 1,
+        "launch_attempted": true,
+        "root_created": true,
+        "actual_cpsat_calls": 0,
+        "actual_oracle_calls": 0
+      },
+      "stage_stopped": true,
+      "evidence_kind": "real_os_protocol_dummy",
+      "actual_cpsat_calls": 0,
+      "actual_oracle_calls": 0
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_partial_response",
+      "mode": "partial",
+      "classification": "invalid_or_partial_response",
+      "request_sha256": "f28b115f942017c791b54fba800573b09ba9abea0bbc341c54c946ccbed2b2ec",
+      "response": null,
+      "watchdog": {
+        "evidence_kind": "real_os_dummy",
+        "complete": true,
+        "reason": null,
+        "error_class": null,
+        "exit_code": 0,
+        "job_accounting": {
+          "cpu_seconds": 0.09375,
+          "active_processes": 0,
+          "total_processes": 3,
+          "terminated_processes": 0,
+          "peak_job_memory_bytes": 10989568,
+          "configured_job_memory_limit_bytes": 134217728
+        },
+        "dummy_payload": {
+          "kind": "dummy_ok"
+        },
+        "final_cpu_known": true,
+        "cumulative_cpu_seconds": 0.09375,
+        "last_observed_cpu_seconds": 0.09375,
+        "cleanup_confirmed": true,
+        "handles_closed": true,
+        "child_wall_including_cleanup": 0.10900000000037835,
+        "stage_wall": 2.047000000002299,
+        "stage_stopped": false,
+        "attempts_reserved": 1,
+        "launch_attempted": true,
+        "root_created": true,
+        "actual_cpsat_calls": 0,
+        "actual_oracle_calls": 0
+      },
+      "stage_stopped": true,
+      "evidence_kind": "real_os_protocol_dummy",
+      "actual_cpsat_calls": 0,
+      "actual_oracle_calls": 0
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_roundtrip_both_native_job_descriptors_without_native_execution:0",
+      "mode": "ok",
+      "classification": "dummy_complete",
+      "request_sha256": "f28b115f942017c791b54fba800573b09ba9abea0bbc341c54c946ccbed2b2ec",
+      "response": {
+        "actual_cpsat_calls": 0,
+        "actual_oracle_calls": 0,
+        "detail": "fixed harmless worker; no solver result",
+        "evidence_kind": "dummy",
+        "job_sha256": "a2617405237e33de7cc5e932e5a4723c0b544d89f6bdd40924881845047cc09d",
+        "reported_bound": null,
+        "request_sha256": "f28b115f942017c791b54fba800573b09ba9abea0bbc341c54c946ccbed2b2ec",
+        "schema": "p1e-worker-v1",
+        "status": "DUMMY_OK",
+        "stdout_bytes": 24,
+        "worker_sha256": "437bd7589963e03ab9a2beaac54df38c0e10feec0d1c6b8cc6fc623fd3a32ea5"
+      },
+      "watchdog": {
+        "evidence_kind": "real_os_dummy",
+        "complete": true,
+        "reason": null,
+        "error_class": null,
+        "exit_code": 0,
+        "job_accounting": {
+          "cpu_seconds": 0.109375,
+          "active_processes": 0,
+          "total_processes": 3,
+          "terminated_processes": 0,
+          "peak_job_memory_bytes": 10899456,
+          "configured_job_memory_limit_bytes": 134217728
+        },
+        "dummy_payload": {
+          "kind": "dummy_ok"
+        },
+        "final_cpu_known": true,
+        "cumulative_cpu_seconds": 0.109375,
+        "last_observed_cpu_seconds": 0.109375,
+        "cleanup_confirmed": true,
+        "handles_closed": true,
+        "child_wall_including_cleanup": 0.125,
+        "stage_wall": 2.125,
+        "stage_stopped": false,
+        "attempts_reserved": 1,
+        "launch_attempted": true,
+        "root_created": true,
+        "actual_cpsat_calls": 0,
+        "actual_oracle_calls": 0
+      },
+      "stage_stopped": false,
+      "evidence_kind": "real_os_protocol_dummy",
+      "actual_cpsat_calls": 0,
+      "actual_oracle_calls": 0
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_roundtrip_both_native_job_descriptors_without_native_execution:1",
+      "mode": "ok",
+      "classification": "dummy_complete",
+      "request_sha256": "66272f309c940347356ef262448a523f607fbe22f71839887f1382af9e607231",
+      "response": {
+        "actual_cpsat_calls": 0,
+        "actual_oracle_calls": 0,
+        "detail": "fixed harmless worker; no solver result",
+        "evidence_kind": "dummy",
+        "job_sha256": "d5c98a743cf1a72c933eba35cb4f1d277e0ddd2cd4700f433d4776e2fa62e49f",
+        "reported_bound": null,
+        "request_sha256": "66272f309c940347356ef262448a523f607fbe22f71839887f1382af9e607231",
+        "schema": "p1e-worker-v1",
+        "status": "DUMMY_OK",
+        "stdout_bytes": 24,
+        "worker_sha256": "437bd7589963e03ab9a2beaac54df38c0e10feec0d1c6b8cc6fc623fd3a32ea5"
+      },
+      "watchdog": {
+        "evidence_kind": "real_os_dummy",
+        "complete": true,
+        "reason": null,
+        "error_class": null,
+        "exit_code": 0,
+        "job_accounting": {
+          "cpu_seconds": 0.078125,
+          "active_processes": 0,
+          "total_processes": 3,
+          "terminated_processes": 0,
+          "peak_job_memory_bytes": 10838016,
+          "configured_job_memory_limit_bytes": 134217728
+        },
+        "dummy_payload": {
+          "kind": "dummy_ok"
+        },
+        "final_cpu_known": true,
+        "cumulative_cpu_seconds": 0.1875,
+        "last_observed_cpu_seconds": 0.078125,
+        "cleanup_confirmed": true,
+        "handles_closed": true,
+        "child_wall_including_cleanup": 0.125,
+        "stage_wall": 4.359000000000378,
+        "stage_stopped": false,
+        "attempts_reserved": 2,
+        "launch_attempted": true,
+        "root_created": true,
+        "actual_cpsat_calls": 0,
+        "actual_oracle_calls": 0
+      },
+      "stage_stopped": false,
+      "evidence_kind": "real_os_protocol_dummy",
+      "actual_cpsat_calls": 0,
+      "actual_oracle_calls": 0
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_timeout",
+      "mode": "timeout",
+      "classification": "supervisor_incomplete",
+      "request_sha256": "f28b115f942017c791b54fba800573b09ba9abea0bbc341c54c946ccbed2b2ec",
+      "response": null,
+      "watchdog": {
+        "evidence_kind": "real_os_dummy",
+        "complete": false,
+        "reason": "CHILD_WALL_LIMIT",
+        "error_class": null,
+        "exit_code": 3758096385,
+        "job_accounting": {
+          "cpu_seconds": 0.078125,
+          "active_processes": 0,
+          "total_processes": 3,
+          "terminated_processes": 0,
+          "peak_job_memory_bytes": 10895360,
+          "configured_job_memory_limit_bytes": 134217728
+        },
+        "dummy_payload": null,
+        "final_cpu_known": true,
+        "cumulative_cpu_seconds": 0.078125,
+        "last_observed_cpu_seconds": 0.078125,
+        "cleanup_confirmed": true,
+        "handles_closed": true,
+        "child_wall_including_cleanup": 0.35900000000037835,
+        "stage_wall": 2.6090000000003783,
+        "stage_stopped": true,
+        "attempts_reserved": 1,
+        "launch_attempted": true,
+        "root_created": true,
+        "actual_cpsat_calls": 0,
+        "actual_oracle_calls": 0
+      },
+      "stage_stopped": true,
+      "evidence_kind": "real_os_protocol_dummy",
+      "actual_cpsat_calls": 0,
+      "actual_oracle_calls": 0
+    },
+    {
+      "test": "research.tests.test_p1e_bridge.ProtocolWindowsTests.test_unknown_is_incomplete_and_no_bound",
+      "mode": "unknown",
+      "classification": "incomplete_no_usable_bound",
+      "request_sha256": "f28b115f942017c791b54fba800573b09ba9abea0bbc341c54c946ccbed2b2ec",
+      "response": {
+        "actual_cpsat_calls": 0,
+        "actual_oracle_calls": 0,
+        "detail": "fixed harmless worker; no solver result",
+        "evidence_kind": "dummy",
+        "job_sha256": "a2617405237e33de7cc5e932e5a4723c0b544d89f6bdd40924881845047cc09d",
+        "reported_bound": null,
+        "request_sha256": "f28b115f942017c791b54fba800573b09ba9abea0bbc341c54c946ccbed2b2ec",
+        "schema": "p1e-worker-v1",
+        "status": "UNKNOWN",
+        "stdout_bytes": 24,
+        "worker_sha256": "437bd7589963e03ab9a2beaac54df38c0e10feec0d1c6b8cc6fc623fd3a32ea5"
+      },
+      "watchdog": {
+        "evidence_kind": "real_os_dummy",
+        "complete": true,
+        "reason": null,
+        "error_class": null,
+        "exit_code": 0,
+        "job_accounting": {
+          "cpu_seconds": 0.09375,
+          "active_processes": 0,
+          "total_processes": 3,
+          "terminated_processes": 0,
+          "peak_job_memory_bytes": 11079680,
+          "configured_job_memory_limit_bytes": 134217728
+        },
+        "dummy_payload": {
+          "kind": "dummy_ok"
+        },
+        "final_cpu_known": true,
+        "cumulative_cpu_seconds": 0.09375,
+        "last_observed_cpu_seconds": 0.09375,
+        "cleanup_confirmed": true,
+        "handles_closed": true,
+        "child_wall_including_cleanup": 0.14099999999962165,
+        "stage_wall": 2.1719999999986612,
+        "stage_stopped": false,
+        "attempts_reserved": 1,
+        "launch_attempted": true,
+        "root_created": true,
+        "actual_cpsat_calls": 0,
+        "actual_oracle_calls": 0
+      },
+      "stage_stopped": true,
+      "evidence_kind": "real_os_protocol_dummy",
+      "actual_cpsat_calls": 0,
+      "actual_oracle_calls": 0
+    }
+  ],
+  "source_sha256": {
+    "research/run_p1e_zero_tests.py": "484c4fe95e397efa207126fef2d9f8a6bb5d52185688b60ec46627dbe3021aa3",
+    "research/tests/p1e_support.py": "26585f70e0b5d53ae43a1d02114e22259ea186c1adb39f99b1046e91218eb0c0",
+    "research/tests/test_p1e_contract.py": "60f218fe2d20801b27812df2c29aef6a6ef89b3269067084904d2c3d1c95cb81",
+    "research/tests/test_p1e_receipt.py": "6806c14cdf342d9113ad76de98388c0be54c6515e5b191081c7009db11213291",
+    "research/tests/test_p1e_bridge.py": "bfcb85902261e31eb0080719e07248eb2776968e2d3570722cb01eeb18263259",
+    "baseline_common.py": "561d2ea505f410edd50c3b3d16d63e77561fa4c318f1015c780a94bba66ece63",
+    "validate_solution.py": "13abc763d918486bde9d644d24fe2d4ca7414b5735b52a6e09989afdcf7df8d8",
+    "cpsat_baseline.py": "c215bf524bce2e39fc11507adb203007ff51e06bbef6a3c5fdc03e441e7380c7",
+    "cpsat_prefix_search_diagnostics.py": "7f92de61516648e8da50808b88cdb8c673c32c92a5547e9ac15d2e09d1eaf9b5",
+    "identical_box_symmetry_audit.py": "49ac79d967dce13cef9aa154a08be586a6678b1ec6e218812c69e041dfa3c990",
+    "research/symmetry_canonical_input.py": "b0bdc3ede964cc1064f4ec888c1b870ab4b50bbd52ba4a9f9c78d79c31e15f9e",
+    "research/symmetry_models.py": "b060e45dcd7852a8302c0a8c3385484de77be083a0b486f0a566b3e80ffdf0b7",
+    "research/symmetry_integration.py": "14e3d69bacf0cd0c7ae73183f2d1309e3094c3f1f154d3e1788a329ef8eef999",
+    "research/symmetry_telemetry.py": "8022a7613929bc598d8778b35a4dff21312fbe552efde0f9bcb48d4edf2249a9",
+    "research/symmetry_guard.py": "fb422bc4d73b03cef028f2ef6baf815c73c8dc325def213be35c1ae1ba732137",
+    "research/symmetry_watchdog.py": "108c5f9ae158248361ed5b80ccb6a556f18843ad06485925aa0e94a2a1a1b987",
+    "research/_windows_job.py": "72e4b2110038cbc61cfb646a007b405b031394d65141994dd77022d270b71f3f",
+    "research/tiny_oracle.py": "8dcb6fac0ea7ec29a622b4400ef51d0520ded4f5f3d709962ccb224bbd0d93b8",
+    "research/p1e_protocol.py": "a540a3371b3db82f26dde8c94914ec5a665a25cd3fe89cafc341fe67e8f6d012",
+    "research/p1e_plan.py": "372a3ac94d54e9d41f1539ed514d797d89b928b8b48d5bbfd6fbeb35c072759e",
+    "research/p1e_receipt.py": "912c14a367b42a8125646b2dbba9ddf6d14776975b813c202806613b50cac369",
+    "research/p1e_bridge.py": "fd7211037d5a0846e8521530648bcd54ec0fcb47d4ed1c23b190057df17e9d32",
+    "research/p1e_dummy_worker.py": "437bd7589963e03ab9a2beaac54df38c0e10feec0d1c6b8cc6fc623fd3a32ea5",
+    "requirements.txt": "12c05780edf45ec3acd82da1cbc8095ef139efcfad4db8bbc8b43465e4ea9fe0",
+    "schemas/container_loading_instance.schema.json": "40e16e8e7db3a18ff7f9a9fc1f8522db114946714e3a2b2fdb7fc8c70e2614cb"
+  },
+  "real_human_receipt_present": false,
+  "real_key_enrollment": false,
+  "receipt_tests": "ephemeral test-only key; no key/credential serialized",
+  "guard_active": true,
+  "blocked_attempts": {
+    "cpsat_api": 0,
+    "native_factory": 0,
+    "oracle": 0
+  },
+  "executed_cpsat_calls": 0,
+  "executed_oracle_calls": 0,
+  "scope": "guarded Python APIs; no native constructor or Oracle delegation"
+}
