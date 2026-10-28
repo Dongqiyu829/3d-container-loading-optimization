@@ -14,5 +14,16 @@ elif mode == "tree":
     subprocess.Popen([sys.executable, "-I", "-S", "-B", __file__, str(directory), "child"],
                      stdout=sys.stdout, stderr=sys.stderr, creationflags=0x08000000)
     time.sleep(3)
+elif mode == "dependencies":
+    # Fixed harmless child dependency probe, NOT a native adapter invocation.
+    # -I keeps environment path injection out; only the fixed repository is added.
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    import json
+    from research.symmetry_guard import ZeroSolveGuard
+    with ZeroSolveGuard() as guard:
+        from research.p1f_workers import bootstrap_crypto
+        bootstrap_crypto()
+        from research.p1e_plan import critical_versions
+        (directory/"dependency.json").write_text(json.dumps({"versions":critical_versions(),"guard":guard.evidence()}))
 elif mode != "normal": raise SystemExit(9)
 (directory/"result.json").write_bytes(b'{"kind":"dummy_ok"}')

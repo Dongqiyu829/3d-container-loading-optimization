@@ -66,6 +66,10 @@ The current test interpreter borrows existing crypto/CFFI namespaces read-only.
 A future native child must have the same pinned dependency identities; missing
 or different packages fail preflight, with no unsigned/degraded fallback. Actual
 child dependency/bootstrap timing has not been calibrated by solver execution.
+The child also supports the existing trusted Conda installation's base crypto
+package through namespace-only discovery (derived from interpreter prefix, never
+from request paths). A fixed guarded OS child probes the actual bootstrap and
+core fingerprints without calling either engine. Native solve timing is untested.
 
 ## OS stdout/stderr and evidence
 
@@ -80,7 +84,10 @@ evidence is preserved even when parsing fails. Native response logs are separate
 bounded; overflow/incomplete data stops rather than certifying an optimum.
 
 Harmless fixtures use os.write to real stdout/stderr, bounded flood and a bounded
-descendant tree. They do not import project code/solvers. One host's OS tests do
+descendant tree. These modes do not import project code/solvers.
+The separate dependency probe intentionally imports the libraries under its own
+ZeroSolveGuard; it never invokes a native worker or engine. Other modes remain
+stdlib-only. One host's OS tests do
 not prove parent-crash, nested-job/other Windows policy, synchronous-pipe behavior
 under other concurrency models or zero resource overshoot. Job commit != RSS;
 user+kernel CPU/wall polling and termination have latency. No parent-crash fault

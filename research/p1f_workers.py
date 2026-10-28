@@ -24,6 +24,24 @@ class OracleIncomplete(WorkerError):
     pass
 
 
+def bootstrap_crypto():
+    """Known installed dependency discovery, never a path supplied by a request.
+
+    Normal environments use their installed package. The existing Conda host
+    has crypto in its base environment; reuse the accepted namespace-only loader
+    from that trusted interpreter installation. Full parent/critical child hashes
+    still have to match the signed manifest. Missing/other layouts fail closed.
+    """
+    try:
+        import cryptography
+    except ModuleNotFoundError:
+        import sys
+        prefix = Path(sys.base_prefix)
+        if prefix.parent.name.lower() != "envs": raise WorkerError("crypto dependency unavailable")
+        from research.run_p1e_zero_tests import load_test_crypto
+        load_test_crypto(prefix.parent.parent/"Lib/site-packages")
+
+
 def execution_closed():
     raise SolveForbidden("P1f native execution is build-time closed; no approval/flag enables it")
 
@@ -162,6 +180,7 @@ def validate_result(p, result):
 def _child_preflight(root, request, kind):
     exact(request, "schema manifest ordinal review_head receipt_b64 attempt runtime_lease")
     if request["schema"] != f"p1f-{kind}-request-v1": raise WorkerError("wrong worker request schema")
+    bootstrap_crypto()
     receipt = base64.b64decode(request["receipt_b64"], validate=True)
     verify_receipt(receipt, request["manifest"], request["review_head"])
     # The audited parent owns all runtime read-lock handles through tree cleanup.

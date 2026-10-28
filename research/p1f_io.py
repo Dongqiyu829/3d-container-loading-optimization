@@ -105,13 +105,14 @@ class CapturedJob(WindowsJob):
 
 
 def run_harmless(mode, stage):
-    if mode not in ("normal", "flood", "tree"): raise ValueError("fixed dummy modes only")
+    if mode not in ("normal", "flood", "tree", "dependencies"): raise ValueError("fixed dummy modes only")
     worker = Path(__file__).with_name("p1f_dummy.py")
     with tempfile.TemporaryDirectory(prefix="p1f-pipes-") as td:
         capture = PipeCapture(td)
         factory = lambda **kw: CapturedJob(capture, **kw)
         try:
-            result = _supervise([sys.executable, "-I", "-S", "-B", str(worker), td, mode], worker.parent,
+            flags = ["-I", "-B"] if mode == "dependencies" else ["-I", "-S", "-B"]
+            result = _supervise([sys.executable, *flags, str(worker), td, mode], worker.parent,
                                  Path(td)/"result.json", stage, "pipe-dummy", backend=factory,
                                  cancelled=lambda: capture.exceeded)
         finally:
@@ -121,6 +122,10 @@ def run_harmless(mode, stage):
                       pipe_handles_closed=capture.closed,
                       stdout_hex=(Path(td)/"stdout.bin").read_bytes().hex(),
                       stderr_hex=(Path(td)/"stderr.bin").read_bytes().hex())
+        if mode == "dependencies" and (Path(td)/"dependency.json").exists():
+            from research.p1e_protocol import strict_json
+            with (Path(td)/"dependency.json").open("rb") as f:
+                result["dependency_probe"] = strict_json(f.read(65537))
         if capture.exceeded: stage.stopped = True; result["classification"] = "output_limit"
         else: result["classification"] = "dummy_complete" if result["complete"] else "supervisor_incomplete"
         return result

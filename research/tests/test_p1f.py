@@ -271,3 +271,12 @@ class RuntimeAndIOTests(unittest.TestCase):
         r=self.run_os("tree",.5)
         self.assertEqual(r["reason"],"CHILD_WALL_LIMIT")
         self.assertGreaterEqual(r["job_accounting"]["total_processes"],2)
+
+    def test_real_child_dependency_bootstrap_without_solve(self):
+        r=self.run_os("dependencies",2)
+        self.assertTrue(r["complete"],r)
+        probe=r["dependency_probe"]
+        for key,value in probe["versions"].items(): self.assertEqual(proposal()["versions"][key],value)
+        self.assertEqual(probe["guard"]["executed_cpsat_calls"],0)
+        self.assertEqual(probe["guard"]["executed_oracle_calls"],0)
+        self.assertFalse(any(probe["guard"]["blocked_attempts"].values()))
