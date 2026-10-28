@@ -117,7 +117,7 @@ def validate_manifest(m):
     hash_text(m["source_head"], 40)
     if canonical(m["controls"]) != canonical(CONTROLS) or canonical(m["limits"]) != canonical(LIMITS):
         raise ValueError("unreviewed controls/resources")
-    version_fields = "python ortools protobuf cryptography platform pointer_bits python_executable_sha256 python_base_sha256 python_dll_sha256 ortools_binaries_sha256 crypto_backend_sha256"
+    version_fields = "python ortools protobuf cryptography platform pointer_bits python_executable_sha256 python_base_sha256 python_dll_sha256 ortools_binaries_sha256 crypto_backend_sha256 cffi_backend_sha256"
     exact(m["versions"], version_fields)
     expected_versions = {"python": "3.12.11", "ortools": "9.14.6206", "protobuf": "6.31.1",
                          "cryptography": "42.0.5", "platform": "win32", "pointer_bits": 64}

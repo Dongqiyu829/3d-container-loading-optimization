@@ -24,6 +24,22 @@ def load_test_crypto(site):
         return
     except ModuleNotFoundError:
         if site is None: raise
+    # This existing crypto build requires CFFI. Load just its dependency
+    # namespaces rather than exposing the foreign site's optional ML packages.
+    if importlib.util.find_spec("_cffi_backend") is None:
+        backends = list(site.resolve().glob("_cffi_backend*.pyd"))
+        if len(backends) != 1: raise ImportError("one compatible CFFI backend required")
+        backend_spec = importlib.util.spec_from_file_location("_cffi_backend", backends[0])
+        backend = importlib.util.module_from_spec(backend_spec)
+        sys.modules["_cffi_backend"] = backend
+        backend_spec.loader.exec_module(backend)
+    if importlib.util.find_spec("cffi") is None:
+        package = site.resolve()/"cffi"
+        ffi_spec = importlib.util.spec_from_file_location("cffi", package/"__init__.py",
+                                                        submodule_search_locations=[str(package)])
+        ffi = importlib.util.module_from_spec(ffi_spec)
+        sys.modules["cffi"] = ffi
+        ffi_spec.loader.exec_module(ffi)
     package = site.resolve()/"cryptography"
     spec = importlib.util.spec_from_file_location("cryptography", package/"__init__.py",
                                                 submodule_search_locations=[str(package)])

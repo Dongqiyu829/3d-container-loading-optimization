@@ -116,7 +116,7 @@ Use only the explicit guarded test allowlist, never legacy discovery:
 python -B -m research.run_p1e_zero_tests --os-tests --evidence results/NEW-tests.json --proposal-out results/NEW-proposal.json
 ```
 
-Optional test-only `--crypto-site` loads only an existing read-only crypto package
+Optional test-only `--crypto-site` loads existing read-only crypto/CFFI namespaces
 when cryptography is absent from the solver environment. No install or production
 dependency change. Target: Python3.12.11, OR-Tools9.14.6206, protobuf6.31.1,
 cryptography42.0.5, Windows x64. Missing/changed dependencies fail closed. The

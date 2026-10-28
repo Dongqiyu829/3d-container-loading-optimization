@@ -36,6 +36,7 @@ def verify_sources(root, m):
 def runtime_versions():
     import ortools
     import cryptography
+    import _cffi_backend
     native_root = Path(ortools.__file__).parent
     native_files = {p.relative_to(native_root).as_posix(): sha_bytes(p.read_bytes())
                     for p in sorted(native_root.rglob("*")) if p.suffix.lower() in (".dll", ".pyd")}
@@ -48,7 +49,8 @@ def runtime_versions():
             "python_executable_sha256": sha_bytes(Path(sys.executable).read_bytes()),
             "python_base_sha256": sha_bytes(Path(sys._base_executable).read_bytes()),
             "python_dll_sha256": sha_bytes(python_dll.read_bytes()),
-            "ortools_binaries_sha256": digest(native_files), "crypto_backend_sha256": sha_bytes(crypto_binary.read_bytes())}
+            "ortools_binaries_sha256": digest(native_files), "crypto_backend_sha256": sha_bytes(crypto_binary.read_bytes()),
+            "cffi_backend_sha256": sha_bytes(Path(_cffi_backend.__file__).read_bytes())}
 
 
 def build_proposal(root):
