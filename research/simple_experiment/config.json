@@ -1,0 +1,39 @@
+{
+  "cases": [
+    "T00",
+    "T01",
+    "T02",
+    "T03"
+  ],
+  "objectives": [
+    "volume",
+    "count"
+  ],
+  "models": [
+    "ORACLE",
+    "M0",
+    "M1",
+    "M2"
+  ],
+  "hints": "none",
+  "cp_sat": {
+    "worker_count": 1,
+    "random_seed": 0,
+    "linearization_level": 2,
+    "symmetry_level": 2,
+    "solve_wall_seconds": 2,
+    "construction_order": "source",
+    "volume_bound": false
+  },
+  "oracle_max_nodes": 200000,
+  "trace_cap": 128,
+  "resources": {
+    "child_wall": 4.5,
+    "stage_wall": 170,
+    "cpu": 110,
+    "memory_bytes": 268435456,
+    "max_attempts": 32,
+    "poll": 0.01,
+    "cleanup_wall": 1
+  }
+}
