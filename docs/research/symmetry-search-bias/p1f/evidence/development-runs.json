@@ -1,0 +1,89 @@
+{
+  "schema": "p1f-development-history-v1",
+  "runs": [
+    {
+      "source_head": "f9bae409a20d42ca1ba9d7cdcb3801282019ef7d",
+      "manifest_sha256": "1605f9563b3bba4784de2596c36dea6b4b41d344eff5d5546fba05dc5fa879b5",
+      "tests_run": 51,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "executed_cpsat_calls": 0,
+      "executed_oracle_calls": 0,
+      "blocked_attempts": {
+        "cpsat_api": 0,
+        "native_factory": 0,
+        "oracle": 0
+      },
+      "round": "01",
+      "dummy_roots": 4,
+      "original_evidence_bytes": 50852,
+      "original_evidence_sha256": "115d0c0e555cacdc8c30fd179facdaabf2ca24a21eed81560fc1c39a4f04f261",
+      "published_full_evidence": false
+    },
+    {
+      "source_head": "a8ae8ef2bf36e4cf4d062e48e5ed1d1cb758e1b8",
+      "manifest_sha256": "f6466cf7c8542b6e10a6fa8f455af1c8f571e4988785c369aee108afa8a8ec85",
+      "tests_run": 52,
+      "failures": 1,
+      "errors": 0,
+      "skips": 0,
+      "executed_cpsat_calls": 0,
+      "executed_oracle_calls": 0,
+      "blocked_attempts": {
+        "cpsat_api": 0,
+        "native_factory": 0,
+        "oracle": 0
+      },
+      "round": "02",
+      "dummy_roots": 5,
+      "original_evidence_bytes": 54015,
+      "original_evidence_sha256": "dad123e98a89505f1cf05978467478f888cde7b8a3fa0024231f31c1f7e3cbf9",
+      "published_full_evidence": false
+    },
+    {
+      "source_head": "b11fff6fbe4dd5e2e71d863a04005b560fb3979e",
+      "manifest_sha256": "a193d005f242e619b44683a94913ca50d4a4dbc094cff0ccd2051d7baba0f6d1",
+      "tests_run": 52,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "executed_cpsat_calls": 0,
+      "executed_oracle_calls": 0,
+      "blocked_attempts": {
+        "cpsat_api": 0,
+        "native_factory": 0,
+        "oracle": 0
+      },
+      "round": "03",
+      "dummy_roots": 5,
+      "original_evidence_bytes": 54440,
+      "original_evidence_sha256": "8e892f67f356b9e0d6073b4c0331aa676bc964bda02f46a4592445591cab12e7",
+      "published_full_evidence": false
+    },
+    {
+      "source_head": "29b0ffeb305be2ad8ee2bc8042e320f9a1c14e88",
+      "manifest_sha256": "a622895df696c06708b8b3f3d360f334d25d45098f7121b4f7426e5b64a3d20a",
+      "tests_run": 52,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "executed_cpsat_calls": 0,
+      "executed_oracle_calls": 0,
+      "blocked_attempts": {
+        "cpsat_api": 0,
+        "native_factory": 0,
+        "oracle": 0
+      },
+      "round": "04",
+      "dummy_roots": 5,
+      "original_evidence_bytes": 54406,
+      "original_evidence_sha256": "8333494ccaf4dd46b900428e17b2fcad649562d35a8caff85e132fb510c33bbe",
+      "published_full_evidence": true
+    }
+  ],
+  "total_dummy_roots": 19,
+  "benchmark_calls": 0,
+  "failure": "Round02 dependency dummy failed during NumPy/OpenBLAS import under the pipe dummy 128MiB cap, before any native engine. Peak job commit 158265344 bytes vs cap134217728, not RSS. All handles/owned tree cleaned. Round03 fixed child numeric threads to1 and aligned dependency probe with already proposed StageA256MiB cap. No StageA budget increase. Round04 batches immutable Git trees only; working file and HEAD checks remain fresh. No automatic research retries; these were distinct zero-solve engineering tests after source changes.",
+  "private_logs_not_published": "Earlier raw diagnostic traces contain host paths; only their hashes and this failure account are published. Existing results remain untouched."
+}

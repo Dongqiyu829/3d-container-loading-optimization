@@ -56,10 +56,11 @@ The parent RuntimeLease hashes while holding non-inheritable Windows read handle
 with FILE_SHARE_READ only; standard writes/deletes are denied through cleanup.
 The stage pays this once; every job rehashes repo sources/proto and checks the
 live lease. The child rehashes core binaries/source and binds the exact parent's
+lease claim/attempt/receipt.
 Immutable Git object trees are fetched in one batch and may be cached by SHA;
 working bytes and the current HEAD are NEVER cached. This removes per-file Git
 process startup from each2s job's preflight without weakening identity checks.
-lease claim/attempt/receipt. The lease claim is a trusted-parent protocol claim,
+The lease claim is a trusted-parent protocol claim,
 NOT cryptographic proof against a hostile manual child invocation. Supported
 entrypoints are closed anyway. Trust assumptions remain a controlled host,
 audited parent and protected source/ledger directories, not hostile same-user
