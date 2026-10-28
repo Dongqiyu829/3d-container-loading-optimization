@@ -111,15 +111,16 @@ class WindowsJob:
         if not ok:
             raise C.WinError(C.get_last_error())
 
-    def start(self, argv, cwd):
+    def start(self, argv, cwd, *, stdio=None):
         if self.process:
             raise RuntimeError("one launch per owned job")
         size = SIZE_T()
-        self.api.InitializeProcThreadAttributeList(None, 1, 0, C.byref(size))
+        attributes = 2 if stdio is not None else 1
+        self.api.InitializeProcThreadAttributeList(None, attributes, 0, C.byref(size))
         if not size.value:
             raise C.WinError(C.get_last_error())
         buf = C.create_string_buffer(size.value)
-        self._check(self.api.InitializeProcThreadAttributeList(buf, 1, 0, C.byref(size)))
+        self._check(self.api.InitializeProcThreadAttributeList(buf, attributes, 0, C.byref(size)))
         try:
             jobs = (HANDLE * 1)(self.job)
             self._check(self.api.UpdateProcThreadAttribute(
@@ -127,10 +128,16 @@ class WindowsJob:
             startup = StartupInfoEx()
             startup.StartupInfo.cb = C.sizeof(startup)
             startup.lpAttributeList = C.cast(buf, C.c_void_p)
+            if stdio is not None:
+                if len(stdio) != 3: raise ValueError("exact stdin/stdout/stderr handles required")
+                handles = (HANDLE * 3)(*stdio)
+                self._check(self.api.UpdateProcThreadAttribute(buf, 0, 0x00020002, handles, C.sizeof(handles), None, None))
+                startup.StartupInfo.dwFlags |= 0x100  # STARTF_USESTDHANDLES
+                startup.StartupInfo.hStdInput, startup.StartupInfo.hStdOutput, startup.StartupInfo.hStdError = stdio
             pi = ProcessInformation()
             command = C.create_unicode_buffer(subprocess.list2cmdline(argv))
             self._check(self.api.CreateProcessW(
-                argv[0], command, None, None, False,
+                argv[0], command, None, None, stdio is not None,
                 0x00080000 | 0x00000004 | 0x08000000,  # extended, suspended, no window
                 None, str(cwd), C.byref(startup), C.byref(pi)))
             self.process, self.thread, self.pid = pi.hProcess, pi.hThread, pi.dwProcessId

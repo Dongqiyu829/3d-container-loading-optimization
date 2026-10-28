@@ -4,15 +4,17 @@ import json
 from pathlib import Path
 import re
 import tempfile
+import ast
 
 from research.symmetry_canonical_input import load_oracle_input
 from research.symmetry_guard import SolveForbidden
 
-VERSION = "p1e-worker-v1"
+VERSION = "p1f-worker-v1"
+MANIFEST_SCHEMA = "p1f-stage-a-unapproved-v1"
 ORACLE_SHA = "8dcb6fac0ea7ec29a622b4400ef51d0520ded4f5f3d709962ccb224bbd0d93b8"
 ORACLE_BLOB = "02d9eed12e422666088028a021e21ef1ee2c519a"
-ENTRYPOINTS = {"cpsat": "research.p1e_protocol:forbidden_cpsat",
-               "oracle": "research.p1e_protocol:forbidden_oracle"}
+ENTRYPOINTS = {"cpsat": "research.p1f_workers:worker_cp",
+               "oracle": "research.p1f_workers:worker_oracle"}
 LIMITS = {"max_cpsat_calls": 24, "max_oracle_calls": 8, "child_wall_ms": 2000,
           "stop_wall_ms": 1800, "stage_wall_ms": 90000, "stage_stop_wall_ms": 88000,
           "cpu_ms": 75000, "cpu_stop_ms": 70000, "job_commit_bytes": 268435456,
@@ -23,7 +25,7 @@ CONTROLS = {"workers": 1, "seed": 0, "LP": 2, "symmetry": 2, "presolve": True,
             "construction_order": "source", "trace_cap": 128,
             "gap_absolute": 0, "gap_relative": 0,
             "instrumentation": "p1b-scalars-first-witness-v1"}
-SOURCES = (
+SOURCE_ROOTS = (
     "baseline_common.py", "validate_solution.py", "cpsat_baseline.py",
     "cpsat_prefix_search_diagnostics.py", "identical_box_symmetry_audit.py",
     "research/symmetry_canonical_input.py", "research/symmetry_models.py",
@@ -31,7 +33,39 @@ SOURCES = (
     "research/symmetry_guard.py", "research/symmetry_watchdog.py", "research/_windows_job.py",
     "research/tiny_oracle.py", "research/p1e_protocol.py", "research/p1e_plan.py",
     "research/p1e_receipt.py", "research/p1e_bridge.py", "research/p1e_dummy_worker.py",
+    "research/p1f_workers.py", "research/p1f_stage.py", "research/p1f_io.py", "research/p1f_dummy.py",
     "requirements.txt", "schemas/container_loading_instance.schema.json")
+
+
+def source_closure(root):
+    """Static repository import closure, including packages and nested imports.
+
+    Legacy diagnostic modules are hashed, never executed as experiment runners.
+    """
+    root = Path(root)
+    pending, found = list(SOURCE_ROOTS), set()
+    while pending:
+        path = pending.pop()
+        if path in found: continue
+        found.add(path)
+        if not path.endswith(".py"): continue
+        tree = ast.parse((root/path).read_bytes())
+        modules = []
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import): modules.extend(a.name for a in node.names)
+            elif isinstance(node, ast.ImportFrom) and node.module and node.level == 0:
+                modules.append(node.module)
+                modules.extend(node.module+"."+a.name for a in node.names)
+        for module in modules:
+            parts = module.split(".")
+            for i in range(1, len(parts)+1):
+                stem = "/".join(parts[:i])
+                for candidate in (stem+".py", stem+"/__init__.py"):
+                    if (root/candidate).is_file() and candidate not in found: pending.append(candidate)
+    return tuple(sorted(found))
+
+
+SOURCES = source_closure(Path(__file__).resolve().parents[1])
 PREDICTIONS = {"T00": {"volume": 0, "count": 0}, "T01": {"volume": 2, "count": 2},
                "T02": {"volume": 3, "count": 3}, "T03": {"volume": 3, "count": 2}}
 
@@ -111,13 +145,13 @@ def job_hash(job):
 
 def validate_manifest(m):
     exact(m, "schema source_head worker_version versions sources inputs controls limits parameters jobs evidence_root execution_authorized")
-    if (m["schema"] != "p1e-stage-a-unapproved-v1" or m["worker_version"] != VERSION
+    if (m["schema"] != MANIFEST_SCHEMA or m["worker_version"] != VERSION
             or m["execution_authorized"] is not False):
         raise ValueError("unapproved schema/worker required")
     hash_text(m["source_head"], 40)
     if canonical(m["controls"]) != canonical(CONTROLS) or canonical(m["limits"]) != canonical(LIMITS):
         raise ValueError("unreviewed controls/resources")
-    version_fields = "python ortools protobuf cryptography platform pointer_bits python_executable_sha256 python_base_sha256 python_dll_sha256 ortools_binaries_sha256 crypto_backend_sha256 cffi_backend_sha256"
+    version_fields = "python ortools protobuf cryptography platform pointer_bits python_executable_sha256 python_base_sha256 python_dll_sha256 ortools_binaries_sha256 crypto_backend_sha256 cffi_backend_sha256 runtime_packages_sha256 python_stdlib_sha256 windows_build"
     exact(m["versions"], version_fields)
     expected_versions = {"python": "3.12.11", "ortools": "9.14.6206", "protobuf": "6.31.1",
                          "cryptography": "42.0.5", "platform": "win32", "pointer_bits": 64}
@@ -126,14 +160,14 @@ def validate_manifest(m):
     for key in version_fields.split():
         if key.endswith("_sha256"): hash_text(m["versions"][key])
     relative(m["evidence_root"])
-    if m["evidence_root"] != "results/stage-a-p1e-review-v1":
+    if m["evidence_root"] != "results/stage-a-p1f-review-v1":
         raise ValueError("unregistered evidence destination")
     if not isinstance(m["sources"], dict) or set(m["sources"]) != set(SOURCES):
         raise ValueError("source allowlist changed")
     for path, record in m["sources"].items():
         relative(path); exact(record, "runtime_sha256 git_blob bytes")
         hash_text(record["runtime_sha256"]); hash_text(record["git_blob"], 40)
-        if type(record["bytes"]) is not int or record["bytes"] <= 0: raise ValueError("source size")
+        if type(record["bytes"]) is not int or record["bytes"] < 0: raise ValueError("source size")
     if m["sources"]["research/tiny_oracle.py"] != {"runtime_sha256": ORACLE_SHA, "git_blob": ORACLE_BLOB, "bytes": 7432}:
         raise ValueError("Oracle identity changed")
     if set(m["inputs"]) != set(PREDICTIONS): raise ValueError("exactly T00-T03 required")
