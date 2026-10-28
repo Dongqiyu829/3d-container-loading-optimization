@@ -1,0 +1,21 @@
+{
+  "files": [
+    {
+      "path": "guard.json",
+      "published_sha256": "f27e3362861ad939a89d63eb310c6343ddf0daff70809fda83fbde0dea4f676c",
+      "size_bytes": 158
+    },
+    {
+      "path": "integration-plan.json",
+      "published_sha256": "1a51e980705285f4358c7ba44c6ab7a868ade9e61e2f812a48263d1a48c60587",
+      "size_bytes": 58329
+    },
+    {
+      "path": "source-manifest.json",
+      "published_sha256": "27d5992a6e3acee17e9a16a5170e483713c07544bfb74296fad2c32e77533031",
+      "size_bytes": 7810
+    }
+  ],
+  "schema_version": "symmetry-telemetry-v1",
+  "total_bytes": 66297
+}

@@ -1,0 +1,9 @@
+{
+  "blocked_attempt_deltas": {
+    "cpsat_api": 0,
+    "native_factory": 0,
+    "oracle": 0
+  },
+  "executed_cpsat_calls": 0,
+  "executed_oracle_calls": 0
+}
