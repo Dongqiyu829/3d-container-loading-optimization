@@ -1,0 +1,62 @@
+{
+  "schema": "issue45-calibration-publication-v1",
+  "source_executed": "fd504269bd13b00fc605672626c8d09d00932030",
+  "review_manifest": "53f44b8fd5e5ac67cf204fd17566b2fd533f7609",
+  "scope": "Nine evidence files excluding this self-referencing inventory. Code/32-job Manifest unchanged. Evidence commit is supplied in Issue45; no real solver authorization.",
+  "files": [
+    {
+      "path": "docs/research/symmetry-search-bias/stage-a-calibration-45/approval-plan.json",
+      "bytes": 751,
+      "sha256": "4875964298ad73fdcafbbeb90f4d62f8b0cb0e50d52ba046c7423d6a4a0afc59",
+      "git_blob": "621bb24ea553b8df33def0f04eb9edcf9628402c"
+    },
+    {
+      "path": "docs/research/symmetry-search-bias/stage-a-calibration-45/calibration.json",
+      "bytes": 9783,
+      "sha256": "1ea2b1d3435845760b4cdd9e72bda90895c85d1bb02c4f59d2671f38c0c12414",
+      "git_blob": "0ed31b54287b1112c97f18744d6174afce39ae3b"
+    },
+    {
+      "path": "docs/research/symmetry-search-bias/stage-a-calibration-45/EVIDENCE.md",
+      "bytes": 9361,
+      "sha256": "9a88334c8a14810254059e3939d808b2391e9fce509dbecc2f25912288bb7f2b",
+      "git_blob": "5beba4676d7485ebb9646bec3591dc7f94600f24"
+    },
+    {
+      "path": "docs/research/symmetry-search-bias/stage-a-calibration-45/invocation.py.txt",
+      "bytes": 8183,
+      "sha256": "c98b330e2c7159f626df9c1e1f82052e2def92beac1075370f071c48c6724d4e",
+      "git_blob": "8f3ecb83b172f946a77dd5a6dd91d3c8849ee792"
+    },
+    {
+      "path": "docs/research/symmetry-search-bias/stage-a-calibration-45/phase-readout.json",
+      "bytes": 4705,
+      "sha256": "511287fee9ea01df9676f2524c3e410430906c02ac897b20ccbf43f30da900f4",
+      "git_blob": "23785030bf44af1ad2e8596a06eba8e26aa83c05"
+    },
+    {
+      "path": "docs/research/symmetry-search-bias/stage-a-calibration-45/preflight_cp-attempt.json",
+      "bytes": 369,
+      "sha256": "0aba07c311c54a06453c1741c870c0d41e3c89e721d6e0c98c97723237ecbf33",
+      "git_blob": "b9424260da58fb44568db36c8a910635bc221771"
+    },
+    {
+      "path": "docs/research/symmetry-search-bias/stage-a-calibration-45/preflight_cp-result.json",
+      "bytes": 3435,
+      "sha256": "3d5b2d200f13012a5629ed4994598cdf5156f6ccb3dbb424d397576c10120347",
+      "git_blob": "740720568aca519b62f5a6e2ba4d3f0c47c6115c"
+    },
+    {
+      "path": "docs/research/symmetry-search-bias/stage-a-calibration-45/preflight_oracle-attempt.json",
+      "bytes": 381,
+      "sha256": "c81422b58754c217d68ec308c867957cdf6660c602ae27c1864253ffa6310134",
+      "git_blob": "23481281d662706ec5af568546a4b17032665d7a"
+    },
+    {
+      "path": "docs/research/symmetry-search-bias/stage-a-calibration-45/preflight_oracle-result.json",
+      "bytes": 3446,
+      "sha256": "b084db64b59e5223a61ad437b2e574cbce4cb73bf0af0d707544b8fb866ad389",
+      "git_blob": "e77071db02045a1e4d5366ca54aded26c01dfd31"
+    }
+  ]
+}

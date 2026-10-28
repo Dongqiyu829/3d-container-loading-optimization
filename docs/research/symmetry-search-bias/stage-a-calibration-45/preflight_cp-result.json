@@ -1,0 +1,101 @@
+{
+  "mode": "preflight_cp",
+  "start_ns": 42900234000000,
+  "shared_cpu_before": 0.0,
+  "result": {
+    "evidence_kind": "real_os_pipe_dummy",
+    "complete": true,
+    "reason": null,
+    "error_class": null,
+    "exit_code": 0,
+    "job_accounting": {
+      "cpu_seconds": 1.15625,
+      "active_processes": 0,
+      "total_processes": 13,
+      "terminated_processes": 0,
+      "peak_job_memory_bytes": 103804928,
+      "configured_job_memory_limit_bytes": 268435456
+    },
+    "dummy_payload": {
+      "kind": "dummy_ok"
+    },
+    "final_cpu_known": true,
+    "cumulative_cpu_seconds": 1.15625,
+    "last_observed_cpu_seconds": 1.15625,
+    "cleanup_confirmed": true,
+    "handles_closed": true,
+    "child_wall_including_cleanup": 1.2810000000026776,
+    "stage_wall": 1.2970000000059372,
+    "stage_stopped": false,
+    "attempts_reserved": 1,
+    "launch_attempted": true,
+    "root_created": true,
+    "actual_cpsat_calls": 0,
+    "actual_oracle_calls": 0,
+    "controller_phases": {
+      "setup_begin_ns": 42900250000000,
+      "launch_begin_ns": 42900250000000,
+      "launch_return_ns": 42900250000000,
+      "cleanup_begin_ns": 42901515000000,
+      "cleanup_end_ns": 42901531000000
+    },
+    "pipe_bytes_saved": 28,
+    "pipe_bytes_observed": 28,
+    "output_quota_exceeded": false,
+    "pipe_handles_closed": true,
+    "stdout_hex": "6e61746976652d7374646f75740a",
+    "stderr_hex": "6e61746976652d7374646572720a",
+    "phase-imports.json": {
+      "authorization_journal_verified_ns": 42901234000000,
+      "imports_done_ns": 42900906000000,
+      "preflight_begin_ns": 42901000000000,
+      "worker_entry_ns": 42900703000000
+    },
+    "phase-preflight.json": {
+      "authorization_journal_verified_ns": 42901234000000,
+      "imports_done_ns": 42900906000000,
+      "input_loaded_ns": 42901390000000,
+      "model_verified_ns": 42901390000000,
+      "preflight_begin_ns": 42901000000000,
+      "preflight_done_ns": 42901406000000,
+      "prepare_begin_ns": 42901250000000,
+      "source_verified_ns": 42901390000000,
+      "worker_entry_ns": 42900703000000
+    },
+    "preflight-probe.json": {
+      "evidence_kind": "harmless_zero_solve_preflight",
+      "guard": {
+        "blocked_attempts": {
+          "cpsat_api": 0,
+          "native_factory": 0,
+          "oracle": 0
+        },
+        "executed_cpsat_calls": 0,
+        "executed_oracle_calls": 0,
+        "guard_active": true,
+        "scope": "guarded Python APIs; no native constructor or Oracle delegation"
+      },
+      "guard_ready_ns": 42900703000000,
+      "mode": "preflight_cp",
+      "native_entry_calls": 0,
+      "preflight_done_ns": 42901421000000,
+      "probe_entry_ns": 42900312000000,
+      "scope": "real source/runtime-core/receipt/proto/durable launch claim; ephemeral TEST authority and synthetic predecessor; no native adapter body",
+      "worker_phases": {
+        "authorization_journal_verified_ns": 42901234000000,
+        "imports_done_ns": 42900906000000,
+        "input_loaded_ns": 42901390000000,
+        "model_verified_ns": 42901390000000,
+        "preflight_begin_ns": 42901000000000,
+        "preflight_done_ns": 42901406000000,
+        "prepare_begin_ns": 42901250000000,
+        "source_verified_ns": 42901390000000,
+        "worker_entry_ns": 42900703000000
+      }
+    },
+    "classification": "dummy_complete"
+  },
+  "return_ns": 42901562000000,
+  "shared_cpu_after": 1.15625,
+  "failed_acceptance_checks": []
+}

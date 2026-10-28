@@ -1,0 +1,15 @@
+{
+  "mode": "preflight_oracle",
+  "state": "one_attempt_reserved_no_retry",
+  "shared_wall_left_seconds": 15.796999999998661,
+  "shared_cpu_left_seconds": 8.84375,
+  "one_item_controller_limits": {
+    "child_wall": 4.5,
+    "stage_wall": 15.796999999998661,
+    "cpu": 8.84375,
+    "memory_bytes": 268435456,
+    "max_attempts": 1,
+    "poll": 0.01,
+    "cleanup_wall": 0.5
+  }
+}

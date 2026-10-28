@@ -1,0 +1,22 @@
+{
+  "schema": "issue45-harmless-preflight-calibration-v1",
+  "source_head": "fd504269bd13b00fc605672626c8d09d00932030",
+  "review_head": "53f44b8fd5e5ac67cf204fd17566b2fd533f7609",
+  "approved_modes": [
+    "preflight_cp",
+    "preflight_oracle"
+  ],
+  "caps": {
+    "child_nominal_seconds": 5,
+    "child_stop_seconds": 4.5,
+    "stage_nominal_seconds": 20,
+    "stage_cleanup_reserve_seconds": 0.5,
+    "cumulative_child_cpu_seconds": 10,
+    "job_commit_bytes": 268435456,
+    "active_processes": 4,
+    "poll_seconds": 0.01,
+    "cleanup_seconds": 0.5,
+    "stdout_stderr_bytes": 16384
+  },
+  "scope": "existing reviewed run_harmless only; separate one-item DummyStages receive remaining shared wall/CPU; no state clearing, no Stage A dispatch"
+}

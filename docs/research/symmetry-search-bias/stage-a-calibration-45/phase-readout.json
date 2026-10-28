@@ -1,0 +1,173 @@
+{
+  "schema": "issue45-derived-phase-readout-v1",
+  "clock": {
+    "implementation": "GetTickCount64()",
+    "resolution": 0.015625,
+    "monotonic": true
+  },
+  "warning": "Raw monotonic tick is 15.625ms; same-tick deltas are unresolved, never evidence of zero work. Timings include test harness setup; no native API call.",
+  "parent": {
+    "guard_and_initial_imports": {
+      "state": "measured",
+      "seconds": 0.593,
+      "raw_delta_ns": 593000000
+    },
+    "remaining_imports_manifest_and_review": {
+      "state": "measured",
+      "seconds": 0.563,
+      "raw_delta_ns": 563000000
+    },
+    "runtime_and_source_lease": {
+      "state": "measured",
+      "seconds": 1.203,
+      "raw_delta_ns": 1203000000
+    },
+    "runtime_and_source_close": {
+      "state": "measured",
+      "seconds": 0.047,
+      "raw_delta_ns": 47000000
+    }
+  },
+  "probes": [
+    {
+      "mode": "preflight_cp",
+      "launch_to_first_dummy_marker_approx_bracket_seconds": [
+        0.062,
+        0.062
+      ],
+      "dummy_guard_setup_and_imports": {
+        "state": "measured",
+        "seconds": 0.391,
+        "raw_delta_ns": 391000000
+      },
+      "worker_project_imports": {
+        "state": "measured",
+        "seconds": 0.203,
+        "raw_delta_ns": 203000000
+      },
+      "bootstrap_crypto_test_key_and_fixture_setup": {
+        "state": "measured",
+        "seconds": 0.094,
+        "raw_delta_ns": 94000000
+      },
+      "receipt_review_journal_verification": {
+        "state": "measured",
+        "seconds": 0.234,
+        "raw_delta_ns": 234000000
+      },
+      "prepare_manifest_source_core_runtime": {
+        "state": "measured",
+        "seconds": 0.14,
+        "raw_delta_ns": 140000000
+      },
+      "frozen_input_load": {
+        "state": "unresolved_same_clock_tick",
+        "seconds": null,
+        "raw_delta_ns": 0
+      },
+      "cp_model_proto_preparation": {
+        "state": "unresolved_same_clock_tick",
+        "seconds": null,
+        "raw_delta_ns": 0
+      },
+      "launch_claim_and_phase_file_finish": {
+        "state": "measured",
+        "seconds": 0.016,
+        "raw_delta_ns": 16000000
+      },
+      "entire_child_preflight_function": {
+        "state": "measured",
+        "seconds": 0.406,
+        "raw_delta_ns": 406000000
+      },
+      "probe_stamp_to_parent_cleanup_begin_combined": {
+        "state": "measured",
+        "seconds": 0.094,
+        "raw_delta_ns": 94000000
+      },
+      "parent_cleanup": {
+        "state": "measured",
+        "seconds": 0.016,
+        "raw_delta_ns": 16000000
+      },
+      "native_call": {
+        "state": "not_entered_fixed_fixture",
+        "seconds": null
+      },
+      "exclusive_result_write": {
+        "state": "not_separately_instrumented",
+        "seconds": null
+      }
+    },
+    {
+      "mode": "preflight_oracle",
+      "launch_to_first_dummy_marker_approx_bracket_seconds": [
+        0.062,
+        0.078
+      ],
+      "dummy_guard_setup_and_imports": {
+        "state": "measured",
+        "seconds": 0.391,
+        "raw_delta_ns": 391000000
+      },
+      "worker_project_imports": {
+        "state": "measured",
+        "seconds": 0.219,
+        "raw_delta_ns": 219000000
+      },
+      "bootstrap_crypto_test_key_and_fixture_setup": {
+        "state": "measured",
+        "seconds": 0.062,
+        "raw_delta_ns": 62000000
+      },
+      "receipt_review_journal_verification": {
+        "state": "measured",
+        "seconds": 0.235,
+        "raw_delta_ns": 235000000
+      },
+      "prepare_manifest_source_core_runtime": {
+        "state": "measured",
+        "seconds": 0.141,
+        "raw_delta_ns": 141000000
+      },
+      "frozen_input_load": {
+        "state": "unresolved_same_clock_tick",
+        "seconds": null,
+        "raw_delta_ns": 0
+      },
+      "cp_model_proto_preparation": {
+        "state": "not_applicable",
+        "seconds": null,
+        "raw_delta_ns": 0
+      },
+      "launch_claim_and_phase_file_finish": {
+        "state": "measured",
+        "seconds": 0.016,
+        "raw_delta_ns": 16000000
+      },
+      "entire_child_preflight_function": {
+        "state": "measured",
+        "seconds": 0.407,
+        "raw_delta_ns": 407000000
+      },
+      "probe_stamp_to_parent_cleanup_begin_combined": {
+        "state": "measured",
+        "seconds": 0.109,
+        "raw_delta_ns": 109000000
+      },
+      "parent_cleanup": {
+        "state": "unresolved_same_clock_tick",
+        "seconds": null,
+        "raw_delta_ns": 0
+      },
+      "native_call": {
+        "state": "not_entered_fixed_fixture",
+        "seconds": null
+      },
+      "exclusive_result_write": {
+        "state": "not_separately_instrumented",
+        "seconds": null
+      }
+    }
+  ]
+}

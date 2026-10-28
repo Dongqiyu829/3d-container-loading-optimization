@@ -1,0 +1,141 @@
+"""Issue45: two fixed harmless preflights, one attempt each; NO native bodies."""
+import json
+import math
+import os
+from pathlib import Path
+import subprocess
+import time
+
+SOURCE = "fd504269bd13b00fc605672626c8d09d00932030"
+REVIEW = "53f44b8fd5e5ac67cf204fd17566b2fd533f7609"
+MANIFEST_PATH = "docs/research/symmetry-search-bias/stage-a-activation/stage-a-manifest.json"
+root = Path.cwd()
+out = root/"results/issue45-calibration-20261028-once"
+out.mkdir(parents=True, exist_ok=False)  # fresh one-shot evidence, never overwrite
+def record(path, value):
+    data = json.dumps(value, indent=2, allow_nan=False).encode("utf-8")+b"\n"
+    with path.open("xb") as f:
+        f.write(data); f.flush(); os.fsync(f.fileno())
+
+began = time.monotonic()
+phases = {"calibration_begin_ns":time.monotonic_ns()}
+data = {"schema":"issue45-harmless-preflight-calibration-v1", "source_head":SOURCE, "review_head":REVIEW,
+        "approved_modes":["preflight_cp","preflight_oracle"], "results":[], "retries":0,
+        "caps":{"child_nominal_seconds":5,"child_stop_seconds":4.5,"stage_nominal_seconds":20,
+                "stage_cleanup_reserve_seconds":0.5,"cumulative_child_cpu_seconds":10,
+                "job_commit_bytes":268435456,"active_processes":4,"poll_seconds":0.01,
+                "cleanup_seconds":0.5,"stdout_stderr_bytes":16384},
+        "scope":"existing reviewed run_harmless only; separate one-item DummyStages receive remaining shared wall/CPU; no state clearing, no Stage A dispatch"}
+record(out/"approval-plan.json", {k:data[k] for k in ("schema","source_head","review_head","approved_modes","caps","scope")})
+cpu_total = 0.0
+lease = None
+error = None
+from research.symmetry_guard import ZeroSolveGuard
+with ZeroSolveGuard() as guard:
+    try:
+        phases["guard_ready_ns"] = time.monotonic_ns()
+        from research.p1f_workers import bootstrap_crypto
+        bootstrap_crypto()
+        from research.p1e_protocol import digest, LIMITS, CONTROLS
+        from research.p1e_plan import RuntimeLease, verify_review
+        from research.symmetry_watchdog import DummyLimits, DummyStage
+        from research.p1f_io import run_harmless
+        from research import p1e_receipt as receipts
+        assert subprocess.check_output(["git","rev-parse","HEAD"]).decode().strip() == SOURCE
+        assert not subprocess.check_output(["git","status","--porcelain"])
+        raw = subprocess.check_output(["git","show",REVIEW+":"+MANIFEST_PATH])
+        m = json.loads(raw)
+        assert digest(m) == "13260212c82fc207e32d0e6298633f0bde54af3220e791a7f7c5dc8ab6983a54"
+        assert receipts.TRUSTED_LEAD_KEYS == ()
+        original_limits, original_controls = dict(LIMITS), dict(CONTROLS)
+        verify_review(root,m,REVIEW)
+        phases["parent_import_identity_review_done_ns"] = time.monotonic_ns()
+        phases["runtime_source_lease_begin_ns"] = time.monotonic_ns()
+        lease = RuntimeLease(m["versions"])
+        lease.protect_sources(root,m)
+        data["read_locked_files"] = len(lease.handles)
+        data["manifest_sha256"] = digest(m)
+        phases["runtime_source_lease_done_ns"] = time.monotonic_ns()
+        for mode in ("preflight_cp","preflight_oracle"):
+            elapsed = time.monotonic()-began
+            wall_left = 20-elapsed-0.5  # reserve final cleanup; never reset overall deadline
+            cpu_left = 10-cpu_total
+            if wall_left <= 0 or cpu_left <= 0:
+                error = "shared_budget_exhausted_before_"+mode
+                break
+            lease.check_sources(root,m)
+            limits = DummyLimits(child_wall=4.5, stage_wall=wall_left, cpu=cpu_left,
+                                 memory_bytes=268435456,max_attempts=1,poll=.01,cleanup_wall=.5)
+            limits.validate()
+            stage = DummyStage(limits)
+            record(out/(mode+"-attempt.json"),{"mode":mode,"state":"one_attempt_reserved_no_retry",
+                   "shared_wall_left_seconds":wall_left,"shared_cpu_left_seconds":cpu_left,
+                   "one_item_controller_limits":vars(limits)})
+            row = {"mode":mode,"start_ns":time.monotonic_ns(),"shared_cpu_before":cpu_total}
+            data["results"].append(row)
+            result = run_harmless(mode,stage,proposal=m,review=REVIEW)
+            row["result"] = result
+            row["return_ns"] = time.monotonic_ns()
+            bad = []
+            accounting = result.get("job_accounting") or {}
+            value = accounting.get("cpu_seconds")
+            if not result.get("final_cpu_known") or type(value) not in (int,float) or not math.isfinite(value) or value < 0:
+                bad.append("unknown_final_cpu")
+                row["shared_cpu_after"] = None
+            else:
+                cpu_total += value
+                row["shared_cpu_after"] = cpu_total
+            for name in ("complete","cleanup_confirmed","handles_closed","pipe_handles_closed"):
+                if result.get(name) is not True: bad.append(name+"_not_true")
+            if accounting.get("active_processes") != 0: bad.append("live_processes")
+            peak = accounting.get("peak_job_memory_bytes")
+            if type(peak) is not int or not 0 <= peak <= 268435456: bad.append("peak_commit")
+            if result.get("output_quota_exceeded"): bad.append("stdout_stderr_quota")
+            probe = result.get("preflight-probe.json")
+            if not probe:
+                bad.append("preflight_incomplete_or_censored")
+            else:
+                child_guard = probe.get("guard",{})
+                if (child_guard.get("blocked_attempts") != {"cpsat_api":0,"native_factory":0,"oracle":0}
+                        or child_guard.get("executed_cpsat_calls") != 0 or child_guard.get("executed_oracle_calls") != 0
+                        or probe.get("native_entry_calls") != 0):
+                    bad.append("child_guard_or_native_scope")
+            if any(guard.blocked.values()): bad.append("parent_guard_attempt")
+            if cpu_total > 10 or time.monotonic()-began >= 20: bad.append("shared_budget")
+            row["failed_acceptance_checks"] = bad
+            record(out/(mode+"-result.json"),row)
+            print(json.dumps({"mode":mode,"complete":result.get("complete"),"reason":result.get("reason"),
+                              "wall":result.get("child_wall_including_cleanup"),"checks":bad}),flush=True)
+            if bad:
+                error = "safe_stop_after_"+mode
+                break
+        assert LIMITS == original_limits and CONTROLS == original_controls
+        assert receipts.TRUSTED_LEAD_KEYS == ()
+        data["original_stage_a_manifest_controls_unchanged"] = True
+        data["authority_registry_empty"] = True
+    except BaseException as exc:
+        error = type(exc).__name__
+        data["exception_class"] = type(exc).__name__
+    finally:
+        phases["source_runtime_close_begin_ns"] = time.monotonic_ns()
+        if lease is not None:
+            try: lease.close()
+            except BaseException as exc:
+                error = "lease_close_"+type(exc).__name__
+        data["source_runtime_handles_closed"] = lease is None or lease.closed
+        phases["source_runtime_close_done_ns"] = time.monotonic_ns()
+        data["parent_guard"] = guard.evidence()
+data["phases"] = phases
+data["cumulative_child_cpu_seconds"] = cpu_total
+data["stage_wall_including_parent_and_close_seconds"] = time.monotonic()-began
+info = time.get_clock_info("monotonic")
+data["clock"] = {"implementation":info.implementation,"resolution":info.resolution,"monotonic":info.monotonic}
+data["error_or_stop"] = error
+data["complete"] = (error is None and len(data["results"]) == 2 and data["source_runtime_handles_closed"]
+                    and cpu_total <= 10 and data["stage_wall_including_parent_and_close_seconds"] < 20)
+data["scientific_stage_a_executed"] = False
+data["actual_solver_calls"] = {"cpsat":0,"oracle":0,"benchmark":0}
+record(out/"calibration.json",data)
+print(json.dumps({"calibration_complete":data["complete"],"probes_attempted":len(data["results"]),
+                  "stage_wall":data["stage_wall_including_parent_and_close_seconds"],"cpu":cpu_total,
+                  "stop":error,"guard":data["parent_guard"]}),flush=True)
