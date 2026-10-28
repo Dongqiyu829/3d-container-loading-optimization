@@ -11,6 +11,7 @@ from research.symmetry_guard import SolveForbidden
 
 VERSION = "p1f-worker-v1"
 MANIFEST_SCHEMA = "p1f-stage-a-unapproved-v1"
+CHILD_ENV = {"OPENBLAS_NUM_THREADS": "1", "OMP_NUM_THREADS": "1", "MKL_NUM_THREADS": "1", "NUMEXPR_NUM_THREADS": "1"}
 ORACLE_SHA = "8dcb6fac0ea7ec29a622b4400ef51d0520ded4f5f3d709962ccb224bbd0d93b8"
 ORACLE_BLOB = "02d9eed12e422666088028a021e21ef1ee2c519a"
 ENTRYPOINTS = {"cpsat": "research.p1f_workers:worker_cp",
@@ -24,7 +25,7 @@ CONTROLS = {"workers": 1, "seed": 0, "LP": 2, "symmetry": 2, "presolve": True,
             "probing": 2, "hints": "none", "volume_bound": False,
             "construction_order": "source", "trace_cap": 128,
             "gap_absolute": 0, "gap_relative": 0,
-            "instrumentation": "p1b-scalars-first-witness-v1"}
+            "instrumentation": "p1b-scalars-first-witness-v1", "child_environment": CHILD_ENV}
 SOURCE_ROOTS = (
     "baseline_common.py", "validate_solution.py", "cpsat_baseline.py",
     "cpsat_prefix_search_diagnostics.py", "identical_box_symmetry_audit.py",

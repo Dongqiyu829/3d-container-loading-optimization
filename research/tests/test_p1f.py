@@ -250,7 +250,8 @@ class RuntimeAndIOTests(unittest.TestCase):
             with self.assertRaises(ValueError): write_new(td,"oversize.json",{"x":"a"*100},cap=16)
 
     def run_os(self,mode,wall=1.5):
-        result=run_harmless(mode,DummyStage(DummyLimits(child_wall=wall)))
+        memory=256*1024**2 if mode=="dependencies" else 128*1024**2
+        result=run_harmless(mode,DummyStage(DummyLimits(child_wall=wall,memory_bytes=memory)))
         OS_OBSERVATIONS.append({"test":self.id(),"mode":mode,**result})
         self.assertTrue(result["cleanup_confirmed"] and result["handles_closed"] and result["pipe_handles_closed"],result)
         self.assertEqual(result["job_accounting"]["active_processes"],0)
@@ -276,6 +277,7 @@ class RuntimeAndIOTests(unittest.TestCase):
         r=self.run_os("dependencies",2)
         self.assertTrue(r["complete"],r)
         probe=r["dependency_probe"]
+        self.assertTrue(all(v=="1" for v in probe["numeric_environment"].values()))
         for key,value in probe["versions"].items(): self.assertEqual(proposal()["versions"][key],value)
         self.assertEqual(probe["guard"]["executed_cpsat_calls"],0)
         self.assertEqual(probe["guard"]["executed_oracle_calls"],0)

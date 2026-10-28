@@ -111,7 +111,7 @@ class WindowsJob:
         if not ok:
             raise C.WinError(C.get_last_error())
 
-    def start(self, argv, cwd, *, stdio=None):
+    def start(self, argv, cwd, *, stdio=None, environment=None):
         if self.process:
             raise RuntimeError("one launch per owned job")
         size = SIZE_T()
@@ -136,10 +136,19 @@ class WindowsJob:
                 startup.StartupInfo.hStdInput, startup.StartupInfo.hStdOutput, startup.StartupInfo.hStdError = stdio
             pi = ProcessInformation()
             command = C.create_unicode_buffer(subprocess.list2cmdline(argv))
+            envbuf = None
+            if environment is not None:
+                values = {key.upper(): value for key,value in os.environ.items()}
+                for key in ("PYTHONPATH", "PYTHONHOME", "PYTHONSTARTUP"): values.pop(key, None)
+                for key,value in environment.items():
+                    if not isinstance(key,str) or not isinstance(value,str) or "\0" in key+value or "=" in key:
+                        raise ValueError("invalid fixed child environment")
+                    values[key.upper()] = value
+                envbuf = C.create_unicode_buffer("\0".join(k+"="+values[k] for k in sorted(values))+"\0\0")
             self._check(self.api.CreateProcessW(
                 argv[0], command, None, None, stdio is not None,
-                0x00080000 | 0x00000004 | 0x08000000,  # extended, suspended, no window
-                None, str(cwd), C.byref(startup), C.byref(pi)))
+                0x00080000 | 0x00000004 | 0x08000000 | (0x400 if envbuf is not None else 0),
+                envbuf, str(cwd), C.byref(startup), C.byref(pi)))
             self.process, self.thread, self.pid = pi.hProcess, pi.hThread, pi.dwProcessId
             # Already in job: failures or parent death cannot leave an unowned
             # suspended process. KILL_ON_JOB_CLOSE applies even before resume.

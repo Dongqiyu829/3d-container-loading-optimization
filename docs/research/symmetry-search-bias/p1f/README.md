@@ -70,6 +70,11 @@ The child also supports the existing trusted Conda installation's base crypto
 package through namespace-only discovery (derived from interpreter prefix, never
 from request paths). A fixed guarded OS child probes the actual bootstrap and
 core fingerprints without calling either engine. Native solve timing is untested.
+Captured research children pin OpenBLAS/OMP/MKL/NumExpr threads to1 in a fixed
+Unicode environment block, without changing parent/production settings. Python
+path/home/startup injection variables are excluded. The dependency probe uses
+the ALREADY proposed256MiB Stage-A commit cap, not the smaller128MiB pipe dummy
+cap: initial import failed at128MiB before any engine. No Stage-A cap increase.
 
 ## OS stdout/stderr and evidence
 

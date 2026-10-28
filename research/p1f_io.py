@@ -8,7 +8,7 @@ import tempfile
 
 from research._windows_job import WindowsJob
 from research.symmetry_watchdog import _supervise
-from research.p1e_protocol import canonical
+from research.p1e_protocol import canonical, CHILD_ENV
 
 
 class SecurityAttributes(C.Structure):
@@ -91,7 +91,7 @@ class CapturedJob(WindowsJob):
         super().__init__(**limits)
 
     def start(self, argv, cwd):
-        try: super().start(argv, cwd, stdio=tuple(self.capture.child))
+        try: super().start(argv, cwd, stdio=tuple(self.capture.child), environment=CHILD_ENV)
         finally: self.capture.child_started()
 
     def sample(self):

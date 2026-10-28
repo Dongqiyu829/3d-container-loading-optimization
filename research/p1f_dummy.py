@@ -24,6 +24,7 @@ elif mode == "dependencies":
         from research.p1f_workers import bootstrap_crypto
         bootstrap_crypto()
         from research.p1e_plan import critical_versions
-        (directory/"dependency.json").write_text(json.dumps({"versions":critical_versions(),"guard":guard.evidence()}))
+        (directory/"dependency.json").write_text(json.dumps({"versions":critical_versions(),"guard":guard.evidence(),
+            "numeric_environment":{k:os.environ.get(k) for k in ("OPENBLAS_NUM_THREADS","OMP_NUM_THREADS","MKL_NUM_THREADS","NUMEXPR_NUM_THREADS")}}))
 elif mode != "normal": raise SystemExit(9)
 (directory/"result.json").write_bytes(b'{"kind":"dummy_ok"}')
