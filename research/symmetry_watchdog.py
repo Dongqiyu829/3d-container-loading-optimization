@@ -70,7 +70,7 @@ def _sample(job, previous_cpu):
     return record
 
 
-def _supervise(argv, cwd, output, stage, key, *, backend=WindowsJob, sleep=time.sleep):
+def _supervise(argv, cwd, output, stage, key, *, backend=WindowsJob, sleep=time.sleep, cancelled=None):
     """Internal controller seam for backend tests; not an experiment entry point."""
     stage.reserve(key)
     limits, clock = stage.limits, stage.clock
@@ -109,7 +109,9 @@ def _supervise(argv, cwd, output, stage, key, *, backend=WindowsJob, sleep=time.
                     now = clock()
                     if root_exit_seen_at is None:
                         root_exit_seen_at = now
-                if now-stage.started >= limits.stage_wall:
+                if cancelled is not None and cancelled():
+                    reason = "CANCELLED"
+                elif now-stage.started >= limits.stage_wall:
                     reason = "STAGE_WALL_LIMIT"
                 elif now-start >= limits.child_wall:
                     reason = "CHILD_WALL_LIMIT"
