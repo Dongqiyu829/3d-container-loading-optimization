@@ -1,0 +1,26 @@
+{
+  "files": [
+    {
+      "path": "config.json",
+      "published_sha256": "9c2fc38251f8eefa26998137801e46c13ccf458e70b2fa717b607d37aabb9c73",
+      "size_bytes": 3100
+    },
+    {
+      "path": "guard.json",
+      "published_sha256": "5cacd3dcec7f54cdbc1aad153f4d4a5ae2314fac90b3f5186b5c43727dd1e7e1",
+      "size_bytes": 194
+    },
+    {
+      "path": "plan.json",
+      "published_sha256": "592514c37aaf4d62e9a8643cb5e908084aec1bc6e7abe3c2229bc0392e6c2ed5",
+      "size_bytes": 46243
+    },
+    {
+      "path": "source-manifest.json",
+      "published_sha256": "9ef03cfef93e4cf6cb335c3922050e1b347afe4dd40613a322c88cdcd630c091",
+      "size_bytes": 5938
+    }
+  ],
+  "schema_version": "symmetry-telemetry-v1",
+  "total_bytes": 55475
+}

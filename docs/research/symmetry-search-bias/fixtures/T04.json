@@ -1,0 +1,30 @@
+{
+  "format_version": "1.0",
+  "instance_id": "T04",
+  "units": "unit",
+  "container": {
+    "length": 1,
+    "width": 2,
+    "height": 1
+  },
+  "box_types": [
+    {
+      "type_id": "A",
+      "dimensions": {
+        "length": 2,
+        "width": 1,
+        "height": 1
+      },
+      "quantity": 3,
+      "box_ids": [
+        "a0",
+        "a1",
+        "a2"
+      ],
+      "allowed_orientations": [
+        "LWH",
+        "WLH"
+      ]
+    }
+  ]
+}

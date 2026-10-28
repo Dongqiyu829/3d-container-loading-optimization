@@ -1,0 +1,46 @@
+{
+  "schema_version": "symmetry-telemetry-v1",
+  "total_bytes": 63419,
+  "files": [
+    {
+      "path": ".gitattributes",
+      "size_bytes": 8,
+      "published_sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    {
+      "path": "artifact-manifest.json",
+      "size_bytes": 739,
+      "published_sha256": "3bcd876d6d18a5846dccff7e5cea040840b6f93ba57c1380ffe8ac70638bf79c"
+    },
+    {
+      "path": "config.json",
+      "size_bytes": 3100,
+      "published_sha256": "9c2fc38251f8eefa26998137801e46c13ccf458e70b2fa717b607d37aabb9c73"
+    },
+    {
+      "path": "guard.json",
+      "size_bytes": 194,
+      "published_sha256": "5cacd3dcec7f54cdbc1aad153f4d4a5ae2314fac90b3f5186b5c43727dd1e7e1"
+    },
+    {
+      "path": "plan.json",
+      "size_bytes": 46243,
+      "published_sha256": "592514c37aaf4d62e9a8643cb5e908084aec1bc6e7abe3c2229bc0392e6c2ed5"
+    },
+    {
+      "path": "source-manifest.json",
+      "size_bytes": 5938,
+      "published_sha256": "9ef03cfef93e4cf6cb335c3922050e1b347afe4dd40613a322c88cdcd630c091"
+    },
+    {
+      "path": "tests.json",
+      "size_bytes": 715,
+      "published_sha256": "0a309461844e2cf9ecb5f37cfdfd5e846753cf995b33e338da26837f188ceb86"
+    },
+    {
+      "path": "tests.log",
+      "size_bytes": 6482,
+      "published_sha256": "b403bd8266bde0e03f06afaefd9ac4437b75438c925b4a84cc336bb4c74f5f76"
+    }
+  ]
+}

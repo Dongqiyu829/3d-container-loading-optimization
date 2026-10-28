@@ -1,0 +1,115 @@
+{
+  "files": [
+    {
+      "original_worktree_bytes_sha256": "561d2ea505f410edd50c3b3d16d63e77561fa4c318f1015c780a94bba66ece63",
+      "path": "baseline_common.py",
+      "text_lf_sha256": "44cc7af8840aeb1442a01f09487ea66a18638e3e181b245baf5c05e0f6139cf0"
+    },
+    {
+      "original_worktree_bytes_sha256": "c215bf524bce2e39fc11507adb203007ff51e06bbef6a3c5fdc03e441e7380c7",
+      "path": "cpsat_baseline.py",
+      "text_lf_sha256": "f1f7c03ed1d94b4861c889f1b501d5661d61957ff9c00d9fb8892572ae124df6"
+    },
+    {
+      "original_worktree_bytes_sha256": "7f92de61516648e8da50808b88cdb8c673c32c92a5547e9ac15d2e09d1eaf9b5",
+      "path": "cpsat_prefix_search_diagnostics.py",
+      "text_lf_sha256": "92dfd4efe858044c0b97609d07792c4dd22d7033ea2bdc571e2d2df46ba9d076"
+    },
+    {
+      "original_worktree_bytes_sha256": "969c3bb51ddf1372ea871ef84e3caec50b9616266080a1bb738e7d8173ce1c9e",
+      "path": "docs/research/symmetry-search-bias/fixtures/T00.json",
+      "text_lf_sha256": "969c3bb51ddf1372ea871ef84e3caec50b9616266080a1bb738e7d8173ce1c9e"
+    },
+    {
+      "original_worktree_bytes_sha256": "4b00fc68b7bdd8e47479f5822f940a48648160bf25661d6530b51135c70bdc3b",
+      "path": "docs/research/symmetry-search-bias/fixtures/T01.json",
+      "text_lf_sha256": "4b00fc68b7bdd8e47479f5822f940a48648160bf25661d6530b51135c70bdc3b"
+    },
+    {
+      "original_worktree_bytes_sha256": "78d05f127b62a4f61309dc1eabc3882f0ac6899afd0c15cf1b404f69f0e38685",
+      "path": "docs/research/symmetry-search-bias/fixtures/T02.json",
+      "text_lf_sha256": "78d05f127b62a4f61309dc1eabc3882f0ac6899afd0c15cf1b404f69f0e38685"
+    },
+    {
+      "original_worktree_bytes_sha256": "0b08044141efa32672e5d098dbc09934ec5e1a2cf43c985529185dfbb9d70a67",
+      "path": "docs/research/symmetry-search-bias/fixtures/T03.json",
+      "text_lf_sha256": "0b08044141efa32672e5d098dbc09934ec5e1a2cf43c985529185dfbb9d70a67"
+    },
+    {
+      "original_worktree_bytes_sha256": "272a434d30ae0c0aa9ef7ba88e4fd6eba0ade7188d0d9674f87d32cb5fb1f515",
+      "path": "docs/research/symmetry-search-bias/fixtures/T04.json",
+      "text_lf_sha256": "272a434d30ae0c0aa9ef7ba88e4fd6eba0ade7188d0d9674f87d32cb5fb1f515"
+    },
+    {
+      "original_worktree_bytes_sha256": "e56c53a271a42254b22702f57563a7ca0468808f2a01dff043d0536ff86a97b3",
+      "path": "docs/research/symmetry-search-bias/fixtures/T05.json",
+      "text_lf_sha256": "e56c53a271a42254b22702f57563a7ca0468808f2a01dff043d0536ff86a97b3"
+    },
+    {
+      "original_worktree_bytes_sha256": "f1c4a6404f0a1ebaafa57f70439a3e800fc3f7adf1d1f05017d4b0d6a8808b45",
+      "path": "docs/research/symmetry-search-bias/fixtures/T06.json",
+      "text_lf_sha256": "f1c4a6404f0a1ebaafa57f70439a3e800fc3f7adf1d1f05017d4b0d6a8808b45"
+    },
+    {
+      "original_worktree_bytes_sha256": "e5c8374604f2e49fee7ba95cee5cdac2c598abca5d648894cdb3e845aaee56c7",
+      "path": "docs/research/symmetry-search-bias/fixtures/T07.json",
+      "text_lf_sha256": "e5c8374604f2e49fee7ba95cee5cdac2c598abca5d648894cdb3e845aaee56c7"
+    },
+    {
+      "original_worktree_bytes_sha256": "49ac79d967dce13cef9aa154a08be586a6678b1ec6e218812c69e041dfa3c990",
+      "path": "identical_box_symmetry_audit.py",
+      "text_lf_sha256": "bf106cf6702314d6bfa36653262691ad0989f6d15522b59ffc55bb2894fb721c"
+    },
+    {
+      "original_worktree_bytes_sha256": "8268cde9a07088c73fd8e263789b3c781109fc829034ea4a5928f9b6d08e90e3",
+      "path": "research/run_zero_tests.py",
+      "text_lf_sha256": "8268cde9a07088c73fd8e263789b3c781109fc829034ea4a5928f9b6d08e90e3"
+    },
+    {
+      "original_worktree_bytes_sha256": "a755ed8898f353b8fac091c4d4704cfb726435a0d5d490599bc543ce4ea78384",
+      "path": "research/symmetry_guard.py",
+      "text_lf_sha256": "a755ed8898f353b8fac091c4d4704cfb726435a0d5d490599bc543ce4ea78384"
+    },
+    {
+      "original_worktree_bytes_sha256": "469e50280358cd04285ad4cbb166cd563c87dc08ac47f6ba314b6f74e39b8058",
+      "path": "research/symmetry_micro_acceptance.py",
+      "text_lf_sha256": "469e50280358cd04285ad4cbb166cd563c87dc08ac47f6ba314b6f74e39b8058"
+    },
+    {
+      "original_worktree_bytes_sha256": "53bb4761751a86e77603d9b05b70365a3473bdb701caab886b2c77a6b6eb6067",
+      "path": "research/symmetry_models.py",
+      "text_lf_sha256": "53bb4761751a86e77603d9b05b70365a3473bdb701caab886b2c77a6b6eb6067"
+    },
+    {
+      "original_worktree_bytes_sha256": "04d1cd8cefd01ea28f7a08bf3e8aec0ed645714ed409f7492825975ba5a23bf7",
+      "path": "research/symmetry_telemetry.py",
+      "text_lf_sha256": "04d1cd8cefd01ea28f7a08bf3e8aec0ed645714ed409f7492825975ba5a23bf7"
+    },
+    {
+      "original_worktree_bytes_sha256": "0dadbaef48c4dcb270fd392729412fea34c8d2befa7d22c47215e4237b266062",
+      "path": "research/tests/test_models.py",
+      "text_lf_sha256": "0dadbaef48c4dcb270fd392729412fea34c8d2befa7d22c47215e4237b266062"
+    },
+    {
+      "original_worktree_bytes_sha256": "5be1cdf6fbe4616b21d4aeb1bd9ce6e129b9fda2acfa56dc34db0fdc597b2bc5",
+      "path": "research/tests/test_plan.py",
+      "text_lf_sha256": "5be1cdf6fbe4616b21d4aeb1bd9ce6e129b9fda2acfa56dc34db0fdc597b2bc5"
+    },
+    {
+      "original_worktree_bytes_sha256": "0f7086f1e8d514bc65b332c05695a6426a032a8186135cf43eb04e4a4de6c080",
+      "path": "research/tests/test_telemetry.py",
+      "text_lf_sha256": "0f7086f1e8d514bc65b332c05695a6426a032a8186135cf43eb04e4a4de6c080"
+    },
+    {
+      "original_worktree_bytes_sha256": "40e16e8e7db3a18ff7f9a9fc1f8522db114946714e3a2b2fdb7fc8c70e2614cb",
+      "path": "schemas/container_loading_instance.schema.json",
+      "text_lf_sha256": "b88a5d6d0f5984e79049cb7fbb42a3a834813f2fac2181da55787eed6c0a0ee9"
+    },
+    {
+      "original_worktree_bytes_sha256": "13abc763d918486bde9d644d24fe2d4ca7414b5735b52a6e09989afdcf7df8d8",
+      "path": "validate_solution.py",
+      "text_lf_sha256": "af546ff9206195cf5f782e6b531cbc64cc23730507543032f5dbec5a60be8809"
+    }
+  ],
+  "hash_mode": "utf8_lf_normalized_text"
+}
