@@ -1,5 +1,6 @@
 """Prepare exact 24 CP protos + 8 Oracle descriptors; never execute a worker."""
 from dataclasses import asdict
+from functools import lru_cache
 import importlib.metadata
 import importlib.util
 from pathlib import Path
@@ -22,6 +23,19 @@ def git(root, *args):
     return subprocess.check_output(["git", "-C", str(root), *args]).decode().strip()
 
 
+@lru_cache(maxsize=16)
+def git_tree(root, revision):
+    """Git object IDs are immutable; cache trees, NEVER working bytes or HEAD."""
+    raw = subprocess.check_output(["git", "-C", str(root), "ls-tree", "-r", "-z", revision])
+    result = {}
+    for item in raw.split(b"\0"):
+        if not item: continue
+        meta,path = item.split(b"\t",1)
+        mode,kind,blob = meta.split()
+        if kind == b"blob": result[path.decode()] = blob.decode()
+    return result
+
+
 def verify_sources(root, m, *, lease=None):
     verify_repository(root, m)
     if lease is None:
@@ -33,10 +47,11 @@ def verify_repository(root, m):
     validate_manifest(m)  # reject unknown paths before any source-path read
     if git(root, "rev-parse", "HEAD") != m["source_head"]: raise ValueError("source checkout HEAD drift")
     oracle_identity(Path(root)/"research/tiny_oracle.py")
+    tree = git_tree(str(Path(root).resolve()), m["source_head"])
     for path, record in m["sources"].items():
         data = (Path(root)/path).read_bytes()
         if (sha_bytes(data) != record["runtime_sha256"] or len(data) != record["bytes"]
-                or git(root, "rev-parse", m["source_head"]+":"+path) != record["git_blob"]):
+                or tree.get(path) != record["git_blob"]):
             raise ValueError("source bytes/blob drift: "+path)
 
 
@@ -161,10 +176,11 @@ def build_proposal(root):
     subprocess.run(["git", "-C", str(root), "diff", "--exit-code", "HEAD", "--", *SOURCES],
                    check=True, stdout=subprocess.DEVNULL)
     sources = {}
+    tree = git_tree(str(root.resolve()), head)
     for path in SOURCES:
         data = (root/path).read_bytes()
         sources[path] = {"runtime_sha256": sha_bytes(data), "bytes": len(data),
-                         "git_blob": git(root, "rev-parse", head+":"+path)}
+                         "git_blob": tree[path]}
     inputs, jobs, params_pool = {}, [], {}
     for case in PREDICTIONS:
         path = root/f"docs/research/symmetry-search-bias/fixtures/{case}.json"

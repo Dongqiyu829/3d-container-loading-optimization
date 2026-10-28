@@ -7,7 +7,7 @@ import sys
 import time
 
 from research.p1e_protocol import LIMITS, SOURCES, canonical, digest, strict_json, validate_manifest
-from research.p1e_plan import verify_sources, git, RuntimeLease
+from research.p1e_plan import verify_sources, git_tree, RuntimeLease
 from research.p1e_receipt import verify_receipt, AttemptJournal
 from research.p1f_workers import prepare_job, validate_result, execution_closed, WorkerError
 from research.p1f_io import CapturedJob, PipeCapture, write_new
@@ -20,8 +20,9 @@ def verify_review(root, manifest, review):
     data = subprocess.check_output(["git", "-C", str(root), "show",
                                    review+":docs/research/symmetry-search-bias/p1f/stage-a-manifest.json"])
     if digest(strict_json(data, 1_000_000)) != digest(manifest): raise WorkerError("review manifest mismatch")
+    reviewed, source = git_tree(str(Path(root).resolve()), review), git_tree(str(Path(root).resolve()), manifest["source_head"])
     for path in SOURCES:
-        if git(root, "rev-parse", review+":"+path) != git(root, "rev-parse", manifest["source_head"]+":"+path):
+        if reviewed.get(path) != source.get(path):
             raise WorkerError("review/source code drift")
 
 
