@@ -70,11 +70,13 @@ def _sample(job, previous_cpu):
     return record
 
 
-def _supervise(argv, cwd, output, stage, key, *, backend=WindowsJob, sleep=time.sleep, cancelled=None):
+def _supervise(argv, cwd, output, stage, key, *, backend=WindowsJob, sleep=time.sleep, cancelled=None, control_kind="dummy_ok"):
     """Internal controller seam for backend tests; not an experiment entry point."""
+    if control_kind not in ("dummy_ok", "worker_terminal"): raise ValueError("fixed control kind")
     stage.reserve(key)
     limits, clock = stage.limits, stage.clock
     start = clock()  # conservative: includes backend setup and CreateProcess
+    phases = {"setup_begin_ns": int(start*1e9)}
     prior_cpu = stage.cpu
     job = None
     stats = None
@@ -94,7 +96,9 @@ def _supervise(argv, cwd, output, stage, key, *, backend=WindowsJob, sleep=time.
             reason = "DEADLINE_BEFORE_LAUNCH"
         else:
             launch_attempted = True
+            phases["launch_begin_ns"] = int(clock()*1e9)
             job.start(argv, cwd)
+            phases["launch_return_ns"] = int(clock()*1e9)
             root_created = True
             while True:
                 stats = _sample(job, last_cpu)
@@ -132,6 +136,7 @@ def _supervise(argv, cwd, output, stage, key, *, backend=WindowsJob, sleep=time.
         root_created = bool(job is not None and getattr(job, "pid", None))
         reason, error = "SUPERVISOR_ERROR", type(exc).__name__
     finally:
+        phases["cleanup_begin_ns"] = int(clock()*1e9)
         if job is not None:
             try:
                 if reason:
@@ -158,6 +163,7 @@ def _supervise(argv, cwd, output, stage, key, *, backend=WindowsJob, sleep=time.
                     close_ok = True
                 except Exception as exc:
                     reason, error = "HANDLE_CLOSE_ERROR", type(exc).__name__
+        phases["cleanup_end_ns"] = int(clock()*1e9)
         stage.busy = False
         if stats is not None and cleanup_confirmed:
             stage.cpu = prior_cpu+stats["cpu_seconds"]
@@ -182,7 +188,7 @@ def _supervise(argv, cwd, output, stage, key, *, backend=WindowsJob, sleep=time.
             reason = "MEMORY_EXHAUSTED_REPORTED_BY_DUMMY"
         elif code != 0:
             reason = "OS_RESOURCE_TERMINATION" if stats and stats["terminated_processes"] else "CHILD_ERROR"
-        elif payload != {"kind": "dummy_ok"}:
+        elif payload != {"kind": control_kind}:
             reason = "INVALID_DUMMY_OUTPUT"
     if reason is None:
         if stage.cpu >= limits.cpu:
@@ -208,7 +214,7 @@ def _supervise(argv, cwd, output, stage, key, *, backend=WindowsJob, sleep=time.
             "stage_wall": clock()-stage.started,
             "stage_stopped": stage.stopped, "attempts_reserved": len(stage.keys),
             "launch_attempted": launch_attempted, "root_created": root_created,
-            "actual_cpsat_calls": 0, "actual_oracle_calls": 0}
+            "actual_cpsat_calls": 0, "actual_oracle_calls": 0, "controller_phases": phases}
 
 
 def run_dummy(mode, stage, key):

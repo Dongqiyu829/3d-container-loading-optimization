@@ -16,7 +16,7 @@ from research.symmetry_canonical_input import load_oracle_input
 from research.symmetry_integration import prepare_run, RunSpec
 from research.symmetry_guard import ZeroSolveGuard
 from research.p1e_protocol import (SOURCES, PREDICTIONS, LIMITS, CONTROLS, VERSION, ENTRYPOINTS,
-                                  MANIFEST_SCHEMA, digest, sha_bytes, job_hash, validate_manifest, oracle_identity)
+                                  MANIFEST_SCHEMA, digest, sha_bytes, job_hash, validate_manifest, oracle_identity, strict_json)
 
 
 def git(root, *args):
@@ -155,6 +155,20 @@ class RuntimeLease:
             self.handles[path] = h
         return path.read_bytes()  # lock is held before hashing the bytes
 
+    def protect_sources(self, root, manifest):
+        # Same Windows sharing contract as runtime files; hold until tree cleanup.
+        verify_repository(root, manifest)
+        for name, record in manifest["sources"].items():
+            data = self._read_locked(Path(root)/name)
+            if len(data) != record["bytes"] or sha_bytes(data) != record["runtime_sha256"]:
+                raise ValueError("locked source identity drift")
+        self.source_binding = (str(Path(root).resolve()), digest(manifest))
+
+    def check_sources(self, root, manifest):
+        self.check(manifest["versions"])
+        if getattr(self, "source_binding", None) != (str(Path(root).resolve()), digest(manifest)):
+            raise ValueError("source lease absent or mismatched")
+
     def check(self, expected):
         if self.closed or not self.handles or self.versions != expected:
             raise ValueError("missing/closed/mismatched runtime lease")
@@ -219,9 +233,19 @@ def build_proposal(root):
     proposal = {"schema": MANIFEST_SCHEMA, "source_head": head, "worker_version": VERSION,
                 "versions": versions, "sources": sources, "inputs": inputs, "controls": dict(CONTROLS),
                 "limits": dict(LIMITS), "parameters": params_pool, "jobs": jobs,
-                "evidence_root": "results/stage-a-p1f-review-v1", "execution_authorized": False}
+                "evidence_root": "results/stage-a-activation-once-v1", "execution_authorized": False}
     validate_manifest(proposal)
     # runtime_versions was computed immediately above; do not rehash its entire
     # inventory a second time during non-executing proposal serialization.
     verify_repository(root, proposal)
     return proposal
+
+
+def verify_review(root, manifest, review):
+    validate_manifest(manifest)
+    subprocess.run(["git", "-C", str(root), "merge-base", "--is-ancestor", manifest["source_head"], review], check=True)
+    data = subprocess.check_output(["git", "-C", str(root), "show",
+                                   review+":docs/research/symmetry-search-bias/stage-a-activation/stage-a-manifest.json"])
+    if digest(strict_json(data, 1_000_000)) != digest(manifest): raise ValueError("review manifest mismatch")
+    reviewed, source = git_tree(str(Path(root).resolve()), review), git_tree(str(Path(root).resolve()), manifest["source_head"])
+    if any(reviewed.get(p) != source.get(p) for p in SOURCES): raise ValueError("review/source code drift")

@@ -12,8 +12,8 @@ from research.p1e_protocol import (VERSION, canonical, digest, exact, hash_text,
                                   strict_json, validate_manifest)
 
 TRUSTED_LEAD_KEYS = ()  # tuple of enrolled raw Ed25519 public keys; no real enrollment in P1e
-DOMAIN = b"3d-container-loading/P1f/StageA/v1\0"
-RECEIPT_SCHEMA = "p1f-human-receipt-v1"
+DOMAIN = b"3d-container-loading/StageA/activation/v1\0"
+RECEIPT_SCHEMA = "stage-a-activation-human-v1"
 
 
 def verify_receipt(data, manifest, review_head, *, now=None):
@@ -106,3 +106,59 @@ class AttemptJournal:
         self.stopped = True
         path = self.path/"STOPPED.json"
         if not path.exists(): _new_record(path, {"reason": str(reason), "counts": self.counts})
+
+
+def trusted_stage_paths(root):
+    """One ledger per shared repository, including all its worktrees.
+
+    No public caller-selected state roots; controlled host/ACLs remain required.
+    This is not a multi-host or hostile-same-user anti-rollback service.
+    """
+    import subprocess
+    common = Path(subprocess.check_output(["git", "-C", str(root), "rev-parse", "--path-format=absolute", "--git-common-dir"]).decode().strip()).resolve()
+    state = common/"research-stage-a-activation"
+    return state/"ledger", state/"evidence"
+
+
+def _slot(root, receipt, manifest, review, ordinal, directory):
+    payload = verify_receipt(receipt, manifest, review)
+    if type(ordinal) is not int or not 0 <= ordinal < len(manifest["jobs"]):
+        raise ValueError("invalid journal ordinal")
+    ledger, evidence = trusted_stage_paths(root)
+    claim_id = digest({"nonce": payload["nonce"], "key": strict_json(receipt)["key_id"]})
+    journal = ledger/claim_id
+    expected = evidence/manifest["evidence_root"]/"jobs"/f"{ordinal:02}"
+    if Path(directory).resolve() != expected.resolve(): raise ValueError("untrusted worker evidence path")
+    if strict_json((journal/"receipt.json").read_bytes()) != payload:
+        raise ValueError("journal receipt mismatch")
+    if (journal/"STOPPED.json").exists() or (journal/"COMPLETED.json").exists():
+        raise ValueError("journal already terminal")
+    job = manifest["jobs"][ordinal]
+    expected_record = {"job_sha256":job["job_sha256"], "kind":job["kind"], "state":"reserved_before_launch"}
+    if strict_json((journal/f"attempt-{ordinal:02}.json").read_bytes()) != expected_record:
+        raise ValueError("no matching durable reservation")
+    if ordinal and strict_json((journal/f"validated-{ordinal-1:02}.json").read_bytes()) != {
+            "job_sha256":manifest["jobs"][ordinal-1]["job_sha256"], "state":"validated"}:
+        raise ValueError("previous ordinal not validated")
+    return journal, job
+
+
+def claim_launch(root, receipt, manifest, review, ordinal, directory):
+    journal, job = _slot(root, receipt, manifest, review, ordinal, directory)
+    record = {"job_sha256":job["job_sha256"], "kind":job["kind"], "pid":os.getpid(), "state":"claimed_once"}
+    _new_record(journal/f"launch-{ordinal:02}.json", record)  # fsync+O_EXCL, never reusable
+    return record
+
+
+def native_marker(root, receipt, manifest, review, ordinal, directory, phase):
+    if phase not in ("enter", "return"): raise ValueError("fixed native phase")
+    journal, job = _slot(root, receipt, manifest, review, ordinal, directory)
+    claim = strict_json((journal/f"launch-{ordinal:02}.json").read_bytes())
+    if claim != {"job_sha256":job["job_sha256"], "kind":job["kind"], "pid":os.getpid(), "state":"claimed_once"}:
+        raise ValueError("launch claim belongs to another process")
+    record = {"job_sha256":job["job_sha256"], "pid":os.getpid(), "phase":phase}
+    if phase == "return" and strict_json((journal/f"native-enter-{ordinal:02}.json").read_bytes()) != {
+            "job_sha256":job["job_sha256"], "pid":os.getpid(), "phase":"enter"}:
+        raise ValueError("return without matching entry")
+    _new_record(journal/f"native-{phase}-{ordinal:02}.json", record)
+    return record
