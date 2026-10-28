@@ -16,9 +16,9 @@ ORACLE_SHA = "8dcb6fac0ea7ec29a622b4400ef51d0520ded4f5f3d709962ccb224bbd0d93b8"
 ORACLE_BLOB = "02d9eed12e422666088028a021e21ef1ee2c519a"
 ENTRYPOINTS = {"cpsat": "research.p1f_workers:worker_cp",
                "oracle": "research.p1f_workers:worker_oracle"}
-LIMITS = {"max_cpsat_calls": 24, "max_oracle_calls": 8, "child_wall_ms": 2000,
-          "stop_wall_ms": 1800, "stage_wall_ms": 90000, "stage_stop_wall_ms": 88000,
-          "cpu_ms": 75000, "cpu_stop_ms": 70000, "job_commit_bytes": 268435456,
+LIMITS = {"max_cpsat_calls": 24, "max_oracle_calls": 8, "child_wall_ms": 5000,
+          "stop_wall_ms": 4500, "stage_wall_ms": 180000, "stage_stop_wall_ms": 170000,
+          "cpu_ms": 120000, "cpu_stop_ms": 110000, "job_commit_bytes": 268435456,
           "peak_review_bytes": 276824064, "active_processes": 4, "cleanup_ms": 1000,
           "poll_ms": 10, "max_output_bytes": 65536, "max_stdout_bytes": 16384}
 CONTROLS = {"workers": 1, "seed": 0, "LP": 2, "symmetry": 2, "presolve": True,

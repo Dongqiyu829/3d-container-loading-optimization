@@ -1,6 +1,6 @@
 {
   "schema": "stage-a-activation-proposal-v1",
-  "source_head": "fd504269bd13b00fc605672626c8d09d00932030",
+  "source_head": "ea0d44a52e8a7e53b427e52f525208d75fdc1f6a",
   "worker_version": "stage-a-activation-worker-v1",
   "versions": {
     "python": "3.12.11",
@@ -121,9 +121,9 @@
       "git_blob": "d0e125e5390938caa63966fbf9c8552b43e156de"
     },
     "research/p1e_protocol.py": {
-      "runtime_sha256": "57a3dee6041c4211fa04f20e6bb40e9416df3cd085d6823d4175ded6109aab41",
-      "bytes": 13559,
-      "git_blob": "d14d1eb08fe7d7677cb3959305c381c1bb72f23e"
+      "runtime_sha256": "b4ebaeadbde25fbe8c2781a35abfbf8fae69cbefbed52f26163a000a10b8acfe",
+      "bytes": 13563,
+      "git_blob": "573da1e5b3299155625f8232dff3a1583398c3ca"
     },
     "research/p1e_receipt.py": {
       "runtime_sha256": "9b5ca305ff91072eb6a3237fb756b22aa7fb2159cc27e449701cc1814b41cb9c",
@@ -406,12 +406,12 @@
   "limits": {
     "max_cpsat_calls": 24,
     "max_oracle_calls": 8,
-    "child_wall_ms": 2000,
-    "stop_wall_ms": 1800,
-    "stage_wall_ms": 90000,
-    "stage_stop_wall_ms": 88000,
-    "cpu_ms": 75000,
-    "cpu_stop_ms": 70000,
+    "child_wall_ms": 5000,
+    "stop_wall_ms": 4500,
+    "stage_wall_ms": 180000,
+    "stage_stop_wall_ms": 170000,
+    "cpu_ms": 120000,
+    "cpu_stop_ms": 110000,
     "job_commit_bytes": 268435456,
     "peak_review_bytes": 276824064,
     "active_processes": 4,

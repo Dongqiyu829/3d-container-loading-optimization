@@ -1,0 +1,61 @@
+test_accounting_unavailable_closes_and_prevents_next_job (research.tests.test_p1d_watchdog.ControllerTests.test_accounting_unavailable_closes_and_prevents_next_job) ... ok
+test_cpu_limit_stops_and_charges_final_cpu (research.tests.test_p1d_watchdog.ControllerTests.test_cpu_limit_stops_and_charges_final_cpu) ... ok
+test_decreasing_cpu_rejected (research.tests.test_p1d_watchdog.ControllerTests.test_decreasing_cpu_rejected) ... ok
+test_duplicate_and_attempt_cap_no_retry (research.tests.test_p1d_watchdog.ControllerTests.test_duplicate_and_attempt_cap_no_retry) ... ok
+test_exit_between_poll_and_root_check_refreshes_job_sample (research.tests.test_p1d_watchdog.ControllerTests.test_exit_between_poll_and_root_check_refreshes_job_sample) ... ok
+test_final_cpu_over_budget_cannot_be_complete (research.tests.test_p1d_watchdog.ControllerTests.test_final_cpu_over_budget_cannot_be_complete) ... ok
+test_handle_close_failure_stops_stage (research.tests.test_p1d_watchdog.ControllerTests.test_handle_close_failure_stops_stage) ... ok
+test_invalid_resource_settings (research.tests.test_p1d_watchdog.ControllerTests.test_invalid_resource_settings) ... ok
+test_kill_failure_still_closes_job (research.tests.test_p1d_watchdog.ControllerTests.test_kill_failure_still_closes_job) ... ok
+test_launch_failure_consumes_attempt_and_kills (research.tests.test_p1d_watchdog.ControllerTests.test_launch_failure_consumes_attempt_and_kills) ... ok
+test_no_arbitrary_command_or_solver_mode (research.tests.test_p1d_watchdog.ControllerTests.test_no_arbitrary_command_or_solver_mode) ... ok
+test_normal_accounting_before_launch_and_cleanup_before_close (research.tests.test_p1d_watchdog.ControllerTests.test_normal_accounting_before_launch_and_cleanup_before_close) ... ok
+test_prelaunch_accounting_failure_never_launches (research.tests.test_p1d_watchdog.ControllerTests.test_prelaunch_accounting_failure_never_launches) ... ok
+test_root_exit_with_live_descendants_is_not_complete (research.tests.test_p1d_watchdog.ControllerTests.test_root_exit_with_live_descendants_is_not_complete) ... ok
+test_signaled_root_with_delayed_job_counter_can_drain (research.tests.test_p1d_watchdog.ControllerTests.test_signaled_root_with_delayed_job_counter_can_drain) ... ok
+test_slow_setup_is_included_before_resume (research.tests.test_p1d_watchdog.ControllerTests.test_slow_setup_is_included_before_resume) ... ok
+test_stage_limit_reservation_denies_launch (research.tests.test_p1d_watchdog.ControllerTests.test_stage_limit_reservation_denies_launch) ... ok
+test_wall_limit_kills_owned_tree (research.tests.test_p1d_watchdog.ControllerTests.test_wall_limit_kills_owned_tree) ... ok
+test_budget_revision_manifest_controller_and_models (research.tests.test_stage_a_activation.ActivationTests.test_budget_revision_manifest_controller_and_models) ... ok
+test_child_preflight_checks_real_journal_without_engine (research.tests.test_stage_a_activation.ActivationTests.test_child_preflight_checks_real_journal_without_engine) ... ok
+test_expired_or_changed_receipt_refuses (research.tests.test_stage_a_activation.ActivationTests.test_expired_or_changed_receipt_refuses) ... ok
+test_failed_launch_stops_and_cannot_resume_or_change_root (research.tests.test_stage_a_activation.ActivationTests.test_failed_launch_stops_and_cannot_resume_or_change_root) ... ok
+test_launch_claim_single_use_and_foreign_pid (research.tests.test_stage_a_activation.ActivationTests.test_launch_claim_single_use_and_foreign_pid) ... ok
+test_missing_reservation_and_wrong_root_refuse (research.tests.test_stage_a_activation.ActivationTests.test_missing_reservation_and_wrong_root_refuse) ... ok
+test_native_supervisor_never_exports_dummy_zero_call_counts (research.tests.test_stage_a_activation.ActivationTests.test_native_supervisor_never_exports_dummy_zero_call_counts) ... ok
+test_no_authority_all_native_entries_refuse_before_launch (research.tests.test_stage_a_activation.ActivationTests.test_no_authority_all_native_entries_refuse_before_launch) ... ok
+test_pipe_close_exception_preserves_terminal_os_evidence (research.tests.test_stage_a_activation.ActivationTests.test_pipe_close_exception_preserves_terminal_os_evidence) ... ok
+test_predecessor_validation_required (research.tests.test_stage_a_activation.ActivationTests.test_predecessor_validation_required) ... ok
+test_public_fixed_32_job_loop_mock_engines (research.tests.test_stage_a_activation.ActivationTests.test_public_fixed_32_job_loop_mock_engines) ... ok
+test_real_review_object_and_old_review_rejected (research.tests.test_stage_a_activation.ActivationTests.test_real_review_object_and_old_review_rejected) ... ok
+test_resource_final_checks (research.tests.test_stage_a_activation.ActivationTests.test_resource_final_checks) ... ok
+test_valid_test_signature_with_old_caps_refuses_before_claim (research.tests.test_stage_a_activation.ActivationTests.test_valid_test_signature_with_old_caps_refuses_before_claim) ... ok
+test_wall_exhausted_after_terminal_summary_stops (research.tests.test_stage_a_activation.ActivationTests.test_wall_exhausted_after_terminal_summary_stops) ... ok
+test_wall_exhausted_after_validation_stops (research.tests.test_stage_a_activation.ActivationTests.test_wall_exhausted_after_validation_stops) ... ok
+test_actual_source_read_handles_deny_write_open (research.tests.test_stage_a_activation.SourceAndWindowsTests.test_actual_source_read_handles_deny_write_open) ... ok
+test_fixed_root_shared_across_worktrees (research.tests.test_stage_a_activation.SourceAndWindowsTests.test_fixed_root_shared_across_worktrees) ... ok
+test_absent_unsigned_boolean_and_proposal_digest_not_receipts (research.tests.test_p1f.ReceiptRegression.test_absent_unsigned_boolean_and_proposal_digest_not_receipts) ... ok
+test_default_empty_trust_rejects_even_cryptographically_valid_test_signature (research.tests.test_p1f.ReceiptRegression.test_default_empty_trust_rejects_even_cryptographically_valid_test_signature) ... ok
+test_exact_order_caps_and_no_retry (research.tests.test_p1f.ReceiptRegression.test_exact_order_caps_and_no_retry) ... ok
+test_expired_future_or_overlong_signature (research.tests.test_p1f.ReceiptRegression.test_expired_future_or_overlong_signature) ... ok
+test_failure_order_mismatch_and_expiry_close_stage (research.tests.test_p1f.ReceiptRegression.test_failure_order_mismatch_and_expiry_close_stage) ... ok
+test_modified_signature_and_payload_rejected (research.tests.test_p1f.ReceiptRegression.test_modified_signature_and_payload_rejected) ... ok
+test_persistent_receipt_claim_prevents_replay_after_restart (research.tests.test_p1f.ReceiptRegression.test_persistent_receipt_claim_prevents_replay_after_restart) ... ok
+test_real_crypto_verification_with_test_only_pinned_public_key (research.tests.test_p1f.ReceiptRegression.test_real_crypto_verification_with_test_only_pinned_public_key) ... ok
+test_source_job_review_budget_and_destination_bindings (research.tests.test_p1f.ReceiptRegression.test_source_job_review_budget_and_destination_bindings) ... ok
+test_cp_proto_reconstruction_and_oracle_no_proto (research.tests.test_p1f.AdapterTests.test_cp_proto_reconstruction_and_oracle_no_proto) ... ok
+test_cp_exact_and_unknown_bound_contract (research.tests.test_p1f.AdapterTests.test_cp_exact_and_unknown_bound_contract) ... ok
+test_oracle_has_no_cp_bound_schema (research.tests.test_p1f.AdapterTests.test_oracle_has_no_cp_bound_schema) ... ok
+test_oracle_resource_exhaustion_never_optimal (research.tests.test_p1f.AdapterTests.test_oracle_resource_exhaustion_never_optimal) ... ok
+test_count_and_volume_have_distinct_physical_targets (research.tests.test_p1f.AdapterTests.test_count_and_volume_have_distinct_physical_targets) ... ok
+test_native_engine_failures_are_typed (research.tests.test_p1f.AdapterTests.test_native_engine_failures_are_typed) ... ok
+test_mutated_proto_or_input_refuses_before_engine (research.tests.test_p1f.AdapterTests.test_mutated_proto_or_input_refuses_before_engine) ... ok
+test_physical_tampering_and_header_mismatch (research.tests.test_p1f.AdapterTests.test_physical_tampering_and_header_mismatch) ... ok
+test_prefix_and_trace_overflow (research.tests.test_p1f.AdapterTests.test_prefix_and_trace_overflow) ... ok
+test_oracle_crlf_and_source_tampering (research.tests.test_p1f.AdapterTests.test_oracle_crlf_and_source_tampering) ... ok
+
+----------------------------------------------------------------------
+Ran 55 tests in 55.014s
+
+OK
+{"tests_run": 55, "failures": 0, "errors": 0, "skips": 0, "executed_cpsat_calls": 0, "executed_oracle_calls": 0}
