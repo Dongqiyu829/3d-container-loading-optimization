@@ -1,0 +1,49 @@
+test_bound_below_witness_stops_analysis (research.tests.test_telemetry.BoundTests.test_bound_below_witness_stops_analysis) ... ok
+test_count_units_and_zero_feasible (research.tests.test_telemetry.BoundTests.test_count_units_and_zero_feasible) ... ok
+test_feasible_raw_and_adjusted_bounds (research.tests.test_telemetry.BoundTests.test_feasible_raw_and_adjusted_bounds) ... ok
+test_independent_bound_units_are_not_interchanged (research.tests.test_telemetry.BoundTests.test_independent_bound_units_are_not_interchanged) ... ok
+test_invalid_and_infeasible_not_normal_samples (research.tests.test_telemetry.BoundTests.test_invalid_and_infeasible_not_normal_samples) ... ok
+test_missing_nan_bool_not_zero (research.tests.test_telemetry.BoundTests.test_missing_nan_bool_not_zero) ... ok
+test_reject_invalid_contracts (research.tests.test_telemetry.BoundTests.test_reject_invalid_contracts) ... ok
+test_unknown_independent_fallback_not_solver_incumbent (research.tests.test_telemetry.BoundTests.test_unknown_independent_fallback_not_solver_incumbent) ... ok
+test_unknown_positive_retained (research.tests.test_telemetry.BoundTests.test_unknown_positive_retained) ... ok
+test_unknown_zero_retained_but_not_usable (research.tests.test_telemetry.BoundTests.test_unknown_zero_retained_but_not_usable) ... ok
+test_constant_dt_is_unusable (research.tests.test_telemetry.ClockAndTraceTests.test_constant_dt_is_unusable) ... ok
+test_empty_is_censored_not_zero (research.tests.test_telemetry.ClockAndTraceTests.test_empty_is_censored_not_zero) ... ok
+test_increasing_dt_does_not_certify_semantics (research.tests.test_telemetry.ClockAndTraceTests.test_increasing_dt_does_not_certify_semantics) ... ok
+test_missing_and_decreasing_clocks (research.tests.test_telemetry.ClockAndTraceTests.test_missing_and_decreasing_clocks) ... ok
+test_no_witness_payload_or_nonfinite_allowed (research.tests.test_telemetry.ClockAndTraceTests.test_no_witness_payload_or_nonfinite_allowed) ... ok
+test_trace_is_bounded_and_reports_overflow (research.tests.test_telemetry.ClockAndTraceTests.test_trace_is_bounded_and_reports_overflow) ... ok
+test_configured_on_zero_not_observed (research.tests.test_telemetry.LogTests.test_configured_on_zero_not_observed) ... ok
+test_lp_off_contradiction (research.tests.test_telemetry.LogTests.test_lp_off_contradiction) ... ok
+test_lp_off_zero (research.tests.test_telemetry.LogTests.test_lp_off_zero) ... ok
+test_lp_on_verified_observed_activity (research.tests.test_telemetry.LogTests.test_lp_on_verified_observed_activity) ... ok
+test_malformed_log_contracts_rejected (research.tests.test_telemetry.LogTests.test_malformed_log_contracts_rejected) ... ok
+test_mismatch_missing_and_truncated (research.tests.test_telemetry.LogTests.test_mismatch_missing_and_truncated) ... ok
+test_presolve_counts_not_exclusive_time (research.tests.test_telemetry.LogTests.test_presolve_counts_not_exclusive_time) ... ok
+test_presolve_missing_is_not_zero (research.tests.test_telemetry.LogTests.test_presolve_missing_is_not_zero) ... ok
+test_reject_traversal_absolute_duplicates_and_oversize (research.tests.test_telemetry.ManifestTests.test_reject_traversal_absolute_duplicates_and_oversize) ... ok
+test_round_trip_and_mutation (research.tests.test_telemetry.ManifestTests.test_round_trip_and_mutation) ... ok
+test_source_hash_is_portable_across_line_endings (research.tests.test_telemetry.ManifestTests.test_source_hash_is_portable_across_line_endings) ... ok
+test_additive_proto_deltas_and_edges_all_cases_both_objectives (research.tests.test_models.ModelTests.test_additive_proto_deltas_and_edges_all_cases_both_objectives) ... ok
+test_all_fixtures_validate_without_solving (research.tests.test_models.ModelTests.test_all_fixtures_validate_without_solving) ... ok
+test_count_objective_not_volume (research.tests.test_models.ModelTests.test_count_objective_not_volume) ... ok
+test_group_weight_invariant_and_capacity_signature (research.tests.test_models.ModelTests.test_group_weight_invariant_and_capacity_signature) ... ok
+test_mixed_type_interleave_has_matched_baselines (research.tests.test_models.ModelTests.test_mixed_type_interleave_has_matched_baselines) ... ok
+test_no_new_variant_or_implicit_objective (research.tests.test_models.ModelTests.test_no_new_variant_or_implicit_objective) ... ok
+test_single_group_index_interleave_is_degenerate (research.tests.test_models.ModelTests.test_single_group_index_interleave_is_degenerate) ... ok
+test_volume_bound_only_one_independent_constraint (research.tests.test_models.ModelTests.test_volume_bound_only_one_independent_constraint) ... ok
+test_prefix_does_not_choose_unique_placement_representative (research.tests.test_models.QuotientTests.test_prefix_does_not_choose_unique_placement_representative) ... ok
+test_selected_masks_cover_each_k_under_both_chains (research.tests.test_models.QuotientTests.test_selected_masks_cover_each_k_under_both_chains) ... ok
+test_intentional_blocked_probes_do_not_delegate (research.tests.test_plan.GuardTests.test_intentional_blocked_probes_do_not_delegate) ... ok
+test_cli_round_trip_no_calls_and_refuse_overwrite (research.tests.test_plan.PlanTests.test_cli_round_trip_no_calls_and_refuse_overwrite) ... ok
+test_cold_pairing_and_counts (research.tests.test_plan.PlanTests.test_cold_pairing_and_counts) ... ok
+test_config_cannot_smuggle_calls_or_unregistered_controls (research.tests.test_plan.PlanTests.test_config_cannot_smuggle_calls_or_unregistered_controls) ... ok
+test_exact_future_rows_no_claimed_results (research.tests.test_plan.PlanTests.test_exact_future_rows_no_claimed_results) ... ok
+test_positive_budgets_and_execution_stage_refused_before_write (research.tests.test_plan.PlanTests.test_positive_budgets_and_execution_stage_refused_before_write) ... ok
+
+----------------------------------------------------------------------
+Ran 43 tests in 0.234s
+
+OK
+{"schema_version": "zero-call-test-v1", "python_version": "3.12.11", "ortools_version": "9.14.6206", "test_modules": ["research.tests.test_telemetry", "research.tests.test_models", "research.tests.test_plan"], "tests_run": 43, "failures": 0, "errors": 0, "skips": 0, "expected_intentionally_blocked_probes": {"cpsat_api": 4, "native_factory": 1, "oracle": 1}, "all_blocked_attempts_are_expected_probes": true, "guard_active": true, "blocked_attempts": {"cpsat_api": 4, "native_factory": 1, "oracle": 1}, "executed_cpsat_calls": 0, "executed_oracle_calls": 0, "scope": "guarded Python APIs; no native constructor or Oracle delegation"}

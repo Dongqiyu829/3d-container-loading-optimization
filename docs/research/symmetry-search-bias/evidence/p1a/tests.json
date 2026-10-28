@@ -1,0 +1,29 @@
+{
+  "schema_version": "zero-call-test-v1",
+  "python_version": "3.12.11",
+  "ortools_version": "9.14.6206",
+  "test_modules": [
+    "research.tests.test_telemetry",
+    "research.tests.test_models",
+    "research.tests.test_plan"
+  ],
+  "tests_run": 43,
+  "failures": 0,
+  "errors": 0,
+  "skips": 0,
+  "expected_intentionally_blocked_probes": {
+    "cpsat_api": 4,
+    "native_factory": 1,
+    "oracle": 1
+  },
+  "all_blocked_attempts_are_expected_probes": true,
+  "guard_active": true,
+  "blocked_attempts": {
+    "cpsat_api": 4,
+    "native_factory": 1,
+    "oracle": 1
+  },
+  "executed_cpsat_calls": 0,
+  "executed_oracle_calls": 0,
+  "scope": "guarded Python APIs; no native constructor or Oracle delegation"
+}

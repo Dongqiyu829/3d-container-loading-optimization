@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Research bound record v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "reported_solver_best_bound",
+    "usable_solver_upper_bound",
+    "validated_lower_bound",
+    "independent_upper_bound",
+    "effective_upper_bound",
+    "effective_relative_gap",
+    "solver_bound_available",
+    "integrity_error",
+    "analysis_valid",
+    "invalid_reported_bound_repr",
+    "witness_source",
+    "effective_bound_source",
+    "schema_version",
+    "bound_policy",
+    "status",
+    "objective_kind",
+    "objective_unit",
+    "bound_reason",
+    "bounds_coincide"
+  ],
+  "properties": {
+    "reported_solver_best_bound": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "usable_solver_upper_bound": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "validated_lower_bound": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "independent_upper_bound": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "effective_upper_bound": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "effective_relative_gap": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "solver_bound_available": {
+      "type": "boolean"
+    },
+    "integrity_error": {
+      "type": "boolean"
+    },
+    "analysis_valid": {
+      "type": "boolean"
+    },
+    "invalid_reported_bound_repr": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "witness_source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "effective_bound_source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "schema_version": {
+      "const": "symmetry-telemetry-v1"
+    },
+    "bound_policy": {
+      "const": "conservative_status_and_validated_witness"
+    },
+    "status": {
+      "enum": [
+        "UNKNOWN",
+        "FEASIBLE",
+        "OPTIMAL",
+        "INFEASIBLE",
+        "MODEL_INVALID"
+      ]
+    },
+    "objective_kind": {
+      "enum": [
+        "volume",
+        "count"
+      ]
+    },
+    "objective_unit": {
+      "enum": [
+        "volume",
+        "boxes"
+      ]
+    },
+    "bound_reason": {
+      "type": "string"
+    },
+    "bounds_coincide": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "objective_kind": {
+            "const": "count"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "objective_unit": {
+            "const": "boxes"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "objective_kind": {
+            "const": "volume"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "objective_unit": {
+            "const": "volume"
+          }
+        }
+      }
+    }
+  ]
+}

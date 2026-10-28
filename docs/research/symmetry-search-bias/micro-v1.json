@@ -1,0 +1,126 @@
+{
+  "schema_version": "symmetry-plan-v1",
+  "stage": "plan",
+  "max_cpsat_calls": 0,
+  "max_oracle_calls": 0,
+  "variants": [
+    "M0",
+    "M1",
+    "M2"
+  ],
+  "objectives": [
+    "volume",
+    "count"
+  ],
+  "cases": [
+    {
+      "id": "T00",
+      "path": "docs/research/symmetry-search-bias/fixtures/T00.json",
+      "manual_predictions": {
+        "volume": 0,
+        "count": 0
+      },
+      "prediction_status": "manual_not_solved"
+    },
+    {
+      "id": "T01",
+      "path": "docs/research/symmetry-search-bias/fixtures/T01.json",
+      "manual_predictions": {
+        "volume": 2,
+        "count": 2
+      },
+      "prediction_status": "manual_not_solved"
+    },
+    {
+      "id": "T02",
+      "path": "docs/research/symmetry-search-bias/fixtures/T02.json",
+      "manual_predictions": {
+        "volume": 3,
+        "count": 3
+      },
+      "prediction_status": "manual_not_solved"
+    },
+    {
+      "id": "T03",
+      "path": "docs/research/symmetry-search-bias/fixtures/T03.json",
+      "manual_predictions": {
+        "volume": 3,
+        "count": 2
+      },
+      "prediction_status": "manual_not_solved"
+    },
+    {
+      "id": "T04",
+      "path": "docs/research/symmetry-search-bias/fixtures/T04.json",
+      "manual_predictions": {
+        "volume": 2,
+        "count": 1
+      },
+      "prediction_status": "manual_not_solved"
+    },
+    {
+      "id": "T05",
+      "path": "docs/research/symmetry-search-bias/fixtures/T05.json",
+      "manual_predictions": {
+        "volume": 8,
+        "count": 2
+      },
+      "prediction_status": "manual_not_solved"
+    },
+    {
+      "id": "T06",
+      "path": "docs/research/symmetry-search-bias/fixtures/T06.json",
+      "manual_predictions": {
+        "volume": 4,
+        "count": 1
+      },
+      "prediction_status": "manual_not_solved"
+    },
+    {
+      "id": "T07",
+      "path": "docs/research/symmetry-search-bias/fixtures/T07.json",
+      "manual_predictions": {
+        "volume": 1,
+        "count": 1
+      },
+      "prediction_status": "manual_not_solved"
+    }
+  ],
+  "future_controls": {
+    "workers": 1,
+    "random_seed": 0,
+    "linearization_level": 2,
+    "symmetry_level": 2,
+    "cp_model_presolve": true,
+    "cp_model_probing_level": 2,
+    "volume_bound": false,
+    "absolute_gap_limit": 0,
+    "relative_gap_limit": 0,
+    "instrumentation": "bounded_scalars_offline_witness_validation_pending"
+  },
+  "future_stage_limits": {
+    "core-a": {
+      "cpsat_calls": 24,
+      "oracle_calls": 8,
+      "wall_seconds": 90,
+      "cpu_seconds": 75
+    },
+    "core-b": {
+      "cpsat_calls": 24,
+      "oracle_calls": 8,
+      "wall_seconds": 90,
+      "cpu_seconds": 75
+    }
+  },
+  "future_call_limits": {
+    "solve_wall_seconds": 2,
+    "oracle_wall_seconds": 2,
+    "oracle_max_nodes": 200000
+  },
+  "oracle_source_reference": {
+    "local_unpublished_commit": "7e867cd3446fc815442dc5265a6652128ae2cd37",
+    "path": "research/tiny_oracle.py",
+    "sha256": "8dcb6fac0ea7ec29a622b4400ef51d0520ded4f5f3d709962ccb224bbd0d93b8",
+    "availability": "not_published_by_P1a_requires_separate_approval"
+  }
+}
