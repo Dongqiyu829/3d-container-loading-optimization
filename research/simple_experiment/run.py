@@ -179,9 +179,9 @@ def check_os(stats, controller):
 
 def worker(directory):
     directory = Path(directory).resolve()
-    # Accidental-invocation guard for a trusted local parent, not authentication.
-    expected_parent = f"{os.getppid()}:{directory}"
-    if os.environ.pop(WORKER_PARENT_ENV, None) != expected_parent:
+    # Trusted-parent launch marker, not authentication. Windows venv launchers
+    # can interpose a process, so the immediate parent PID is not stable.
+    if os.environ.pop(WORKER_PARENT_ENV, None) != str(directory):
         raise ValueError("worker requires supervised parent launch")
     request = read_json(directory/"request.json")
     config = validate_config(request["config"])
@@ -232,7 +232,7 @@ def run_batch(config, output_root):
                 cpu_known = False
                 previous_marker = os.environ.get(WORKER_PARENT_ENV)
                 try:
-                    os.environ[WORKER_PARENT_ENV] = f"{os.getpid()}:{directory.resolve()}"
+                    os.environ[WORKER_PARENT_ENV] = str(directory.resolve())
                     stats = _supervise([sys.executable,"-I","-B",str(Path(__file__).resolve()),"--worker",str(directory.resolve())],
                         ROOT, directory/"worker-control.json", controller, str(job["ordinal"]), control_kind="worker_terminal")
                 finally:
@@ -285,7 +285,18 @@ def main(argv=None):
     p.add_argument("--worker",type=Path,help=argparse.SUPPRESS)
     a = p.parse_args(argv)
     if a.worker:
-        worker(a.worker); return 0
+        try:
+            worker(a.worker)
+        except Exception as exc:
+            import traceback
+            error = {"exception_type":type(exc).__name__[:128], "message":str(exc)[:512],
+                     "traceback":traceback.format_exc(limit=4)[-4096:]}
+            try:
+                save(a.worker/"worker-error.json", error)  # local only; exclusive write
+            except OSError:
+                pass  # Never replace the original error or overwrite old evidence.
+            raise
+        return 0
     config = load_config(a.config)
     if not a.execute:
         print(json.dumps({"tasks":plan(config),"config":config,"executed":False},indent=2)); return 0

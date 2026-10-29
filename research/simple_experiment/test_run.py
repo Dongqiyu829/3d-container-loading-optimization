@@ -72,19 +72,46 @@ class SimpleTests(unittest.TestCase):
                     run.os.environ.pop(run.WORKER_PARENT_ENV,None)
                     if marker != "missing":
                         run.os.environ[run.WORKER_PARENT_ENV] = (
-                            f"{run.os.getppid()}:{directory.resolve()}" if marker == "parent" else "forged")
+                            str(directory.resolve()) if marker == "parent" else "forged")
                     with self.assertRaises(ValueError):run.main(["--worker",str(directory)])
                     solve.assert_not_called()
                 self.assertFalse((directory/"worker-result.json").exists())
+                error=run.read_json(directory/"worker-error.json")
+                self.assertEqual(error["exception_type"],"ValueError")
+                self.assertTrue(error["message"])
+                self.assertIn("ValueError",error["traceback"])
+                self.assertLessEqual(len(error["message"]),512)
+                self.assertLessEqual(len(error["traceback"]),4096)
         # The expected parent marker + fixed request still reaches the existing seam.
         for i in (0,1):
             directory=self.directory/("valid"+str(i));directory.mkdir()
             job=run.plan(self.config)[i]
             run.save(directory/"request.json",{"job":job,"config":self.config})
-            with patch.dict(run.os.environ,{run.WORKER_PARENT_ENV:f"{run.os.getppid()}:{directory.resolve()}"}),patch.object(run,"solve_task",return_value={"job":job}) as solve:
+            with patch.dict(run.os.environ,{run.WORKER_PARENT_ENV:str(directory.resolve())}),patch.object(run.os,"getppid",return_value=-1),patch.object(run,"solve_task",return_value={"job":job}) as solve:
                 self.assertEqual(run.main(["--worker",str(directory)]),0)
                 solve.assert_called_once_with(job,self.config,directory/"input.json",directory)
                 self.assertNotIn(run.WORKER_PARENT_ENV,run.os.environ)
+                self.assertFalse((directory/"worker-error.json").exists())
+
+    def test_worker_error_records_read_failure_and_preserves_existing_evidence(self):
+        for i,raw,kind in ((0,None,"FileNotFoundError"),(1,"{broken","JSONDecodeError")):
+            directory=self.directory/str(i);directory.mkdir()
+            if raw is not None:(directory/"request.json").write_text(raw,encoding="utf-8")
+            with patch.dict(run.os.environ,{run.WORKER_PARENT_ENV:str(directory.resolve())}),patch.object(run,"solve_task") as solve:
+                with self.assertRaises((FileNotFoundError,json.JSONDecodeError)):
+                    run.main(["--worker",str(directory)])
+                solve.assert_not_called()
+            error=run.read_json(directory/"worker-error.json")
+            self.assertEqual(error["exception_type"],kind)
+            self.assertIn(kind,error["traceback"])
+            before=(directory/"worker-error.json").read_bytes()
+            # Logging failure (existing file) must not mask the original rejection.
+            with patch.dict(run.os.environ),patch.object(run,"solve_task") as solve:
+                run.os.environ.pop(run.WORKER_PARENT_ENV,None)
+                with self.assertRaisesRegex(ValueError,"supervised parent launch"):
+                    run.main(["--worker",str(directory)])
+                solve.assert_not_called()
+            self.assertEqual((directory/"worker-error.json").read_bytes(),before)
 
     def test_three_model_protos_only_change_prefix(self):
         # Check all4 fixtures and both objectives without any Solve.
@@ -183,7 +210,7 @@ class SimpleTests(unittest.TestCase):
         def reply(argv, cwd, output, controller, key, **kw):
             controller.reserve(key)
             folder = Path(output).parent
-            self.assertEqual(run.os.environ.get(run.WORKER_PARENT_ENV),f"{run.os.getpid()}:{folder.resolve()}")
+            self.assertEqual(run.os.environ.get(run.WORKER_PARENT_ENV),str(folder.resolve()))
             job = run.read_json(folder/"request.json")["job"]
             instance = load_instance(folder/"input.json")
             placements = [place("a0")] if mismatch and job["case"] == "T01" and job["model"] == "M0" else []
