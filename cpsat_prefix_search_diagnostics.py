@@ -455,6 +455,7 @@ def run_diagnostic_solve(
         hint_mapping = prepare_cpsat_hint(instance, hint_solution)
         apply_cpsat_hint(artifacts, hint_mapping)
     fingerprint = cpsat_model_structure_sha256(artifacts.model)
+    full_proto_hash = hashlib.sha256(artifacts.model.Proto().SerializeToString(deterministic=True)).hexdigest()
     solver = cp_model.CpSolver()
     solver.parameters.num_search_workers = 1
     solver.parameters.random_seed = random_seed
@@ -471,6 +472,7 @@ def run_diagnostic_solve(
         if max_deterministic_time <= 0:
             raise ValueError("max_deterministic_time must be positive")
         solver.parameters.max_deterministic_time = max_deterministic_time
+    parameter_hash = hashlib.sha256(solver.parameters.SerializeToString(deterministic=True)).hexdigest()
     target = hint_mapping.packed_volume if hint_mapping is not None else None
     callback = _new_diagnostic_callback(cp_model, target)
     status = solver.Solve(artifacts.model, callback)
@@ -535,6 +537,8 @@ def run_diagnostic_solve(
         "response_num_booleans": response.num_booleans,
         "response_num_fixed_booleans": response.num_fixed_booleans,
         "model_structure_sha256": fingerprint,
+        "full_model_proto_sha256": full_proto_hash,
+        "parameters_proto_sha256": parameter_hash,
         "reverse_prefix_constraints": reverse_records,
         "trajectory": callback.events,
         "trajectory_summary": trajectory,
@@ -614,6 +618,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--wall-budget", type=float)
     parser.add_argument("--wall-only", action="store_true", help="omit all deterministic-budget tasks; requires --wall-budget")
     parser.add_argument("--seeds", default="0", help="distinct nonnegative comma-separated seeds")
+    parser.add_argument("--configurations", help="optional ordered comma-separated subset, e.g. D,A")
     parser.add_argument("--linearization-level", type=int, choices=(0, 1, 2))
     parser.add_argument("--symmetry-level", type=int, choices=range(5))
     parser.add_argument("--wall-safety-limit", type=float, default=60.0)
@@ -626,6 +631,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--allow-dirty", action="store_true")
     parser.add_argument("--cxx")
     args = parser.parse_args(argv)
+    requested = args.configurations.split(",") if args.configurations is not None else None
+    if requested is not None and (not all(requested) or len(set(requested)) != len(requested)):
+        raise ValueError("configurations must be distinct nonempty names")
     seeds = tuple(int(item) for item in args.seeds.split(","))
     if not seeds or len(set(seeds)) != len(seeds) or any(seed < 0 for seed in seeds):
         raise ValueError("seeds must be distinct nonnegative integers")
@@ -745,6 +753,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                 ("HF", original, "forward", forward_hint, "portfolio-ig-forward"),
                 ("HR", original, "reverse", reverse_hint, "portfolio-ig-reverse"),
             ]
+        if requested is not None:
+            available = {item[0]:item for item in configurations}
+            if any(name not in available for name in requested):
+                raise ValueError("requested configuration is not enabled")
+            configurations = [available[name] for name in requested]
         for seed in seeds:
             for deterministic_budget, wall_limit in efforts:
                 by_name = {}

@@ -289,6 +289,24 @@ class PilotCLIParameterTests(unittest.TestCase):
                     self.assertFalse(row["hinted"])
                     self.assertFalse(row["volume_bound_enabled"])
                     self.assertFalse(holder.Solve.call_args.args[0].Proto().solution_hint.vars)
+            elif expected_calls==12:
+                expected=[(case,seed,name) for case in ("benchmark-medium-mixed-24","benchmark-selection-pressure-02") for seed in (0,1,2) for name in ("D","A")]
+                self.assertEqual([(r["physical_instance_id"],r["random_seed"],r["configuration"]) for r in records],expected)
+                self.assertEqual(len(list((folder/"trajectories").glob("*.record.json"))),12)
+                for i in range(0,12,2):
+                    d,a=holders[i:i+2]
+                    self.assertEqual(d.Solve.call_args.args[0].Proto().SerializeToString(deterministic=True),a.Solve.call_args.args[0].Proto().SerializeToString(deterministic=True))
+                    self.assertEqual(d.parameters.SerializeToString(deterministic=True),a.parameters.SerializeToString(deterministic=True))
+                    self.assertEqual(records[i]["full_model_proto_sha256"],records[i+1]["full_model_proto_sha256"])
+                    self.assertEqual(records[i]["parameters_proto_sha256"],records[i+1]["parameters_proto_sha256"])
+                for holder,row in zip(holders,records):
+                    params=holder.parameters
+                    self.assertEqual((params.num_search_workers,params.random_seed,params.linearization_level,params.symmetry_level,params.max_deterministic_time,params.max_time_in_seconds),(1,row["random_seed"],2,2,.5,5))
+                    self.assertEqual(row["max_deterministic_time"],.5)
+                    self.assertFalse(row["hinted"])
+                    self.assertFalse(row["volume_bound_enabled"])
+                    self.assertEqual(row["prefix_direction"],"none")
+                    self.assertFalse(holder.Solve.call_args.args[0].Proto().solution_hint.vars)
             else:
                 self.assertEqual([r["max_deterministic_time"] for r in records],[.01]*4+[.05]*4+[.2]*4+[None]*4)
                 for holder in holders:
@@ -301,6 +319,12 @@ class PilotCLIParameterTests(unittest.TestCase):
                         "--instance",str(ROOT/"benchmarks/instances/benchmark-selection-pressure-02.json"),
                         "--seeds","0,1,2","--wall-only","--wall-budget","2",
                         "--linearization-level","2","--symmetry-level","2"],24)
+
+    def test_D_then_A_exactly_12_mock_calls_identical_full_protos_and_parameters(self):
+        self._mock_cli(["--instance",str(ROOT/"benchmarks/instances/benchmark-medium-mixed-24.json"),
+                        "--instance",str(ROOT/"benchmarks/instances/benchmark-selection-pressure-02.json"),
+                        "--seeds","0,1,2","--configurations","D,A","--deterministic-budgets","0.5",
+                        "--wall-safety-limit","5","--linearization-level","2","--symmetry-level","2"],12)
 
     def test_legacy_wall_budget_still_appends_to_default_deterministic_runs(self):
         self._mock_cli(["--instance",str(INSTANCE_PATH),"--wall-budget","2"],16)
