@@ -299,7 +299,7 @@ Forward and reverse representative orders are physically equivalent but produced
 
 ### Pure textual-ID reversal
 
-Renaming textual IDs alone, while preserving the indexed model, did not change the mathematical proto or search behavior. The effect therefore was not caused by lexicographic spelling of IDs.
+Renaming textual IDs alone preserved the indexed model Proto and matched the earlier deterministic-budget search outcomes; under a wall-clock cutoff, identical Protos can still have different terminal effort because stopping times differ. This does not permute solver variable indices.
 
 ### Indexed-representative sensitivity and interpretation
 
