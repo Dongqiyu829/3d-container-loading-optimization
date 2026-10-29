@@ -54,6 +54,38 @@ class SimpleTests(unittest.TestCase):
             self.assertEqual(run.main([]),0)
             execute.assert_not_called()
 
+    def test_worker_rejects_direct_and_forged_requests_before_solver(self):
+        variants = []
+        for model_index in (0,1):  # Oracle and CP paths both stop before solve_task.
+            job = run.plan(self.config)[model_index]
+            variants.extend([(job,self.config,"missing"),(job,self.config,"forged")])
+        expanded = copy.deepcopy(self.config);expanded["oracle_max_nodes"] = 200001
+        changed = copy.deepcopy(self.config);changed["cp_sat"]["solve_wall_seconds"] = 100
+        variants.extend([(self.job,expanded,"parent"),(run.plan(self.config)[1],changed,"parent")])
+        for change in ({"ordinal":32},{"ordinal":False},{"model":"M3"},{"case":"other"},{"objective":"other"}):
+            variants.append(({**self.job,**change},self.config,"parent"))
+        for i,(job,config,marker) in enumerate(variants):
+            with self.subTest(i=i):
+                directory=self.directory/str(i);directory.mkdir()
+                run.save(directory/"request.json",{"job":job,"config":config})
+                with patch.dict(run.os.environ),patch.object(run,"solve_task") as solve:
+                    run.os.environ.pop(run.WORKER_PARENT_ENV,None)
+                    if marker != "missing":
+                        run.os.environ[run.WORKER_PARENT_ENV] = (
+                            f"{run.os.getppid()}:{directory.resolve()}" if marker == "parent" else "forged")
+                    with self.assertRaises(ValueError):run.main(["--worker",str(directory)])
+                    solve.assert_not_called()
+                self.assertFalse((directory/"worker-result.json").exists())
+        # The expected parent marker + fixed request still reaches the existing seam.
+        for i in (0,1):
+            directory=self.directory/("valid"+str(i));directory.mkdir()
+            job=run.plan(self.config)[i]
+            run.save(directory/"request.json",{"job":job,"config":self.config})
+            with patch.dict(run.os.environ,{run.WORKER_PARENT_ENV:f"{run.os.getppid()}:{directory.resolve()}"}),patch.object(run,"solve_task",return_value={"job":job}) as solve:
+                self.assertEqual(run.main(["--worker",str(directory)]),0)
+                solve.assert_called_once_with(job,self.config,directory/"input.json",directory)
+                self.assertNotIn(run.WORKER_PARENT_ENV,run.os.environ)
+
     def test_three_model_protos_only_change_prefix(self):
         # Check all4 fixtures and both objectives without any Solve.
         for case in self.config["cases"]:
@@ -151,6 +183,7 @@ class SimpleTests(unittest.TestCase):
         def reply(argv, cwd, output, controller, key, **kw):
             controller.reserve(key)
             folder = Path(output).parent
+            self.assertEqual(run.os.environ.get(run.WORKER_PARENT_ENV),f"{run.os.getpid()}:{folder.resolve()}")
             job = run.read_json(folder/"request.json")["job"]
             instance = load_instance(folder/"input.json")
             placements = [place("a0")] if mismatch and job["case"] == "T01" and job["model"] == "M0" else []
@@ -167,6 +200,7 @@ class SimpleTests(unittest.TestCase):
                     "child_wall_including_cleanup":.01,"job_accounting":{
                         "active_processes":0,"peak_job_memory_bytes":1,
                         "configured_job_memory_limit_bytes":268435456}}
+        previous_marker = run.os.environ.get(run.WORKER_PARENT_ENV)
         with patch("research.symmetry_watchdog._supervise",side_effect=reply) as launch:
             output = run.run_batch(self.config,self.directory)
             self.assertEqual(launch.call_count,32)
@@ -180,6 +214,7 @@ class SimpleTests(unittest.TestCase):
             self.assertIn("Oracle objective mismatch",summary["stop_reason"])
             self.assertEqual(summary["completed"],9)
             self.assertEqual(launch.call_count,10)  # stop at T01/volume/M0
+        self.assertEqual(run.os.environ.get(run.WORKER_PARENT_ENV),previous_marker)
 
     def test_analysis_keeps_zero_but_not_missing_as_success(self):
         run.save(self.directory/"run.json",{"config":self.config})

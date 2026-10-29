@@ -19,6 +19,7 @@ if str(ROOT) not in sys.path:
 DEFAULT_CONFIG = Path(__file__).with_name("config.json")
 FIXTURES = ROOT/"docs/research/symmetry-search-bias/fixtures"
 MAX_FILE = 1024 * 1024
+WORKER_PARENT_ENV = "SIMPLE_EXPERIMENT_PARENT"
 
 
 def read_json(path):
@@ -52,18 +53,22 @@ def limits(config):
     return SimpleNamespace(**values, validate=validate)
 
 
-def load_config(path=DEFAULT_CONFIG):
-    c = read_json(path)
+def validate_config(c):
     if (c["cases"] != ["T00","T01","T02","T03"] or c["objectives"] != ["volume","count"]
             or c["models"] != ["ORACLE","M0","M1","M2"] or c["hints"] != "none"
-            or c["oracle_max_nodes"] != 200000 or c["trace_cap"] != 128):
+            or type(c["oracle_max_nodes"]) is not int or c["oracle_max_nodes"] != 200000
+            or type(c["trace_cap"]) is not int or c["trace_cap"] != 128):
         raise ValueError("only fixed Stage A is implemented")
     expected = {"worker_count":1,"random_seed":0,"linearization_level":2,"symmetry_level":2,
                 "solve_wall_seconds":2,"construction_order":"source","volume_bound":False}
-    if c["cp_sat"] != expected:
+    if c["cp_sat"] != expected or any(type(c["cp_sat"][k]) is not type(v) for k,v in expected.items()):
         raise ValueError("fixed Stage-A CP parameters required")
     limits(c)
     return c
+
+
+def load_config(path=DEFAULT_CONFIG):
+    return validate_config(read_json(path))
 
 
 def plan(config):
@@ -173,10 +178,18 @@ def check_os(stats, controller):
 
 
 def worker(directory):
-    directory = Path(directory)
+    directory = Path(directory).resolve()
+    # Accidental-invocation guard for a trusted local parent, not authentication.
+    expected_parent = f"{os.getppid()}:{directory}"
+    if os.environ.pop(WORKER_PARENT_ENV, None) != expected_parent:
+        raise ValueError("worker requires supervised parent launch")
     request = read_json(directory/"request.json")
+    config = validate_config(request["config"])
+    job = request["job"]
+    if type(job) is not dict or type(job.get("ordinal")) is not int or job not in plan(config):
+        raise ValueError("worker task is outside fixed Stage A whitelist")
     try:
-        result = solve_task(request["job"], request["config"], directory/"input.json", directory)
+        result = solve_task(job, config, directory/"input.json", directory)
     except Exception as exc:
         result = {"job":request["job"], "status":None, "objective_value":None,
                   "solution":None, "error":type(exc).__name__+": "+str(exc)}
@@ -217,8 +230,16 @@ def run_batch(config, output_root):
             result = {"job":job,"status":None,"objective_value":None,"solution":None,"error":None,"accepted":False}
             try:
                 cpu_known = False
-                stats = _supervise([sys.executable,"-I","-B",str(Path(__file__).resolve()),"--worker",str(directory.resolve())],
-                    ROOT, directory/"worker-control.json", controller, str(job["ordinal"]), control_kind="worker_terminal")
+                previous_marker = os.environ.get(WORKER_PARENT_ENV)
+                try:
+                    os.environ[WORKER_PARENT_ENV] = f"{os.getpid()}:{directory.resolve()}"
+                    stats = _supervise([sys.executable,"-I","-B",str(Path(__file__).resolve()),"--worker",str(directory.resolve())],
+                        ROOT, directory/"worker-control.json", controller, str(job["ordinal"]), control_kind="worker_terminal")
+                finally:
+                    if previous_marker is None:
+                        os.environ.pop(WORKER_PARENT_ENV, None)
+                    else:
+                        os.environ[WORKER_PARENT_ENV] = previous_marker
                 cpu_known = stats.get("final_cpu_known") is True
                 # Old watchdog's dummy counters are NOT native call measurements.
                 for key in ("actual_cpsat_calls","actual_oracle_calls","dummy_payload"):
