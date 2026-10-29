@@ -104,11 +104,51 @@ def add_reverse_prefix_constraints(
     return records
 
 
+def move_forward_prefix_late(model: Any) -> dict[str, Any]:
+    """Copy the complete Forward Proto, move only its row block, and verify."""
+    before = copy.deepcopy(model.Proto())
+    positions = [i for i, row in enumerate(before.constraints)
+                 if row.name.startswith("selection_prefix_")]
+    if not positions or positions != list(range(positions[0], positions[-1] + 1)):
+        raise RuntimeError("Forward Prefix must be one nonempty contiguous block")
+    start, count = positions[0], len(positions)
+    prefix = list(before.constraints[start:start + count])
+    other = list(before.constraints[:start]) + list(before.constraints[start + count:])
+    late = copy.deepcopy(before)
+    late.ClearField("constraints")
+    late.constraints.extend(other + prefix)
+    serialize = lambda proto: proto.SerializeToString(deterministic=True)
+    before_rest, late_rest = copy.deepcopy(before), copy.deepcopy(late)
+    before_rest.ClearField("constraints")
+    late_rest.ClearField("constraints")
+    before_rows = [serialize(row) for row in before.constraints]
+    late_rows = [serialize(row) for row in late.constraints]
+    restored = copy.deepcopy(late)
+    restored.ClearField("constraints")
+    restored.constraints.extend(other[:start] + prefix + other[start:])
+    checks = {
+        "non_constraint_fields_equal": serialize(before_rest) == serialize(late_rest),
+        "constraint_byte_multiset_equal": Counter(before_rows) == Counter(late_rows),
+        "prefix_order_equal": late_rows[-count:] == [serialize(row) for row in prefix],
+        "non_prefix_order_equal": late_rows[:-count] == [serialize(row) for row in other],
+        "inverse_restores_complete_proto": serialize(restored) == serialize(before),
+    }
+    if not all(checks.values()):
+        raise RuntimeError("Forward Late static contract failed: " + repr(checks))
+    model.Proto().CopyFrom(late)
+    return {
+        "checks": checks, "prefix_start": start, "prefix_count": count,
+        "early_proto_sha256": hashlib.sha256(serialize(before)).hexdigest(),
+        "late_proto_sha256": hashlib.sha256(serialize(late)).hexdigest(),
+    }
+
+
 def build_diagnostic_model(
     instance: CanonicalInstance,
     *,
     prefix_direction: str = "none",
     volume_bound: bool = False,
+    forward_late: bool = False,
 ) -> tuple[Any, list[dict[str, Any]]]:
     if prefix_direction not in PREFIX_DIRECTIONS:
         raise ValueError(f"unknown prefix direction: {prefix_direction!r}")
@@ -117,6 +157,10 @@ def build_diagnostic_model(
         volume_bound=volume_bound,
         selection_prefix_symmetry=prefix_direction == "forward",
     )
+    if forward_late:
+        if prefix_direction != "forward":
+            raise ValueError("Forward Late requires the Forward model")
+        move_forward_prefix_late(artifacts.model)
     added = []
     if prefix_direction == "reverse":
         added = add_reverse_prefix_constraints(artifacts, instance)
@@ -447,7 +491,8 @@ def run_diagnostic_solve(
     started = time.perf_counter()
     build_started = time.perf_counter()
     artifacts, reverse_records = build_diagnostic_model(
-        instance, prefix_direction=prefix_direction, volume_bound=volume_bound
+        instance, prefix_direction=prefix_direction, volume_bound=volume_bound,
+        forward_late=configuration == "BL",
     )
     build_runtime = time.perf_counter() - build_started
     hint_mapping = None
@@ -499,6 +544,8 @@ def run_diagnostic_solve(
         "instance_id": instance.instance_id,
         "configuration": configuration,
         "prefix_direction": prefix_direction,
+        "forward_prefix_position": ("late" if configuration == "BL" else "early")
+        if prefix_direction == "forward" else None,
         "volume_bound_enabled": volume_bound,
         "hinted": hint_mapping is not None,
         "hint_source": hint_source if hint_mapping is not None else None,
@@ -698,14 +745,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         write_json_new(directory / "permutations" / f"{original.instance_id}.labels.json", relabel_audit)
         model_summaries = {}
-        for name, model_instance, direction in (
+        summary_configurations = [
             ("A", original, "none"),
             ("B", original, "forward"),
             ("C", original, "reverse"),
             ("D", relabelled, "none"),
-        ):
+        ]
+        if requested is not None and "BL" in requested:
+            summary_configurations.append(("BL", original, "forward"))
+        for name, model_instance, direction in summary_configurations:
             artifacts, _ = build_diagnostic_model(
-                model_instance, prefix_direction=direction, volume_bound=args.volume_bound
+                model_instance, prefix_direction=direction, volume_bound=args.volume_bound,
+                forward_late=name == "BL",
             )
             model_summaries[name] = model_structural_summary(artifacts, model_instance)
         structures.append(
@@ -745,6 +796,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             ("C", original, "reverse", None, None),
             ("D", relabelled, "none", None, None),
         ]
+        if requested is not None and "BL" in requested and not args.hint_only:
+            configurations.append(("BL", original, "forward", None, None))
         if args.include_relabelled_forward and not args.hint_only:
             configurations.append(("E", relabelled, "forward", None, None))
         if args.with_hints:
@@ -791,6 +844,16 @@ def main(argv: Sequence[str] | None = None) -> int:
                     record["random_seed"] = seed
                     record["physical_instance_id"] = original.instance_id
                     write_json_new(directory / "trajectories" / f"{original.instance_id}.{name}.{suffix}.record.json", record)
+                    if requested is not None and "BL" in requested and (
+                        record["solver_status"] not in ("FEASIBLE", "OPTIMAL")
+                        or solution is None or record["validation"] != "VALID"
+                    ):
+                        write_json_new(directory / "failure.json", {
+                            "configuration": name, "random_seed": seed,
+                            "failure_reason": "H_order task has no validated incumbent",
+                            "solver_status": record["solver_status"],
+                        })
+                        raise RuntimeError("H_order stopped: no validated incumbent")
                     if record["solver_status"] not in ("UNKNOWN", "FEASIBLE", "OPTIMAL"):
                         raise RuntimeError("unexpected optional-box model status: " + record["solver_status"])
                     records.append(record)
@@ -826,6 +889,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     )
                 for reference_name, challenger_name in (
                     ("A", "B"), ("A", "C"), ("A", "D"), ("B", "C"),
+                    ("B", "BL"),
                     ("H0", "HF"), ("H0", "HR"), ("HF", "HR"),
                 ):
                     if reference_name in by_name and challenger_name in by_name:

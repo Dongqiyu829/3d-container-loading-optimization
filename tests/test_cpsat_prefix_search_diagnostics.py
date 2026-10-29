@@ -314,6 +314,91 @@ class PilotCLIParameterTests(unittest.TestCase):
                     self.assertFalse(holder.parameters.HasField("linearization_level"))
                     self.assertFalse(holder.parameters.HasField("symmetry_level"))
 
+    def test_forward_late_four_task_static_contract(self):
+        import hashlib
+        import cpsat_prefix_search_diagnostics as diagnostic
+        from ortools.sat.python import cp_model
+        instance_path = ROOT / "benchmarks/instances/benchmark-fragmentation-filler-02.json"
+        instance = load_instance(instance_path)
+        early, _ = build_diagnostic_model(instance, prefix_direction="forward")
+        original = early.model.Proto().SerializeToString(deterministic=True)
+        audit = diagnostic.move_forward_prefix_late(early.model)
+        self.assertTrue(all(audit["checks"].values()))
+        self.assertEqual(audit["prefix_count"], 14)
+        self.assertNotEqual(audit["early_proto_sha256"], audit["late_proto_sha256"])
+        built_late, _ = build_diagnostic_model(instance, prefix_direction="forward", forward_late=True)
+        self.assertEqual(early.model.Proto(), built_late.model.Proto())
+        self.assertEqual(hashlib.sha256(original).hexdigest(), audit["early_proto_sha256"])
+        holders = []
+        real_holder = cp_model.CpSolver
+        def factory():
+            holder = real_holder()  # Parameters only; no native SolveWrapper.
+            holder.Solve = Mock(return_value=cp_model.FEASIBLE)
+            holder.StatusName = lambda status: "FEASIBLE"
+            holder.Value = lambda variable: 0  # Physically valid empty mock witness.
+            holder.ResponseProto = lambda: SimpleNamespace(
+                num_binary_propagations=0, num_integer_propagations=0, num_restarts=0,
+                deterministic_time=0, num_booleans=0, num_fixed_booleans=0, num_lp_iterations=0)
+            holder.BestObjectiveBound = lambda: 260
+            holder.NumBranches = lambda: 0
+            holder.NumConflicts = lambda: 0
+            holder.WallTime = lambda: 0
+            holders.append(holder)
+            return holder
+        with tempfile.TemporaryDirectory() as temporary:
+            with patch.object(diagnostic, "_git_information", return_value=("mock", False, "mock")), patch.object(cp_model, "CpSolver", side_effect=factory), redirect_stdout(io.StringIO()):
+                self.assertEqual(diagnostic.main([
+                    "--instance", str(instance_path), "--seeds", "0", "--wall-only",
+                    "--wall-budget", "2", "--linearization-level", "2", "--symmetry-level", "2",
+                    "--configurations", "A,B,BL,D", "--run-id", "mock-order", "--results-root", temporary,
+                ]), 0)
+            folder = Path(temporary) / "mock-order"
+            rows = json.loads((folder / "records.json").read_text())["records"]
+            self.assertEqual([row["configuration"] for row in rows], ["A", "B", "BL", "D"])
+            self.assertEqual(len(holders), 4)
+            self.assertEqual(len(list((folder / "trajectories").glob("*.record.json"))), 4)
+            models = [h.Solve.call_args.args[0].Proto() for h in holders]
+            self.assertEqual(models[0], models[3])
+            self.assertEqual(models[1].SerializeToString(deterministic=True), original)
+            self.assertEqual(models[2], built_late.model.Proto())
+            for row, holder in zip(rows, holders):
+                holder.Solve.assert_called_once()
+                p = holder.parameters
+                self.assertEqual((p.num_search_workers, p.random_seed, p.linearization_level,
+                                  p.symmetry_level, p.max_time_in_seconds), (1, 0, 2, 2, 2))
+                self.assertFalse(p.HasField("max_deterministic_time"))
+                self.assertEqual(p.SerializeToString(deterministic=True), holders[0].parameters.SerializeToString(deterministic=True))
+                self.assertFalse(row["hinted"] or row["volume_bound_enabled"])
+                self.assertIsNone(row["max_deterministic_time"])
+                self.assertEqual(row["validation"], "VALID")
+                self.assertFalse(holder.Solve.call_args.args[0].Proto().solution_hint.vars)
+                raw = json.loads((folder / "instances" / (instance.instance_id + ".json")).read_text())
+                self.assertEqual(raw, instance.raw)
+            self.assertEqual(rows[0]["instance_sha256"], rows[1]["instance_sha256"])
+            self.assertEqual(rows[1]["instance_sha256"], rows[2]["instance_sha256"])
+            relabelled = json.loads((folder / "relabelled_instances" / (instance.instance_id + "--copy-labels-reversed.json")).read_text())
+            from baseline_common import load_instance as load_saved
+            self.assertTrue(physical_equivalence_audit(instance, load_saved(folder / "relabelled_instances" / (relabelled["instance_id"] + ".json")))["physically_equivalent"])
+        def unknown_factory():
+            holder = factory()
+            holder.Solve = Mock(return_value=cp_model.UNKNOWN)
+            holder.StatusName = lambda status: "UNKNOWN"
+            return holder
+        with tempfile.TemporaryDirectory() as temporary:
+            with patch.object(diagnostic, "_git_information", return_value=("mock", False, "mock")), patch.object(cp_model, "CpSolver", side_effect=unknown_factory), redirect_stdout(io.StringIO()):
+                with self.assertRaisesRegex(RuntimeError, "no validated incumbent"):
+                    diagnostic.main([
+                        "--instance", str(instance_path), "--seeds", "0", "--wall-only",
+                        "--wall-budget", "2", "--linearization-level", "2", "--symmetry-level", "2",
+                        "--configurations", "A,B,BL,D", "--run-id", "mock-stop", "--results-root", temporary,
+                    ])
+            self.assertEqual(len(holders), 5)  # Four success mocks, one failure mock only.
+            failure = json.loads((Path(temporary) / "mock-stop/failure.json").read_text())
+            self.assertEqual((failure["configuration"], failure["solver_status"]), ("A", "UNKNOWN"))
+        self.order_preflight = {"tasks": 4, "order": ["A", "B", "BL", "D"], "contract": audit,
+                                "model_hashes": [row["full_model_proto_sha256"] for row in rows],
+                                "parameter_hashes": [row["parameters_proto_sha256"] for row in rows]}
+
     def test_wall_only_exactly_24_mock_calls_with_fixed_parameters_and_labels(self):
         self._mock_cli(["--instance",str(ROOT/"benchmarks/instances/benchmark-medium-mixed-24.json"),
                         "--instance",str(ROOT/"benchmarks/instances/benchmark-selection-pressure-02.json"),
