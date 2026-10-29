@@ -1,4 +1,9 @@
 import copy
+import io
+import json
+from contextlib import redirect_stdout
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
 import sys
 import tempfile
 import unittest
@@ -224,6 +229,81 @@ class TrajectoryTests(unittest.TestCase):
             create_run_directory(temporary, "fixed")
             with self.assertRaises(FileExistsError):
                 create_run_directory(temporary, "fixed")
+
+
+class PilotCLIParameterTests(unittest.TestCase):
+    def _mock_cli(self, extra, expected_calls):
+        import cpsat_prefix_search_diagnostics as diagnostic
+        from ortools.sat.python import cp_model
+        real_holder = cp_model.CpSolver
+        holders = []
+        def factory():
+            holder = real_holder()  # Python parameters only; never a SolveWrapper.
+            holder.Solve = Mock(return_value=cp_model.UNKNOWN)
+            holder.StatusName = lambda status: "UNKNOWN"
+            holder.ResponseProto = lambda: SimpleNamespace(
+                num_binary_propagations=0,num_integer_propagations=0,num_restarts=0,
+                deterministic_time=0,num_booleans=0,num_fixed_booleans=0,num_lp_iterations=0)
+            holder.BestObjectiveBound = lambda: 0
+            holder.NumBranches = lambda: 0
+            holder.NumConflicts = lambda: 0
+            holder.WallTime = lambda: 0
+            holders.append(holder)
+            return holder
+        with tempfile.TemporaryDirectory() as temporary:
+            with patch.object(diagnostic,"_git_information",return_value=("mock",False,"mock")),patch.object(cp_model,"CpSolver",side_effect=factory),redirect_stdout(io.StringIO()):
+                self.assertEqual(diagnostic.main([*extra,"--results-root",temporary,"--run-id","mock"]),0)
+            folder=Path(temporary)/"mock"
+            records=json.loads((folder/"records.json").read_text())["records"]
+            self.assertEqual(len(records),expected_calls)
+            self.assertEqual(len(holders),expected_calls)
+            for holder,row in zip(holders,records):
+                holder.Solve.assert_called_once()
+                self.assertEqual(row["solver_status"],"UNKNOWN")
+                self.assertIsNone(row["packed_volume"])
+                self.assertFalse(row["solver_bound_available"])
+                self.assertIsNone(row["usable_solver_best_bound"])
+                self.assertIsNone(row["effective_upper_bound"])
+                self.assertIsNone(row["trajectory_summary"]["first_feasible"])
+            if expected_calls==24:
+                expected=[(case,seed,name) for case in ("benchmark-medium-mixed-24","benchmark-selection-pressure-02") for seed in (0,1,2) for name in "ABCD"]
+                self.assertEqual([(r["physical_instance_id"],r["random_seed"],r["configuration"]) for r in records],expected)
+                self.assertEqual(len(list((folder/"trajectories").glob("*.record.json"))),24)
+                for case in ("benchmark-medium-mixed-24","benchmark-selection-pressure-02"):
+                    original=json.loads((ROOT/"benchmarks/instances"/(case+".json")).read_text())
+                    self.assertEqual(json.loads((folder/"instances"/(case+".json")).read_text()),original)
+                    audit=json.loads((folder/"permutations"/(case+".labels.json")).read_text())
+                    self.assertTrue(audit["physically_equivalent"])
+                from research.symmetry_models import without_prefix
+                for start in range(0,24,4):
+                    models=[h.Solve.call_args.args[0].Proto() for h in holders[start:start+4]]
+                    stripped=[without_prefix(m).SerializeToString(deterministic=True) for m in models]
+                    self.assertTrue(all(p==stripped[0] for p in stripped))
+                    self.assertTrue(any(c.name.startswith("selection_prefix_") for c in models[1].constraints))
+                    self.assertTrue(any(c.name.startswith("diagnostic_reverse_prefix_") for c in models[2].constraints))
+                for holder,row in zip(holders,records):
+                    params=holder.parameters
+                    self.assertEqual((params.num_search_workers,params.random_seed,params.linearization_level,params.symmetry_level,params.max_time_in_seconds),(1,row["random_seed"],2,2,2))
+                    self.assertFalse(params.HasField("max_deterministic_time"))
+                    self.assertIsNone(row["max_deterministic_time"])
+                    self.assertFalse(row["hinted"])
+                    self.assertFalse(row["volume_bound_enabled"])
+                    self.assertFalse(holder.Solve.call_args.args[0].Proto().solution_hint.vars)
+            else:
+                self.assertEqual([r["max_deterministic_time"] for r in records],[.01]*4+[.05]*4+[.2]*4+[None]*4)
+                for holder in holders:
+                    self.assertEqual(holder.parameters.random_seed,0)
+                    self.assertFalse(holder.parameters.HasField("linearization_level"))
+                    self.assertFalse(holder.parameters.HasField("symmetry_level"))
+
+    def test_wall_only_exactly_24_mock_calls_with_fixed_parameters_and_labels(self):
+        self._mock_cli(["--instance",str(ROOT/"benchmarks/instances/benchmark-medium-mixed-24.json"),
+                        "--instance",str(ROOT/"benchmarks/instances/benchmark-selection-pressure-02.json"),
+                        "--seeds","0,1,2","--wall-only","--wall-budget","2",
+                        "--linearization-level","2","--symmetry-level","2"],24)
+
+    def test_legacy_wall_budget_still_appends_to_default_deterministic_runs(self):
+        self._mock_cli(["--instance",str(INSTANCE_PATH),"--wall-budget","2"],16)
 
 
 if __name__ == "__main__":

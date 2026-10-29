@@ -5,6 +5,8 @@ from __future__ import annotations
 import argparse
 import copy
 import csv
+import hashlib
+import math
 import json
 import platform
 import tempfile
@@ -436,6 +438,8 @@ def run_diagnostic_solve(
     hint_solution: Mapping[str, Any] | None = None,
     hint_source: str | None = None,
     symmetry_level: int | None = None,
+    random_seed: int = 0,
+    linearization_level: int | None = None,
 ) -> tuple[dict[str, Any] | None, dict[str, Any]]:
     import ortools
     from ortools.sat.python import cp_model
@@ -453,8 +457,12 @@ def run_diagnostic_solve(
     fingerprint = cpsat_model_structure_sha256(artifacts.model)
     solver = cp_model.CpSolver()
     solver.parameters.num_search_workers = 1
-    solver.parameters.random_seed = 0
+    solver.parameters.random_seed = random_seed
     solver.parameters.max_time_in_seconds = time_limit_seconds
+    if linearization_level is not None:
+        if linearization_level not in (0, 1, 2):
+            raise ValueError("linearization_level must be 0, 1 or 2")
+        solver.parameters.linearization_level = linearization_level
     if symmetry_level is not None:
         if symmetry_level < 0 or symmetry_level > 4:
             raise ValueError("symmetry_level must be between 0 and 4")
@@ -475,6 +483,8 @@ def run_diagnostic_solve(
         result = validate_solution(instance.raw, solution)
         if not result.valid:
             raise RuntimeError(f"diagnostic solver produced invalid solution: {result.issues}")
+        if prefix_direction != "none" and not selection_is_direction_valid(instance, solution, prefix_direction):
+            raise RuntimeError("diagnostic solution violates its prefix direction")
         validation = "VALID"
     trajectory = summarize_trajectory(callback.events, instance.container_volume)
     objective = solution["metrics"]["packed_volume"] if solution is not None else None
@@ -482,6 +492,7 @@ def run_diagnostic_solve(
         sum(box.volume for box in instance.boxes), instance.container_volume
     )
     raw_bound = solver.BestObjectiveBound()
+    usable_bound = raw_bound if status in (cp_model.FEASIBLE, cp_model.OPTIMAL) else None
     return solution, {
         "instance_id": instance.instance_id,
         "configuration": configuration,
@@ -497,7 +508,10 @@ def run_diagnostic_solve(
         "utilization": solution["metrics"]["utilization"] if solution is not None else None,
         "validation": validation,
         "raw_solver_best_bound": raw_bound,
-        "effective_upper_bound": min(raw_bound, physical_bound),
+        "solver_bound_available": usable_bound is not None,
+        "usable_solver_best_bound": usable_bound,
+        "physical_upper_bound": physical_bound,
+        "effective_upper_bound": min(usable_bound, physical_bound) if usable_bound is not None else None,
         "num_branches": solver.NumBranches(),
         "num_conflicts": solver.NumConflicts(),
         "num_boolean_propagations": response.num_binary_propagations,
@@ -512,6 +526,10 @@ def run_diagnostic_solve(
         "worker_count": solver.parameters.num_search_workers,
         "random_seed": solver.parameters.random_seed,
         "symmetry_level": solver.parameters.symmetry_level,
+        "linearization_level": solver.parameters.linearization_level,
+        "solver_parameters": str(solver.parameters),
+        "instance_sha256": hashlib.sha256(json.dumps(dict(instance.raw), sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
+        "num_lp_iterations": getattr(response, "num_lp_iterations", None),
         "cp_model_presolve": solver.parameters.cp_model_presolve,
         "cp_model_probing_level": solver.parameters.cp_model_probing_level,
         "response_num_booleans": response.num_booleans,
@@ -562,8 +580,10 @@ def _parse_budgets(value: str) -> tuple[float, ...]:
 def _write_csv(path: Path, records: Sequence[Mapping[str, Any]]) -> None:
     fields = (
         "instance_id", "configuration", "prefix_direction", "volume_bound_enabled",
-        "hinted", "max_deterministic_time", "time_limit_seconds", "solver_status",
-        "packed_volume", "raw_solver_best_bound", "num_branches", "num_conflicts",
+        "hinted", "random_seed", "linearization_level", "symmetry_level",
+        "max_deterministic_time", "time_limit_seconds", "solver_status",
+        "packed_volume", "raw_solver_best_bound", "solver_bound_available",
+        "usable_solver_best_bound", "physical_upper_bound", "num_branches", "num_conflicts",
         "num_boolean_propagations", "num_integer_propagations", "num_restarts",
         "deterministic_time", "solver_wall_time_seconds", "validation",
     )
@@ -592,6 +612,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--external-only", action="store_true")
     parser.add_argument("--deterministic-budgets", default="0.01,0.05,0.2")
     parser.add_argument("--wall-budget", type=float)
+    parser.add_argument("--wall-only", action="store_true", help="omit all deterministic-budget tasks; requires --wall-budget")
+    parser.add_argument("--seeds", default="0", help="distinct nonnegative comma-separated seeds")
+    parser.add_argument("--linearization-level", type=int, choices=(0, 1, 2))
+    parser.add_argument("--symmetry-level", type=int, choices=range(5))
     parser.add_argument("--wall-safety-limit", type=float, default=60.0)
     parser.add_argument("--volume-bound", action="store_true")
     parser.add_argument("--include-relabelled-forward", action="store_true")
@@ -602,6 +626,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--allow-dirty", action="store_true")
     parser.add_argument("--cxx")
     args = parser.parse_args(argv)
+    seeds = tuple(int(item) for item in args.seeds.split(","))
+    if not seeds or len(set(seeds)) != len(seeds) or any(seed < 0 for seed in seeds):
+        raise ValueError("seeds must be distinct nonnegative integers")
+    if args.wall_only and args.wall_budget is None:
+        raise ValueError("--wall-only requires --wall-budget")
+    efforts = [] if args.wall_only else [(budget, args.wall_safety_limit) for budget in _parse_budgets(args.deterministic_budgets)]
+    if args.wall_budget is not None:
+        if not math.isfinite(args.wall_budget) or args.wall_budget <= 0:
+            raise ValueError("wall budget must be finite and positive")
+        efforts.append((None, args.wall_budget))
     if args.hint_only:
         args.with_hints = True
     commit, dirty, digest = _git_information(REPOSITORY_ROOT)
@@ -618,7 +652,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         "platform": platform.platform(),
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "workers": 1,
-        "random_seed": 0,
+        "random_seed": seeds[0] if len(seeds) == 1 else None,
+        "random_seeds": list(seeds),
     }
     paths = list(args.instance or (() if args.external_only else DEFAULT_INTERNAL_PATHS))
     instances = [load_instance(path) for path in paths]
@@ -630,6 +665,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             instances.append(_load_raw_instance(raw))
     if not instances:
         raise ValueError("no instances selected")
+    write_json_new(directory / "configuration.json", _json_safe(vars(args)))
+    write_json_new(directory / "provenance.json", provenance)
     executable = None
     if args.with_hints:
         executable = directory / "greedy_baseline.exe"
@@ -708,70 +745,84 @@ def main(argv: Sequence[str] | None = None) -> int:
                 ("HF", original, "forward", forward_hint, "portfolio-ig-forward"),
                 ("HR", original, "reverse", reverse_hint, "portfolio-ig-reverse"),
             ]
-        efforts = [(budget, args.wall_safety_limit) for budget in _parse_budgets(args.deterministic_budgets)]
-        if args.wall_budget is not None:
-            efforts.append((None, args.wall_budget))
-        for deterministic_budget, wall_limit in efforts:
-            by_name = {}
-            for name, model_instance, direction, hint, hint_source in configurations:
-                solution, record = run_diagnostic_solve(
-                    model_instance,
-                    configuration=name,
-                    prefix_direction=direction,
-                    max_deterministic_time=deterministic_budget,
-                    time_limit_seconds=wall_limit,
-                    volume_bound=args.volume_bound,
-                    hint_solution=hint,
-                    hint_source=hint_source,
-                )
-                record.update(provenance)
-                record["physical_instance_id"] = original.instance_id
-                records.append(record)
-                by_name[name] = record
-                first_summaries.append(
-                    {
-                        "physical_instance_id": original.instance_id,
-                        "configuration": name,
-                        "max_deterministic_time": deterministic_budget,
-                        **record["trajectory_summary"],
-                    }
-                )
-                improvement_summaries.append(
-                    {
-                        "physical_instance_id": original.instance_id,
-                        "configuration": name,
-                        "max_deterministic_time": deterministic_budget,
-                        "improvements": record["trajectory_summary"]["improvements"],
-                    }
-                )
-                if solution is not None:
+        for seed in seeds:
+            for deterministic_budget, wall_limit in efforts:
+                by_name = {}
+                for name, model_instance, direction, hint, hint_source in configurations:
                     suffix = f"dt-{deterministic_budget}" if deterministic_budget is not None else f"wall-{wall_limit}"
+                    if len(seeds) > 1 or seed != 0:
+                        suffix += f".seed-{seed}"
+                    try:
+                        solution, record = run_diagnostic_solve(
+                            model_instance,
+                            configuration=name,
+                            prefix_direction=direction,
+                            max_deterministic_time=deterministic_budget,
+                            time_limit_seconds=wall_limit,
+                            volume_bound=args.volume_bound,
+                            hint_solution=hint,
+                            hint_source=hint_source,
+                            random_seed=seed,
+                            linearization_level=args.linearization_level,
+                            symmetry_level=args.symmetry_level,
+                        )
+                    except Exception as exc:
+                        import traceback
+                        write_json_new(directory / "failure.json", {
+                            "instance_id": original.instance_id, "configuration": name,
+                            "random_seed": seed, "exception_type": type(exc).__name__,
+                            "message": str(exc), "traceback": traceback.format_exc(limit=6),
+                        })
+                        raise
+                    record.update(provenance)
+                    record["random_seed"] = seed
+                    record["physical_instance_id"] = original.instance_id
+                    write_json_new(directory / "trajectories" / f"{original.instance_id}.{name}.{suffix}.record.json", record)
+                    if record["solver_status"] not in ("UNKNOWN", "FEASIBLE", "OPTIMAL"):
+                        raise RuntimeError("unexpected optional-box model status: " + record["solver_status"])
+                    records.append(record)
+                    by_name[name] = record
+                    first_summaries.append(
+                        {
+                            "physical_instance_id": original.instance_id,
+                            "configuration": name,
+                            "max_deterministic_time": deterministic_budget,
+                            "random_seed": seed,
+                            **record["trajectory_summary"],
+                        }
+                    )
+                    improvement_summaries.append(
+                        {
+                            "physical_instance_id": original.instance_id,
+                            "configuration": name,
+                            "max_deterministic_time": deterministic_budget,
+                            "random_seed": seed,
+                            "improvements": record["trajectory_summary"]["improvements"],
+                        }
+                    )
+                    if solution is not None:
+                        write_json_new(
+                            directory / "solutions" / f"{original.instance_id}.{name}.{suffix}.json",
+                            solution,
+                        )
+                    trajectory_suffix = suffix
                     write_json_new(
-                        directory / "solutions" / f"{original.instance_id}.{name}.{suffix}.json",
-                        solution,
+                        directory / "trajectories"
+                        / f"{original.instance_id}.{name}.{trajectory_suffix}.json",
+                        record["trajectory"],
                     )
-                trajectory_suffix = (
-                    f"dt-{deterministic_budget}"
-                    if deterministic_budget is not None
-                    else f"wall-{wall_limit}"
-                )
-                write_json_new(
-                    directory / "trajectories"
-                    / f"{original.instance_id}.{name}.{trajectory_suffix}.json",
-                    record["trajectory"],
-                )
-            for reference_name, challenger_name in (
-                ("A", "B"), ("A", "C"), ("A", "D"), ("B", "C"),
-                ("H0", "HF"), ("H0", "HR"), ("HF", "HR"),
-            ):
-                if reference_name in by_name and challenger_name in by_name:
-                    comparison = compare_diagnostics(
-                        by_name[reference_name], by_name[challenger_name]
-                    )
-                    comparison["physical_instance_id"] = original.instance_id
-                    comparisons.append(comparison)
+                for reference_name, challenger_name in (
+                    ("A", "B"), ("A", "C"), ("A", "D"), ("B", "C"),
+                    ("H0", "HF"), ("H0", "HR"), ("HF", "HR"),
+                ):
+                    if reference_name in by_name and challenger_name in by_name:
+                        comparison = compare_diagnostics(
+                            by_name[reference_name], by_name[challenger_name]
+                        )
+                        comparison["physical_instance_id"] = original.instance_id
+                        comparison["random_seed"] = seed
+                        comparisons.append(comparison)
 
-    write_json_new(directory / "configuration.json", _json_safe(vars(args)))
     write_json_new(directory / "records.json", {"records": records})
     write_json_new(directory / "first-feasible-summary.json", {"records": first_summaries})
     write_json_new(directory / "improvement-summary.json", {"records": improvement_summaries})
@@ -781,7 +832,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     write_json_new(directory / "model-structure.json", {"instances": structures})
     write_json_new(directory / "physical-equivalence.json", {"instances": equivalence})
     write_json_new(directory / "hint-transformations.json", {"hints": hint_audits})
-    write_json_new(directory / "provenance.json", provenance)
     _write_csv(directory / "summary.csv", records)
     print(f"run_id={run_id}")
     print(f"instances={len(instances)} records={len(records)} comparisons={len(comparisons)}")
