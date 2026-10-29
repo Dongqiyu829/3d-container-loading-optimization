@@ -299,13 +299,23 @@ Forward and reverse representative orders are physically equivalent but produced
 
 ### Pure textual-ID reversal
 
-Renaming textual IDs alone, while preserving the indexed model, did not change the mathematical proto or search behavior. The effect therefore was not caused by lexicographic spelling of IDs.
+Renaming textual IDs alone preserved the indexed model Proto and matched the earlier deterministic-budget search outcomes; under a wall-clock cutoff, identical Protos can still have different terminal effort because stopping times differ. This does not permute solver variable indices.
 
 ### Indexed-representative sensitivity and interpretation
 
 Changing which indexed copy is forced to represent a selected subset changes how implications, hints, and non-overlap literals interact with propagation. Symmetry removal can eliminate redundant states while also removing a search trajectory that happened to improve the incumbent efficiently.
 
-**Decision — Closed as a production direction.** Branch count reduction is insufficient evidence for manual symmetry breaking in this formulation.
+### 2026-10 Stage B closure
+
+Local handoffs report separate LP0/LP2 pilots on `benchmark-medium-mixed-24` (seeds 0/1/2, one worker, SYM2, cold/no hints or extra volume bound):
+
+- Under a nominal 2s wall limit, LP0 incumbents were higher in 12/12 model/seed pairs. Forward's interaction `[(prefix-none)LP2 - (prefix-none)LP0]` was `(-94,-12,-58)`; Reverse's `(-52,+6,-158)` changed sign.
+- Under DT0.5 with a 5s wall safety limit, the two interactions involving DT-overrun runs are excluded from strictly matched-work interpretation; remaining interactions still change sign. These budget regimes answer different questions and must not be pooled into one ranking.
+- The six wall-pilot no-prefix A/text-ID-relabelled D controls matched final incumbents and full model/parameter Protos, but terminal DT and branches differed. Equal objectives do not establish identical search work; D does not change variable ordering.
+
+Both pilots returned native `FEASIBLE` with validated final witnesses, not solver optimality proofs. These local observations do not establish LP implicit regularization as a causal explanation or justify generalization beyond this selected instance and three seeds; presolve, branching, propagation and cuts remain alternative explanations. Detailed evidence: [Research HUB #31 wall pilot](https://github.com/Dongqiyu829/3d-container-loading-optimization/issues/31#issuecomment-6494495028) and [DT evidence closure](https://github.com/Dongqiyu829/3d-container-loading-optimization/issues/31#issuecomment-6493571995).
+
+**Decision — Closed as a production direction.** Branch count reduction is insufficient evidence for manual symmetry breaking in this formulation. Manual Selection Prefix remains default off; production LP and `symmetry_level` settings are unchanged.
 
 ### Reproducibility
 
