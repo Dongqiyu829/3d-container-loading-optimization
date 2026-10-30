@@ -484,6 +484,7 @@ def run_diagnostic_solve(
     symmetry_level: int | None = None,
     random_seed: int = 0,
     linearization_level: int | None = None,
+    lp_value_guidance: str | None = None,
 ) -> tuple[dict[str, Any] | None, dict[str, Any]]:
     import ortools
     from ortools.sat.python import cp_model
@@ -517,6 +518,12 @@ def run_diagnostic_solve(
         if max_deterministic_time <= 0:
             raise ValueError("max_deterministic_time must be positive")
         solver.parameters.max_deterministic_time = max_deterministic_time
+    if lp_value_guidance is not None:
+        if lp_value_guidance not in ("on", "off"):
+            raise ValueError("lp_value_guidance must be on or off")
+        solver.parameters.exploit_integer_lp_solution = lp_value_guidance == "on"
+        solver.parameters.exploit_all_lp_solution = lp_value_guidance == "on"
+        solver.parameters.search_branching = cp_model.AUTOMATIC_SEARCH
     parameter_hash = hashlib.sha256(solver.parameters.SerializeToString(deterministic=True)).hexdigest()
     target = hint_mapping.packed_volume if hint_mapping is not None else None
     callback = _new_diagnostic_callback(cp_model, target)
@@ -668,6 +675,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--configurations", help="optional ordered comma-separated subset, e.g. D,A")
     parser.add_argument("--linearization-level", type=int, choices=(0, 1, 2))
     parser.add_argument("--symmetry-level", type=int, choices=range(5))
+    parser.add_argument("--lp-value-guidance", choices=("on", "off"),
+                        help="control only the two exploit LP-value candidate flags")
     parser.add_argument("--wall-safety-limit", type=float, default=60.0)
     parser.add_argument("--volume-bound", action="store_true")
     parser.add_argument("--include-relabelled-forward", action="store_true")
@@ -831,6 +840,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                             random_seed=seed,
                             linearization_level=args.linearization_level,
                             symmetry_level=args.symmetry_level,
+                            lp_value_guidance=args.lp_value_guidance,
                         )
                     except Exception as exc:
                         import traceback
@@ -844,7 +854,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     record["random_seed"] = seed
                     record["physical_instance_id"] = original.instance_id
                     write_json_new(directory / "trajectories" / f"{original.instance_id}.{name}.{suffix}.record.json", record)
-                    if requested is not None and "BL" in requested and (
+                    if (args.lp_value_guidance is not None or (requested is not None and "BL" in requested)) and (
                         record["solver_status"] not in ("FEASIBLE", "OPTIMAL")
                         or solution is None or record["validation"] != "VALID"
                     ):
